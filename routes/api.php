@@ -15,13 +15,11 @@ Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
             Route::get('', 'index');
             Route::get('/search', 'search');
             Route::get('/{user}', 'show');
-            Route::post('/{user}/approve', 'approve');
-            Route::post('/{user}/revoke-approval', 'revokeApproval');
         });
     });
 });
 
-Route::middleware(['auth:supabase', 'role:user', 'user.approved'])->group(function () {
+Route::middleware(['auth:supabase', 'role:user'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
         Route::get('', 'index');
         Route::get('subscribe/{plan}', 'subscribe');
