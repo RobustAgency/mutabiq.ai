@@ -61,32 +61,4 @@ class UserController extends Controller
             'data' => new UserResource($user),
         ]);
     }
-
-    /**
-     * Approve a user account.
-     */
-    public function approve(User $user): JsonResponse
-    {
-        $user->approve();
-
-        return response()->json([
-            'error' => false,
-            'message' => 'User approved successfully',
-            'data' => new UserResource($user),
-        ]);
-    }
-
-    /**
-     * Revoke approval for a user account.
-     */
-    public function revokeApproval(User $user): JsonResponse
-    {
-        $user->revokeApproval();
-
-        return response()->json([
-            'error' => false,
-            'message' => 'User approval revoked successfully',
-            'data' => null,
-        ]);
-    }
 }

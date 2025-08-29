@@ -39,8 +39,7 @@ class NewAccountNotification extends Notification implements ShouldQueue
             ->greeting('Hello Admin')
             ->line("A new user ({$this->user->name}) has registered on the platform.")
             ->line("Email: {$this->user->email}")
-            ->line("Registered at: {$this->user->created_at->toDayDateTimeString()}")
-            ->line('Please review this account for approval.');
+            ->line("Registered at: {$this->user->created_at->toDayDateTimeString()}");
     }
 
     /**
