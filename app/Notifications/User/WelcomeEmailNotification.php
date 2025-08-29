@@ -8,17 +8,14 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class AccountRevokedNotification extends Notification implements ShouldQueue
+class WelcomeEmailNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(public User $user) {}
 
     /**
      * Get the notification's delivery channels.
@@ -36,9 +33,13 @@ class AccountRevokedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('Your account has been revoked.')
-            ->action('Contact Support', url('/support'))
-            ->line('Thank you for using our application!');
+            ->subject('Welcome to '.config('app.name').'!')
+            ->greeting('Hello '.$this->user->name.'!')
+            ->line('Welcome to our platform! We\'re excited to have you on board.')
+            ->line('Your account has been successfully created and you can now start exploring all the features we have to offer.')
+            ->action('Get Started', url('/dashboard'))
+            ->line('If you have any questions, feel free to reach out to our support team.')
+            ->line('Thank you for joining us!');
     }
 
     /**
@@ -46,8 +47,10 @@ class AccountRevokedNotification extends Notification implements ShouldQueue
      *
      * @return array<string, mixed>
      */
-    public function toArray(User $notifiable): array
+    public function toArray(object $notifiable): array
     {
-        return [];
+        return [
+            //
+        ];
     }
 }
