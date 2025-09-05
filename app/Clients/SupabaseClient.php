@@ -107,7 +107,8 @@ class SupabaseClient
             'password' => $userData['password'] ?? Str::random(12),
             'email_confirm' => $userData['email_verified'] ?? true,
             'user_metadata' => [
-                'name' => $userData['name'],
+                'full_name' => $userData['name'],
+                'role' => $userData['role'],
             ],
         ]);
 
