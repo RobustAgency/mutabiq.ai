@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Models\User;
-use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -24,20 +23,6 @@ class UserRepository
             ->latest()
             ->limit(10)
             ->get();
-    }
-
-    /**
-     * Create an Admin user.
-     */
-    public function createAdmin(array $adminData): User
-    {
-        return User::create([
-            'name' => $adminData['name'],
-            'email' => $adminData['email'],
-            'password' => bcrypt($adminData['password']),
-            'role' => UserRole::ADMIN,
-            'supabase_id' => $adminData['supabase_id'],
-        ]);
     }
 
     /**

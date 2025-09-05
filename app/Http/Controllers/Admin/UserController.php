@@ -4,14 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Clients\SupabaseClient;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
-use Illuminate\Auth\Events\Registered;
 use App\Http\Requests\Admin\SearchUsersRequest;
-use App\Http\Requests\Admin\CreateAdminUserRequest;
 
 class UserController extends Controller
 {
@@ -51,26 +48,6 @@ class UserController extends Controller
             'message' => 'Users retrieved successfully',
             'data' => UserResource::collection($users),
         ]);
-    }
-
-    /**
-     * Store a new admin user.
-     */
-    public function store(CreateAdminUserRequest $request, SupabaseClient $supabaseClient): JsonResponse
-    {
-        $data = $request->validated();
-
-        $supabaseResponse = $supabaseClient->createUser($data);
-        $data['supabase_id'] = $supabaseResponse['id'];
-
-        $user = $this->userRepository->createAdmin($data);
-        event(new Registered($user));
-
-        return response()->json([
-            'error' => false,
-            'message' => 'Admin user created successfully',
-            'data' => new UserResource($user),
-        ], 201);
     }
 
     /**
