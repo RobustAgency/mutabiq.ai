@@ -26,7 +26,7 @@ class FrameworkRepository
         });
 
         $query->when(! empty($filters['geography']), function ($query) use ($filters) {
-            $query->whereDate('geography', $filters['geography']);
+            $query->where('geography', 'like', '%'.$filters['geography'].'%');
         });
 
         $perPage = $filters['per_page'] ?? 10;

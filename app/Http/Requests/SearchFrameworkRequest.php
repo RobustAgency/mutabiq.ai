@@ -23,7 +23,7 @@ class SearchFrameworkRequest extends FormRequest
     {
         return [
             'name' => ['string', 'min:2'],
-            'geography' => ['date', 'nullable'],
+            'geography' => ['string', 'nullable'],
             'status' => ['string', 'nullable'],
             'per_page' => ['integer', 'min:1'],
         ];
