@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupabaseController;
+use App\Http\Controllers\FrameworkController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PaymentMethodController;
 
@@ -16,6 +17,13 @@ Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
             Route::get('search', 'search');
             Route::post('', 'store');
             Route::get('{user}', 'show');
+        });
+
+        Route::prefix('/frameworks')->controller(FrameworkController::class)->group(function () {
+            Route::get('', 'index');
+            Route::post('', 'store');
+            Route::get('{framework}', 'show');
+            Route::put('{framework}', 'update');
         });
     });
 });
