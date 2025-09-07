@@ -26,7 +26,7 @@ class OrganizationRepository
             $query->where('country', $filters['country']);
         }
 
-        if (! empty($filters['is_active'])) {
+        if (array_key_exists('is_active', $filters)) {
             $query->where('is_active', $filters['is_active']);
         }
 

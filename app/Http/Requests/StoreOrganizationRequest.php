@@ -24,7 +24,7 @@ class StoreOrganizationRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'website' => ['nullable', 'string', 'max:255', 'url'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:20', 'unique:organizations,phone'],
             'country' => ['nullable', 'string', 'max:500'],
             'is_active' => ['required', 'boolean'],
         ];
