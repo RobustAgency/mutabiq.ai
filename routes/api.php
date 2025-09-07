@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupabaseController;
 use App\Http\Controllers\FrameworkController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\PaymentMethodController;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
@@ -23,7 +24,14 @@ Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
             Route::get('', 'index');
             Route::post('', 'store');
             Route::get('{framework}', 'show');
-            Route::put('{framework}', 'update');
+            Route::post('{framework}', 'update');
+        });
+
+        Route::prefix('/requirements')->controller(RequirementController::class)->group(function () {
+            Route::get('', 'index');
+            Route::post('', 'store');
+            Route::get('{requirement}', 'show');
+            Route::post('{requirement}', 'update');
         });
     });
 });
