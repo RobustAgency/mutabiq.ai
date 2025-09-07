@@ -27,12 +27,6 @@
     git reset --hard {{ $commit }}
 @endtask
 
-@task('cleanup_old_releases')
-    echo "Cleaning up old releases..."
-    cd {{ $releases_dir }}
-    find . -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \;
-@endtask
-
 @task('writeable')
     echo 'make bootstrap/cache writeable ...'
     cd {{ $new_release_dir }}

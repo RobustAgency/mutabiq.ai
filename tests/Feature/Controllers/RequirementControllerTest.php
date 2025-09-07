@@ -59,7 +59,7 @@ class RequirementControllerTest extends TestCase
     {
         $user = User::factory()->create(['role' => UserRole::ADMIN]);
         $framework = Framework::factory()->create(['user_id' => $user->id]);
-        $requirement = Requirement::factory()->create();
+        $requirement = Requirement::factory()->create(['user_id' => $user->id]);
 
         $requirement->frameworks()->attach($framework->id);
 
@@ -80,7 +80,7 @@ class RequirementControllerTest extends TestCase
         $user = User::factory()->create(['role' => UserRole::ADMIN]);
         $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
         $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);
-        $requirement = Requirement::factory()->create(['name' => 'Old Requirement Name']);
+        $requirement = Requirement::factory()->create(['name' => 'Old Requirement Name', 'user_id' => $user->id]);
         $requirement->frameworks()->attach($framework2->id);
 
         $payload = [
@@ -111,7 +111,7 @@ class RequirementControllerTest extends TestCase
         $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
         $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);
 
-        $requirement = Requirement::factory()->create(['name' => 'Linked Requirement']);
+        $requirement = Requirement::factory()->create(['name' => 'Linked Requirement', 'user_id' => $user->id]);
 
         $requirement->frameworks()->attach([$framework1->id, $framework2->id]);
 
