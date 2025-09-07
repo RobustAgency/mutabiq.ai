@@ -7,6 +7,7 @@ use App\Http\Controllers\SupabaseController;
 use App\Http\Controllers\FrameworkController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\RequirementController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PaymentMethodController;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
@@ -33,6 +34,12 @@ Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
             Route::get('{requirement}', 'show');
             Route::post('{requirement}', 'update');
         });
+
+        Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {
+            Route::get('', 'index');
+            Route::get('{organization}', 'show');
+            Route::post('{organization}', 'update');
+        });
     });
 });
 
@@ -51,5 +58,9 @@ Route::middleware(['auth:supabase', 'role:user'])->group(function () {
 
     Route::prefix('profile')->controller(ProfileController::class)->group(function () {
         Route::get('', 'show');
+    });
+
+    Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {
+        Route::post('', 'store');
     });
 });
