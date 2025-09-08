@@ -30,7 +30,12 @@ class RequirementRepository
     {
         $requirementData['user_id'] = $user->id;
 
-        return Requirement::create($requirementData);
+        $requirement = Requirement::create($requirementData);
+        if (isset($requirementData['framework_ids'])) {
+            $requirement->frameworks()->sync($requirementData['framework_ids']);
+        }
+
+        return $requirement;
     }
 
     public function update(Requirement $requirement, array $requirementData): Requirement
