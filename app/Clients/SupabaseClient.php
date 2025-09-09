@@ -46,9 +46,9 @@ class SupabaseClient
      */
     public function __construct()
     {
-        $this->apiUrl = rtrim(config('services.supabase.url'), '/');
-        $this->serviceKey = config('services.supabase.key');
-        $this->jwtSecret = config('services.supabase.jwt_secret');
+        $this->apiUrl = rtrim(config('services.supabase.url') ?? '', '/');
+        $this->serviceKey = config('services.supabase.key') ?? '';
+        $this->jwtSecret = config('services.supabase.jwt_secret') ?? '';
     }
 
     /**
@@ -73,7 +73,6 @@ class SupabaseClient
             ->retry(3, 1000, function (Exception $exception, PendingRequest $request) {
                 if ($exception instanceof RequestException) {
                     $statusCode = $exception->response->status();
-                    // Don't retry on client errors except rate limiting
                     if ($statusCode >= 400 && $statusCode < 500 && $statusCode !== 429) {
                         return false;
                     }
@@ -104,10 +103,11 @@ class SupabaseClient
     {
         $response = $this->getClient()->post('/admin/users', [
             'email' => $userData['email'],
-            'password' => $userData['password'] ?? Str::random(12),
+            'password' => $userData['password'],
             'email_confirm' => $userData['email_verified'] ?? true,
             'user_metadata' => [
-                'name' => $userData['name'],
+                'full_name' => $userData['name'],
+                'role' => $userData['role'],
             ],
         ]);
 
@@ -306,7 +306,7 @@ class SupabaseClient
 
         if (! $user) {
             // Create new user if they don't exist using the factory method
-            $user = User::createFromSupabase([
+            $user = User::registerUser([
                 'name' => $userData['name'],
                 'email' => $userData['email'],
                 'supabase_id' => $userData['supabase_id'],

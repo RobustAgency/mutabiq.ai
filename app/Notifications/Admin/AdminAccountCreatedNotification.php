@@ -8,16 +8,14 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class NewAccountNotification extends Notification implements ShouldQueue
+class AdminAccountCreatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(
-        public User $user
-    ) {}
+    public function __construct(public User $user) {}
 
     /**
      * Get the notification's delivery channels.
@@ -26,7 +24,7 @@ class NewAccountNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail'];
     }
 
     /**
@@ -35,11 +33,12 @@ class NewAccountNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Account Registration')
-            ->greeting('Hello Admin')
-            ->line("A new user ({$this->user->name}) has registered on the platform.")
-            ->line("Email: {$this->user->email}")
-            ->line("Registered at: {$this->user->created_at->toDayDateTimeString()}");
+            ->subject('Your Admin Account Has Been Created')
+            ->greeting('Hello '.$this->user->name.',')
+            ->line('Your admin account has been created successfully.')
+            ->line('Email: '.$this->user->email)
+            ->line('Default Password: password')
+            ->line('Please log in and change your password immediately for security.');
     }
 
     /**

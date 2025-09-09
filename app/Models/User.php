@@ -29,6 +29,7 @@ class User extends Authenticatable
         'role',
         'password',
         'plan_id',
+        'organization_id',
     ];
 
     /**
@@ -46,18 +47,15 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'role' => UserRole::class,
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'role' => UserRole::class,
+    ];
 
     /**
      * Create a new user from Supabase data.
@@ -65,7 +63,7 @@ class User extends Authenticatable
      * @param  array  $attributes  User attributes including name, email, supabase_id, etc.
      * @return self The created user instance
      */
-    public static function createFromSupabase(array $attributes): self
+    public static function registerUser(array $attributes): self
     {
         $user = self::create([
             'name' => $attributes['name'],

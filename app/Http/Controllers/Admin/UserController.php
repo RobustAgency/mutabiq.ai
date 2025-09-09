@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
+use App\Clients\SupabaseClient;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
 use App\Http\Requests\Admin\SearchUsersRequest;
+use App\Http\Requests\Admin\CreateAdminUserRequest;
 
 class UserController extends Controller
 {
@@ -25,7 +28,9 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 10);
-        $users = $this->userRepository->getPaginated($perPage);
+        $role = $request->input('role', null);
+        $userRole = $role ? UserRole::from($role) : null;
+        $users = $this->userRepository->getPaginatedByRole($userRole, $perPage);
 
         return response()->json([
             'error' => false,
@@ -48,6 +53,25 @@ class UserController extends Controller
             'message' => 'Users retrieved successfully',
             'data' => UserResource::collection($users),
         ]);
+    }
+
+    /**
+     * Store a new admin user.
+     */
+    public function store(CreateAdminUserRequest $request, SupabaseClient $supabaseClient): JsonResponse
+    {
+        $data = $request->validated();
+
+        $supabaseResponse = $supabaseClient->createUser($data);
+        $data['supabase_id'] = $supabaseResponse['id'];
+
+        $user = User::registerUser($data);
+
+        return response()->json([
+            'error' => false,
+            'message' => 'Admin user created successfully',
+            'data' => new UserResource($user),
+        ], 201);
     }
 
     /**
