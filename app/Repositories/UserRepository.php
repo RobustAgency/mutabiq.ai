@@ -27,20 +27,6 @@ class UserRepository
     }
 
     /**
-     * Create an Admin user.
-     */
-    public function createAdmin(array $adminData): User
-    {
-        return User::create([
-            'name' => $adminData['name'],
-            'email' => $adminData['email'],
-            'password' => bcrypt($adminData['password']),
-            'role' => UserRole::ADMIN,
-            'supabase_id' => $adminData['supabase_id'],
-        ]);
-    }
-
-    /**
      * Get a user by ID with specified relations.
      */
     public function findById(int $id): ?User
@@ -53,8 +39,14 @@ class UserRepository
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator<int, User>
      */
-    public function getPaginated(int $perPage = 10): LengthAwarePaginator
+    public function getPaginatedByRole(?UserRole $role, int $perPage): LengthAwarePaginator
     {
-        return User::where('role', '!=', 'admin')->latest()->paginate($perPage);
+        $query = User::query();
+
+        if ($role) {
+            $query->where('role', $role);
+        }
+
+        return $query->latest()->paginate($perPage);
     }
 }

@@ -46,8 +46,7 @@ class UserControllerTest extends TestCase
             $user->updated_at = now();
             $user->save();
         }
-
-        $response = $this->actingAs($admin)->getJson('/api/admin/users');
+        $response = $this->actingAs($admin)->getJson('/api/admin/users?role=user');
 
         $response->assertOk();
 
@@ -55,6 +54,10 @@ class UserControllerTest extends TestCase
         $this->assertFalse($responseData['error']);
         $this->assertEquals('Users retrieved successfully', $responseData['message']);
         $this->assertArrayHasKey('data', $responseData);
+
+        foreach ($responseData['data']['data'] as $user) {
+            $this->assertEquals(UserRole::USER->value, $user['role']);
+        }
     }
 
     public function test_admin_can_store_new_admin_user(): void
@@ -64,10 +67,10 @@ class UserControllerTest extends TestCase
         $admin = User::factory()->create(['role' => UserRole::ADMIN]);
 
         $payload = [
-            'name' => 'New Admin',
+            'name' => fake()->name(),
             'email' => 'new.admin@example.com',
-            'password' => 'securepassword123',
-            'role' => 'admin',
+            'password' => fake()->password(8),
+            'role' => UserRole::ADMIN->value,
         ];
 
         $response = $this->actingAs($admin)->postJson('/api/admin/users', $payload);
