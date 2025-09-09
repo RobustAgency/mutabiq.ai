@@ -25,10 +25,6 @@ class FrameworkRepository
             $query->where('is_published', $filters['status']);
         });
 
-        $query->when(! empty($filters['geography']), function ($query) use ($filters) {
-            $query->where('geography', 'like', '%'.$filters['geography'].'%');
-        });
-
         $perPage = $filters['per_page'] ?? 10;
 
         return $query->latest()->paginate($perPage);

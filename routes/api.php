@@ -32,6 +32,7 @@ Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
             Route::post('', 'store');
             Route::get('{requirement}', 'show');
             Route::post('{requirement}', 'update');
+
         });
     });
 });
