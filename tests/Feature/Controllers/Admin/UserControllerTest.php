@@ -15,25 +15,6 @@ class UserControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Mock Supabase client for all tests
-        Http::fake([
-            // Mock the Supabase auth endpoint for user creation
-            '*/auth/v1/admin/users' => function ($request) {
-                $requestData = $request->data();
-
-                return Http::response(FakeSupabase::getUserCreationResponse([
-                    'email' => $requestData['email'],
-                    'name' => $requestData['user_metadata']['name'] ?? 'Test User',
-                    'email_verified' => $requestData['email_confirm'] ?? true,
-                ]), 200);
-            },
-        ]);
-    }
-
     public function test_admin_can_view_all_users_with_pagination(): void
     {
         Notification::fake();
@@ -46,8 +27,7 @@ class UserControllerTest extends TestCase
             $user->updated_at = now();
             $user->save();
         }
-
-        $response = $this->actingAs($admin)->getJson('/api/admin/users');
+        $response = $this->actingAs($admin)->getJson('/api/admin/users?role=user');
 
         $response->assertOk();
 
@@ -55,6 +35,61 @@ class UserControllerTest extends TestCase
         $this->assertFalse($responseData['error']);
         $this->assertEquals('Users retrieved successfully', $responseData['message']);
         $this->assertArrayHasKey('data', $responseData);
+
+        foreach ($responseData['data']['data'] as $user) {
+            $this->assertEquals(UserRole::USER->value, $user['role']);
+        }
+    }
+
+    public function test_admin_can_store_new_admin_user(): void
+    {
+        Notification::fake();
+
+        Http::fake([
+            '*/auth/v1/admin/users' => function ($request) {
+                $requestData = $request->data();
+
+                return Http::response(FakeSupabase::getUserCreationResponse([
+                    'email' => $requestData['email'],
+                    'name' => $requestData['user_metadata']['name'] ?? 'Test User',
+                    'email_verified' => $requestData['email_confirm'] ?? true,
+                ]), 200);
+            },
+        ]);
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+
+        $payload = [
+            'name' => fake()->name(),
+            'email' => 'new.admin@example.com',
+            'password' => fake()->password(8),
+            'role' => UserRole::ADMIN->value,
+        ];
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/users', $payload);
+
+        $response->assertCreated();
+        $response->assertJsonStructure([
+            'error',
+            'message',
+            'data' => [
+                'id',
+                'name',
+                'email',
+                'created_at',
+                'updated_at',
+            ],
+        ]);
+
+        $responseData = $response->json();
+
+        $this->assertFalse($responseData['error']);
+        $this->assertEquals('Admin user created successfully', $responseData['message']);
+        $this->assertEquals('new.admin@example.com', $responseData['data']['email']);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'new.admin@example.com',
+            'role' => UserRole::ADMIN->value,
+        ]);
     }
 
     public function test_admin_can_view_user(): void

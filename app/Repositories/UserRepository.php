@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -38,8 +39,14 @@ class UserRepository
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator<int, User>
      */
-    public function getPaginated(int $perPage = 10): LengthAwarePaginator
+    public function getPaginatedByRole(?UserRole $role, int $perPage): LengthAwarePaginator
     {
-        return User::where('role', '!=', 'admin')->latest()->paginate($perPage);
+        $query = User::query();
+
+        if ($role) {
+            $query->where('role', $role);
+        }
+
+        return $query->latest()->paginate($perPage);
     }
 }
