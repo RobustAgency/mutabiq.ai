@@ -46,9 +46,9 @@ class SupabaseClient
      */
     public function __construct()
     {
-        $this->apiUrl = rtrim(config('services.supabase.url'), '/');
-        $this->serviceKey = config('services.supabase.key');
-        $this->jwtSecret = config('services.supabase.jwt_secret');
+        $this->apiUrl = rtrim(config('services.supabase.url') ?? '', '/');
+        $this->serviceKey = config('services.supabase.key') ?? '';
+        $this->jwtSecret = config('services.supabase.jwt_secret') ?? '';
     }
 
     /**
@@ -73,7 +73,6 @@ class SupabaseClient
             ->retry(3, 1000, function (Exception $exception, PendingRequest $request) {
                 if ($exception instanceof RequestException) {
                     $statusCode = $exception->response->status();
-                    // Don't retry on client errors except rate limiting
                     if ($statusCode >= 400 && $statusCode < 500 && $statusCode !== 429) {
                         return false;
                     }
