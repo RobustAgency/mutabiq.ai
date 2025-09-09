@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Controllers\Admin;
 
 use Tests\TestCase;
 use App\Models\User;
@@ -134,7 +134,7 @@ class FrameworkControllerTest extends TestCase
             'assessment_mode' => 'Third-party Assessment',
         ];
 
-        $response = $this->actingAs($user)->putJson("/api/admin/frameworks/{$framework->id}", $payload);
+        $response = $this->actingAs($user)->postJson("/api/admin/frameworks/{$framework->id}", $payload);
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -165,7 +165,7 @@ class FrameworkControllerTest extends TestCase
             'framework_logo' => UploadedFile::fake()->image('new_logo.png'),
         ];
 
-        $response = $this->actingAs($user)->putJson("/api/admin/frameworks/{$framework->id}", $payload);
+        $response = $this->actingAs($user)->postJson("/api/admin/frameworks/{$framework->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('frameworks', [
