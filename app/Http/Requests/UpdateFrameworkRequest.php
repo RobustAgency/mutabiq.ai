@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateFrameworkRequest extends FormRequest
@@ -23,7 +24,10 @@ class UpdateFrameworkRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'min:2', 'max:255'],
-            'code' => ['sometimes', 'required', 'string', 'min:2', 'max:100', 'unique:frameworks,code'],
+            'code' => [
+                'sometimes', 'required', 'string', 'max:100',
+                Rule::unique('requirements', 'code')->ignore($this->route('framework')),
+            ],
             'type' => ['sometimes', 'required', 'string', 'max:100'],
             'geography' => ['sometimes', 'required', 'string', 'max:100'],
             'category' => ['sometimes', 'required', 'string'],
