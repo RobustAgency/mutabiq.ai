@@ -15,25 +15,6 @@ class UserControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Mock Supabase client for all tests
-        Http::fake([
-            // Mock the Supabase auth endpoint for user creation
-            '*/auth/v1/admin/users' => function ($request) {
-                $requestData = $request->data();
-
-                return Http::response(FakeSupabase::getUserCreationResponse([
-                    'email' => $requestData['email'],
-                    'name' => $requestData['user_metadata']['name'] ?? 'Test User',
-                    'email_verified' => $requestData['email_confirm'] ?? true,
-                ]), 200);
-            },
-        ]);
-    }
-
     public function test_admin_can_view_all_users_with_pagination(): void
     {
         Notification::fake();
@@ -64,6 +45,17 @@ class UserControllerTest extends TestCase
     {
         Notification::fake();
 
+        Http::fake([
+            '*/auth/v1/admin/users' => function ($request) {
+                $requestData = $request->data();
+
+                return Http::response(FakeSupabase::getUserCreationResponse([
+                    'email' => $requestData['email'],
+                    'name' => $requestData['user_metadata']['name'] ?? 'Test User',
+                    'email_verified' => $requestData['email_confirm'] ?? true,
+                ]), 200);
+            },
+        ]);
         $admin = User::factory()->create(['role' => UserRole::ADMIN]);
 
         $payload = [
