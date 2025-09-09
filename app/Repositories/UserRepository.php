@@ -27,6 +27,20 @@ class UserRepository
     }
 
     /**
+     * Create an Admin user.
+     */
+    public function createAdmin(array $adminData): User
+    {
+        return User::create([
+            'name' => $adminData['name'],
+            'email' => $adminData['email'],
+            'password' => bcrypt($adminData['password']),
+            'role' => UserRole::ADMIN,
+            'supabase_id' => $adminData['supabase_id'],
+        ]);
+    }
+
+    /**
      * Get a user by ID with specified relations.
      */
     public function findById(int $id): ?User

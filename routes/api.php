@@ -13,9 +13,8 @@ Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
     Route::prefix('/admin')->group(function () {
         Route::prefix('/users')->controller(UserController::class)->group(function () {
             Route::get('', 'index');
-            Route::get('search', 'search');
-            Route::post('', 'store');
-            Route::get('{user}', 'show');
+            Route::get('/search', 'search');
+            Route::get('/{user}', 'show');
         });
     });
 });

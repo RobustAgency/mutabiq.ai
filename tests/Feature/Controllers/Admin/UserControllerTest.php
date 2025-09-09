@@ -92,6 +92,46 @@ class UserControllerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_store_new_admin_user(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+
+        $payload = [
+            'name' => 'New Admin',
+            'email' => 'new.admin@example.com',
+            'password' => 'securepassword123',
+            'role' => 'admin',
+        ];
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/users', $payload);
+
+        $response->assertCreated();
+        $response->assertJsonStructure([
+            'error',
+            'message',
+            'data' => [
+                'id',
+                'name',
+                'email',
+                'created_at',
+                'updated_at',
+            ],
+        ]);
+
+        $responseData = $response->json();
+
+        $this->assertFalse($responseData['error']);
+        $this->assertEquals('Admin user created successfully', $responseData['message']);
+        $this->assertEquals('new.admin@example.com', $responseData['data']['email']);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'new.admin@example.com',
+            'role' => UserRole::ADMIN->value,
+        ]);
+    }
+
     public function test_admin_can_view_user(): void
     {
         Notification::fake();

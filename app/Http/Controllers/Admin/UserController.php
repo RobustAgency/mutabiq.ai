@@ -64,7 +64,6 @@ class UserController extends Controller
 
         $supabaseResponse = $supabaseClient->createUser($data);
         $data['supabase_id'] = $supabaseResponse['id'];
-        $data['password'] = $data['password'];
 
         $user = User::registerUser($data);
 
