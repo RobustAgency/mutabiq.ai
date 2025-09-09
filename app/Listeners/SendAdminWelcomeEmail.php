@@ -17,7 +17,7 @@ class SendAdminWelcomeEmail implements ShouldQueue
     {
         /** @var User $user */
         $user = $event->user;
-        if ($user->role === UserRole::ADMIN->value) {
+        if ($user->role === UserRole::ADMIN) {
             $user->notify(new AdminAccountCreatedNotification($user));
         }
     }

@@ -103,7 +103,7 @@ class SupabaseClient
     {
         $response = $this->getClient()->post('/admin/users', [
             'email' => $userData['email'],
-            'password' => $userData['password'] ?? Str::random(12),
+            'password' => $userData['password'],
             'email_confirm' => $userData['email_verified'] ?? true,
             'user_metadata' => [
                 'full_name' => $userData['name'],
@@ -306,7 +306,7 @@ class SupabaseClient
 
         if (! $user) {
             // Create new user if they don't exist using the factory method
-            $user = User::createFromSupabase([
+            $user = User::registerUser([
                 'name' => $userData['name'],
                 'email' => $userData['email'],
                 'supabase_id' => $userData['supabase_id'],

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\UserRole;
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateAdminUserRequest extends FormRequest
@@ -25,7 +27,7 @@ class CreateAdminUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', 'string', 'in:admin,user'],
+            'role' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, UserRole::cases()))],
         ];
     }
 }
