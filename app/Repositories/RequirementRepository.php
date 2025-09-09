@@ -15,7 +15,7 @@ class RequirementRepository
      */
     public function getFilteredRequirements(User $user, array $filters = []): LengthAwarePaginator
     {
-        $query = Requirement::where('user_id', $user->id);
+        $query = Requirement::where('user_id', $user->id)->withCount('frameworks');
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
@@ -30,7 +30,12 @@ class RequirementRepository
     {
         $requirementData['user_id'] = $user->id;
 
-        return Requirement::create($requirementData);
+        $requirement = Requirement::create($requirementData);
+        if (isset($requirementData['framework_ids'])) {
+            $requirement->frameworks()->sync($requirementData['framework_ids']);
+        }
+
+        return $requirement;
     }
 
     public function update(Requirement $requirement, array $requirementData): Requirement
