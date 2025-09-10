@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
@@ -11,6 +12,12 @@ class LoginRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        $email = $this->input('email');
+        $organization = User::where('email', $email)->with('organization')->first()?->organization;
+        if ($organization && ! $organization->is_active) {
+            return false;
+        }
+
         return true;
     }
 
@@ -25,5 +32,14 @@ class LoginRequest extends FormRequest
             'email' => ['required', 'email'],
             'password' => ['required'],
         ];
+    }
+
+    protected function failedAuthorization()
+    {
+        abort(response()->json([
+            'error' => true,
+            'message' => 'Your organization is inactive. Please contact admin.',
+            'data' => null,
+        ], 403));
     }
 }

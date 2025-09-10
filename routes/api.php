@@ -2,6 +2,7 @@
 
 use App\Models\Organization;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupabaseController;
@@ -43,6 +44,11 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
             Route::get('', 'index');
             Route::get('{organization}', 'show');
             Route::post('{organization}', 'update');
+        });
+
+        Route::prefix('/tags')->controller(TagController::class)->group(function () {
+            Route::get('', 'index');
+            Route::post('', 'store');
         });
     });
 });
