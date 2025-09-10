@@ -14,9 +14,9 @@ class RequirementControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_admin_can_list_their_requirements(): void
+    public function test_super_admin_can_list_their_requirements(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
         Requirement::factory()->count(3)->create(['user_id' => $user->id]);
 
@@ -29,9 +29,9 @@ class RequirementControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_store_requirement(): void
+    public function test_super_admin_can_store_requirement(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework = Framework::factory()->create(['user_id' => $user->id]);
 
         $payload = [
@@ -55,9 +55,9 @@ class RequirementControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_view_single_requirement(): void
+    public function test_super_admin_can_view_single_requirement(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework = Framework::factory()->create(['user_id' => $user->id]);
         $requirement = Requirement::factory()->create(['user_id' => $user->id]);
 
@@ -75,9 +75,9 @@ class RequirementControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_update_requirement(): void
+    public function test_super_admin_can_update_requirement(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
         $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);
         $requirement = Requirement::factory()->create(['name' => 'Old Requirement Name', 'user_id' => $user->id]);
@@ -104,9 +104,9 @@ class RequirementControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_unlink_framework_from_requirement(): void
+    public function test_super_admin_can_unlink_framework_from_requirement(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
         $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
         $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);

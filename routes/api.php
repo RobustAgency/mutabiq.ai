@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Organization;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ProfileController;
@@ -12,7 +13,7 @@ use App\Http\Controllers\PaymentMethodController;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
 
-Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
+Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
     Route::prefix('/admin')->group(function () {
         Route::prefix('/users')->controller(UserController::class)->group(function () {
             Route::get('', 'index');
@@ -44,7 +45,7 @@ Route::middleware(['auth:supabase', 'role:admin'])->group(function () {
     });
 });
 
-Route::middleware(['auth:supabase', 'role:user'])->group(function () {
+Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
         Route::get('', 'index');
         Route::get('subscribe/{plan}', 'subscribe');
@@ -62,6 +63,6 @@ Route::middleware(['auth:supabase', 'role:user'])->group(function () {
     });
 
     Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {
-        Route::post('', 'store');
+        Route::post('', 'store')->can('create', Organization::class);
     });
 });

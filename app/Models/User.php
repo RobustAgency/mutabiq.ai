@@ -69,7 +69,7 @@ class User extends Authenticatable
             'name' => $attributes['name'],
             'email' => $attributes['email'],
             'supabase_id' => $attributes['supabase_id'],
-            'role' => UserRole::tryFrom(strtolower($attributes['role'] ?? '')) ?? UserRole::USER,
+            'role' => UserRole::tryFrom(strtolower($attributes['role'] ?? '')),
         ]);
 
         // Dispatch Registered event
