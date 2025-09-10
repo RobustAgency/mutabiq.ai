@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
+use Illuminate\Validation\Rules\Enum;
 use App\Http\Requests\Admin\SearchUsersRequest;
 use App\Http\Requests\Admin\CreateAdminUserRequest;
 
@@ -27,9 +28,15 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 10);
-        $role = $request->input('role', null);
-        $userRole = $role ? UserRole::from($role) : null;
+        $validated = $request->validate([
+            'role' => ['nullable', new Enum(UserRole::class)],
+            'per_page' => 'integer|min:1|max:100',
+        ]);
+
+        $perPage = $validated['per_page'] ?? 10;
+        $role = $validated['role'] ?? null;
+
+        $userRole = $role ? UserRole::tryFrom($role) : null;
         $users = $this->userRepository->getPaginatedByRole($userRole, $perPage);
 
         return response()->json([

@@ -65,11 +65,19 @@ class User extends Authenticatable
      */
     public static function registerUser(array $attributes): self
     {
+        $role = $attributes['role'];
+
+        if ($role instanceof UserRole) {
+            $roleValue = $role->value;
+        } else {
+            $roleValue = strtolower($role ?? '');
+        }
         $user = self::create([
             'name' => $attributes['name'],
             'email' => $attributes['email'],
             'supabase_id' => $attributes['supabase_id'],
-            'role' => UserRole::tryFrom(strtolower($attributes['role'] ?? '')),
+            'role' => UserRole::tryFrom($roleValue),
+            'organization_id' => $attributes['organization_id'] ?? null,
         ]);
 
         // Dispatch Registered event
