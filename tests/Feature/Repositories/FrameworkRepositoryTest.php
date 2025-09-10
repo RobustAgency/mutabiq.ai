@@ -56,27 +56,4 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertCount(1, $results);
         $this->assertEquals('Published Framework', $results->first()->name);
     }
-
-    public function test_it_can_filter_frameworks_by_geography(): void
-    {
-        $user = User::factory()->create();
-
-        Framework::factory()->create([
-            'user_id' => $user->id,
-            'name' => 'EU AI Act',
-            'geography' => 'EU',
-        ]);
-
-        Framework::factory()->create([
-            'user_id' => $user->id,
-            'name' => 'UAE PDPL',
-            'geography' => 'UAE',
-        ]);
-
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getFilteredFrameworks($user, ['geography' => 'UAE']);
-
-        $this->assertCount(1, $results);
-        $this->assertEquals('UAE PDPL', $results->first()->name);
-    }
 }

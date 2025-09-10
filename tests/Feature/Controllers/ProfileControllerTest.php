@@ -38,7 +38,7 @@ class ProfileControllerTest extends TestCase
 
         $user = User::factory()->create([
             'id' => 1,
-            'role' => UserRole::USER,
+            'role' => UserRole::OWNER,
         ]);
 
         $response = $this->actingAs($user)->getJson('/api/profile');
