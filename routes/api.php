@@ -10,8 +10,10 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\TeamInvitationController;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
+Route::post('accept-invite', [TeamInvitationController::class, 'acceptInvitation']);
 
 Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
     Route::prefix('/admin')->group(function () {
@@ -58,11 +60,9 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('add', 'addPaymentMethod');
     });
 
-    Route::prefix('profile')->controller(ProfileController::class)->group(function () {
-        Route::get('', 'show');
-    });
+    Route::get('profile', [ProfileController::class, 'show']);
 
-    Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {
-        Route::post('', 'store')->can('create', Organization::class);
-    });
+    Route::post('organizations', [OrganizationController::class, 'store'])->can('create', Organization::class);
+
+    Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
 });
