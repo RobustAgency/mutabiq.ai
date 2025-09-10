@@ -16,9 +16,9 @@ class FrameworkControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_admin_can_list_their_frameworks(): void
+    public function test_super_admin_can_list_their_frameworks(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
         Framework::factory()->count(3)->create(['user_id' => $user->id]);
 
@@ -31,9 +31,9 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_store_framework(): void
+    public function test_super_admin_can_store_framework(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
         $payload = [
             'name' => 'EU AI Act',
@@ -67,11 +67,11 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_store_framework_with_logo(): void
+    public function test_super_admin_can_store_framework_with_logo(): void
     {
         Storage::fake('public');
 
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
         $payload = [
             'name' => 'EU AI Act',
@@ -96,9 +96,9 @@ class FrameworkControllerTest extends TestCase
         $this->assertNotNull($framework->getFirstMediaUrl('client_logo'));
     }
 
-    public function test_admin_can_view_single_framework(): void
+    public function test_super_admin_can_view_single_framework(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework = Framework::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)->getJson("/api/admin/frameworks/{$framework->id}");
@@ -111,9 +111,9 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_update_framework(): void
+    public function test_super_admin_can_update_framework(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Old Name']);
 
         $payload = [
@@ -149,11 +149,11 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_replace_framework_logo_on_update(): void
+    public function test_super_admin_can_replace_framework_logo_on_update(): void
     {
         Storage::fake('public');
 
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
         $framework = Framework::factory()->create(['user_id' => $user->id]);
 

@@ -13,9 +13,9 @@ class OrganizationControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_admin_can_view_list_of_organizations(): void
+    public function test_super_admin_can_view_list_of_organizations(): void
     {
-        $user = User::factory()->create(['role' => UserRole::ADMIN]);
+        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
         Organization::factory()->count(3)->create();
 
@@ -40,7 +40,7 @@ class OrganizationControllerTest extends TestCase
 
     public function test_user_can_create_organization(): void
     {
-        $user = User::factory()->create(['role' => UserRole::USER]);
+        $user = User::factory()->create(['role' => UserRole::OWNER]);
 
         $organizationData = [
             'name' => $this->faker->company(),
@@ -68,9 +68,9 @@ class OrganizationControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_view_single_organization(): void
+    public function test_super_admin_can_view_single_organization(): void
     {
-        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        $admin = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $user = User::factory()->create(['organization_id' => null]);
         $organization = Organization::factory()->create(['user_id' => $user->id]);
         $user->update(['organization_id' => $organization->id]);
@@ -87,9 +87,9 @@ class OrganizationControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_inactivate_organization(): void
+    public function test_super_admin_can_inactivate_organization(): void
     {
-        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        $admin = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $user = User::factory()->create(['organization_id' => null]);
         $organization = Organization::factory()->create(['user_id' => $user->id]);
         $user->update(['organization_id' => $organization->id]);

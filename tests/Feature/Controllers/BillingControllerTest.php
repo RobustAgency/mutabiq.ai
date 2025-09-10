@@ -37,7 +37,7 @@ class BillingControllerTest extends TestCase
     {
         $user = User::factory()->create([
             'id' => 1,
-            'role' => UserRole::USER,
+            'role' => UserRole::OWNER,
         ]);
 
         Plan::factory()->create([
@@ -58,7 +58,7 @@ class BillingControllerTest extends TestCase
     public function test_user_has_no_payment_method(): void
     {
         $user = User::factory()->create([
-            'role' => UserRole::USER,
+            'role' => UserRole::OWNER,
         ]);
         $plan = Plan::factory()->create(['active' => true]);
 
@@ -81,7 +81,7 @@ class BillingControllerTest extends TestCase
     public function test_get_user_invoices(): void
     {
         $user = User::factory()->create([
-            'role' => UserRole::USER,
+            'role' => UserRole::OWNER,
         ]);
 
         // Fake Stripe invoice object
@@ -113,7 +113,7 @@ class BillingControllerTest extends TestCase
     public function test_get_user_upcoming_invoice(): void
     {
         $user = User::factory()->create([
-            'role' => UserRole::USER,
+            'role' => UserRole::OWNER,
         ]);
 
         // Fake Stripe upcoming invoice object
