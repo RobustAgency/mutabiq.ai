@@ -16,7 +16,7 @@ class FrameworkRepository
     public function getFilteredFrameworks(User $user, array $filters = []): LengthAwarePaginator
     {
         $query = Framework::where('user_id', $user->id);
-
+        
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
         });
@@ -42,5 +42,15 @@ class FrameworkRepository
         $framework->update($frameworkData);
 
         return $framework;
+    }
+
+    /**
+     * Get available frameworks with optional filters.
+     */
+    public function getAvailableFrameworks(array $filters = []): LengthAwarePaginator
+    {
+        $query = Framework::where('is_published', true);
+
+        return $query->latest()->paginate($filters['per_page'] ?? 10);
     }
 }

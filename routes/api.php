@@ -11,6 +11,7 @@ use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\TeamInvitationController;
+use App\Http\Controllers\User\FrameworkController as UserFrameworkController;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
 Route::post('accept-invite', [TeamInvitationController::class, 'acceptInvitation']);
@@ -65,4 +66,6 @@ Route::middleware(['auth:supabase'])->group(function () {
     Route::post('organizations', [OrganizationController::class, 'store'])->can('create', Organization::class);
 
     Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
+
+    Route::get('frameworks', [UserFrameworkController::class, 'index']);
 });
