@@ -9,6 +9,7 @@ use App\Events\UserCreated;
 use Laravel\Cashier\Billable;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -84,5 +85,15 @@ class User extends Authenticatable
         event(new Registered($user));
 
         return $user;
+    }
+
+    /**
+     * Get the organization that owns the user.
+     *
+     * @return BelongsTo<Organization, $this>
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 }
