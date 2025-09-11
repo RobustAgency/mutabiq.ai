@@ -37,12 +37,6 @@ class TagRepository
     {
         $tagData['user_id'] = $user->id;
 
-        return Tag::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'group' => $tagData['group'],
-            ],
-            ['name' => $tagData['name']]
-        );
+        return Tag::create($tagData);
     }
 }
