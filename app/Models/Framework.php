@@ -57,7 +57,7 @@ class Framework extends Model implements HasMedia
      */
     public function requirements(): BelongsToMany
     {
-        return $this->belongsToMany(Requirement::class);
+        return $this->belongsToMany(Requirement::class, 'framework_requirement');
     }
 
     /**
@@ -67,6 +67,6 @@ class Framework extends Model implements HasMedia
      */
     public function controls(): BelongsToMany
     {
-        return $this->belongsToMany(Control::class);
+        return $this->belongsToMany(Control::class, 'control_framework');
     }
 }
