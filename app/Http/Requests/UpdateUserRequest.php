@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\UserRole;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateOrganizationRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,16 +24,9 @@ class UpdateOrganizationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['sometimes', 'string', 'max:255'],
-            'website' => ['sometimes', 'string', 'max:255', 'url'],
-            'phone' => [
-                'nullable',
-                'string',
-                'max:20',
-                Rule::unique('organizations', 'phone')->ignore($this->organization->id),
-            ],
-            'country' => ['nullable', 'string', 'max:500'],
-            'is_active' => ['required', 'boolean'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
+            'role' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, UserRole::cases()))],
         ];
     }
 }

@@ -35,7 +35,7 @@ class OrganizationRepositoryTest extends TestCase
             'is_active' => true,
         ]);
         $repository = app(OrganizationRepository::class);
-        $results = $repository->getFilteredOrganizationsForAdmin($user, ['name' => 'Risk']);
+        $results = $repository->getFilteredOrganizations(['name' => 'Risk']);
 
         $this->assertCount(1, $results);
         $this->assertEquals('High Risk AI', $results->first()->name);
@@ -63,7 +63,7 @@ class OrganizationRepositoryTest extends TestCase
             'is_active' => true,
         ]);
         $repository = app(OrganizationRepository::class);
-        $results = $repository->getFilteredOrganizationsForAdmin($user, ['country' => 'Pakistan']);
+        $results = $repository->getFilteredOrganizations(['country' => 'Pakistan']);
 
         $this->assertCount(1, $results);
         $this->assertEquals('Pakistan', $results->first()->country);
@@ -91,7 +91,7 @@ class OrganizationRepositoryTest extends TestCase
             'is_active' => false,
         ]);
         $repository = app(OrganizationRepository::class);
-        $results = $repository->getFilteredOrganizationsForAdmin($user, ['is_active' => true]);
+        $results = $repository->getFilteredOrganizations(['is_active' => true]);
 
         $this->assertCount(1, $results);
     }
