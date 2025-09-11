@@ -38,6 +38,7 @@ class FrameworkResource extends JsonResource
             'framework_logo' => $this->getFirstMediaUrl('framework_logos') ?: null,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'requirements' => RequirementResource::collection($this->whenLoaded('requirements')),
         ];
     }
 }

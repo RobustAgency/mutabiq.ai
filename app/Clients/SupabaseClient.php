@@ -128,7 +128,13 @@ class SupabaseClient
      */
     public function updateUser(string $userId, array $userData): bool
     {
-        $response = $this->getClient()->put("/admin/users/{$userId}", $userData);
+        $response = $this->getClient()->put("/admin/users/{$userId}", [
+            'email' => $userData['email'],
+            'user_metadata' => [
+                'full_name' => $userData['name'],
+                'role' => $userData['role'],
+            ],
+        ]);
 
         if (! $response->successful()) {
             throw new Exception('Failed to update user in Supabase: '.$response->body());
