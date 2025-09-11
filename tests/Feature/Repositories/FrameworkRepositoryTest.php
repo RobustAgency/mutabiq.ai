@@ -56,4 +56,41 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertCount(1, $results);
         $this->assertEquals('Published Framework', $results->first()->name);
     }
+
+    public function test_it_applies_pagination_correctly(): void
+    {
+        $user = User::factory()->create();
+
+        Framework::factory()->count(15)->create([
+            'user_id' => $user->id,
+        ]);
+
+        $repository = app(FrameworkRepository::class);
+        $results = $repository->getFilteredFrameworks($user, ['per_page' => 5]);
+
+        $this->assertCount(5, $results);
+        $this->assertEquals(5, $results->perPage());
+        $this->assertEquals(15, $results->total());
+    }
+
+    public function test_it_can_get_available_frameworks(): void
+    {
+        $user = User::factory()->create();
+
+        Framework::factory()->create([
+            'user_id' => $user->id,
+            'is_published' => true,
+        ]);
+
+        Framework::factory()->create([
+            'user_id' => $user->id,
+            'is_published' => false,
+        ]);
+
+        $repository = app(FrameworkRepository::class);
+        $results = $repository->getAvailableFrameworks();
+
+        $this->assertCount(1, $results);
+        $this->assertTrue($results->first()->is_published);
+    }
 }
