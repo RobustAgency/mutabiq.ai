@@ -125,8 +125,8 @@ class OrganizationControllerTest extends TestCase
             'website' => 'https://updated-website.com',
             'phone' => '123-456-7890',
             'country' => 'Updated Country',
-            
-            'is_active' => true,
+
+            'is_active' => false,
         ];
 
         $response = $this->actingAs($admin)->postJson("/api/admin/organizations/{$organization->id}", $updateData);
@@ -144,7 +144,7 @@ class OrganizationControllerTest extends TestCase
             'website' => 'https://updated-website.com',
             'phone' => '123-456-7890',
             'country' => 'Updated Country',
-            'is_active' => true,
+            'is_active' => false,
         ]);
     }
 }

@@ -23,8 +23,8 @@ class UpdateOrganizationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'website' => ['nullable', 'string', 'max:255', 'url'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'website' => ['sometimes', 'string', 'max:255', 'url'],
             'phone' => [
                 'nullable',
                 'string',
