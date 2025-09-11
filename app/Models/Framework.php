@@ -59,4 +59,14 @@ class Framework extends Model implements HasMedia
     {
         return $this->belongsToMany(Requirement::class);
     }
+
+    /**
+     * Get the controls for the framework.
+     *
+     * @return BelongsToMany<Control, $this>
+     */
+    public function controls(): BelongsToMany
+    {
+        return $this->belongsToMany(Control::class);
+    }
 }
