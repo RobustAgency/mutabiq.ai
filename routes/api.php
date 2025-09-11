@@ -24,6 +24,8 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
             Route::get('search', 'search');
             Route::post('', 'store');
             Route::get('{user}', 'show');
+            Route::post('{user}', 'update');
+            Route::delete('{user}', 'destroy');
         });
 
         Route::prefix('/frameworks')->controller(FrameworkController::class)->group(function () {

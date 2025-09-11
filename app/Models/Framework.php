@@ -6,9 +6,9 @@ use App\Enums\FrameworkCategory;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Framework extends Model implements HasMedia
 {
@@ -53,10 +53,10 @@ class Framework extends Model implements HasMedia
     /**
      * Get the requirements for the framework.
      *
-     * @return HasMany<Requirement, $this>
+     * @return BelongsToMany<Requirement, $this>
      */
-    public function requirements(): HasMany
+    public function requirements(): BelongsToMany
     {
-        return $this->hasMany(Requirement::class);
+        return $this->belongsToMany(Requirement::class);
     }
 }
