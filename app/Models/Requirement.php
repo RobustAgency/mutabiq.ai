@@ -25,7 +25,7 @@ class Requirement extends Model
      */
     public function frameworks(): BelongsToMany
     {
-        return $this->belongsToMany(Framework::class, 'framework_requirement');
+        return $this->belongsToMany(Framework::class);
     }
 
     /**
@@ -35,6 +35,6 @@ class Requirement extends Model
      */
     public function controls(): BelongsToMany
     {
-        return $this->belongsToMany(Control::class, 'control_requirement');
+        return $this->belongsToMany(Control::class);
     }
 }

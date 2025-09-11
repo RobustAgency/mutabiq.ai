@@ -28,7 +28,7 @@ class Control extends Model
      */
     public function frameworks(): BelongsToMany
     {
-        return $this->belongsToMany(Framework::class, 'control_framework');
+        return $this->belongsToMany(Framework::class);
     }
 
     /**
@@ -38,7 +38,7 @@ class Control extends Model
      */
     public function requirements(): BelongsToMany
     {
-        return $this->belongsToMany(Requirement::class, 'control_requirement');
+        return $this->belongsToMany(Requirement::class);
     }
 
     /**
@@ -48,7 +48,7 @@ class Control extends Model
      */
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class, 'control_tag');
+        return $this->belongsToMany(Tag::class);
     }
 
     /**

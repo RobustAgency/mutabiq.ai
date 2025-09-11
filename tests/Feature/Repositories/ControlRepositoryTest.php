@@ -31,6 +31,6 @@ class ControlRepositoryTest extends TestCase
         $results = $repository->getFilteredControls($user, ['name' => 'AI']);
 
         $this->assertCount(1, $results);
-        $this->assertEquals('AI System Monitoring Control', $results->first()->name); // 👈 fix here
+        $this->assertEquals('AI System Monitoring Control', $results->first()->name);
     }
 }
