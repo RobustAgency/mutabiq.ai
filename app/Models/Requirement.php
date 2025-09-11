@@ -25,6 +25,16 @@ class Requirement extends Model
      */
     public function frameworks(): BelongsToMany
     {
-        return $this->belongsToMany(Framework::class, 'framework_requirement');
+        return $this->belongsToMany(Framework::class);
+    }
+
+    /**
+     * Get the requirements for this controls.
+     *
+     * @return BelongsToMany<Control, $this>
+     */
+    public function controls(): BelongsToMany
+    {
+        return $this->belongsToMany(Control::class);
     }
 }

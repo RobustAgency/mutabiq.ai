@@ -4,6 +4,7 @@ use App\Models\Organization;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\ControlController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupabaseController;
 use App\Http\Controllers\FrameworkController;
@@ -23,6 +24,8 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
             Route::get('search', 'search');
             Route::post('', 'store');
             Route::get('{user}', 'show');
+            Route::post('{user}', 'update');
+            Route::delete('{user}', 'destroy');
         });
 
         Route::prefix('/frameworks')->controller(FrameworkController::class)->group(function () {
@@ -37,7 +40,13 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
             Route::post('', 'store');
             Route::get('{requirement}', 'show');
             Route::post('{requirement}', 'update');
+        });
 
+        Route::prefix('/controls')->controller(ControlController::class)->group(function () {
+            Route::get('', 'index');
+            Route::post('', 'store');
+            Route::get('{control}', 'show');
+            Route::post('{control}', 'update');
         });
 
         Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {

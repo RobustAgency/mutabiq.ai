@@ -15,7 +15,7 @@ class RequirementRepository
      */
     public function getFilteredRequirements(User $user, array $filters = []): LengthAwarePaginator
     {
-        $query = Requirement::where('user_id', $user->id)->withCount('frameworks');
+        $query = Requirement::where('user_id', $user->id)->withCount('frameworks', 'controls');
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%'.$filters['name'].'%');

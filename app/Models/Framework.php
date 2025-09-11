@@ -6,7 +6,9 @@ use App\Enums\FrameworkCategory;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Framework extends Model implements HasMedia
 {
@@ -37,4 +39,34 @@ class Framework extends Model implements HasMedia
         'is_published' => 'boolean',
         'category' => FrameworkCategory::class,
     ];
+
+    /**
+     * Get the user that owns the control.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the requirements for the framework.
+     *
+     * @return BelongsToMany<Requirement, $this>
+     */
+    public function requirements(): BelongsToMany
+    {
+        return $this->belongsToMany(Requirement::class);
+    }
+
+    /**
+     * Get the controls for the framework.
+     *
+     * @return BelongsToMany<Control, $this>
+     */
+    public function controls(): BelongsToMany
+    {
+        return $this->belongsToMany(Control::class);
+    }
 }

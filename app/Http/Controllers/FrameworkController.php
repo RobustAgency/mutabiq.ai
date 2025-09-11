@@ -56,7 +56,7 @@ class FrameworkController extends Controller
 
     public function show(Framework $framework): JsonResponse
     {
-        $framework->load('media');
+        $framework->load('media', 'requirements');
 
         return response()->json([
             'error' => false,
