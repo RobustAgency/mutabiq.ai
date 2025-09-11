@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateOrganizationRequest extends FormRequest
@@ -22,6 +23,15 @@ class UpdateOrganizationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['required', 'string', 'max:255'],
+            'website' => ['nullable', 'string', 'max:255', 'url'],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('organizations', 'phone')->ignore($this->organization->id),
+            ],
+            'country' => ['nullable', 'string', 'max:500'],
             'is_active' => ['required', 'boolean'],
         ];
     }

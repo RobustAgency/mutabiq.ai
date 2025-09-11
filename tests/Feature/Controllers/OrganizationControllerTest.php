@@ -112,4 +112,39 @@ class OrganizationControllerTest extends TestCase
             'is_active' => false,
         ]);
     }
+
+    public function test_super_admin_can_update_organization(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
+        $user = User::factory()->create(['organization_id' => null]);
+        $organization = Organization::factory()->create(['user_id' => $user->id]);
+        $user->update(['organization_id' => $organization->id]);
+
+        $updateData = [
+            'name' => 'Updated Organization Name',
+            'website' => 'https://updated-website.com',
+            'phone' => '123-456-7890',
+            'country' => 'Updated Country',
+            
+            'is_active' => true,
+        ];
+
+        $response = $this->actingAs($admin)->postJson("/api/admin/organizations/{$organization->id}", $updateData);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'error' => false,
+            'message' => 'Organization updated successfully',
+            'data' => null,
+        ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $organization->id,
+            'name' => 'Updated Organization Name',
+            'website' => 'https://updated-website.com',
+            'phone' => '123-456-7890',
+            'country' => 'Updated Country',
+            'is_active' => true,
+        ]);
+    }
 }
