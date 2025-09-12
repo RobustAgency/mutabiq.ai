@@ -23,6 +23,7 @@ class SearchUsersRequest extends FormRequest
     {
         return [
             'term' => ['required', 'string', 'min:2'],
+            'role' => ['nullable', 'string'],
         ];
     }
 }
