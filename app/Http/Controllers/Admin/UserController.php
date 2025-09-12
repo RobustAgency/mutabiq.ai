@@ -55,7 +55,7 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        $users = $this->userRepository->search($validated['term']);
+        $users = $this->userRepository->search($validated);
 
         return response()->json([
             'error' => false,
