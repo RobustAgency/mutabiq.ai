@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
 use Illuminate\Validation\Rules\Enum;
+use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\Admin\SearchUsersRequest;
 use App\Http\Requests\Admin\CreateAdminUserRequest;
 
@@ -20,7 +21,8 @@ class UserController extends Controller
      * Create a new controller instance.
      */
     public function __construct(
-        private UserRepository $userRepository
+        private UserRepository $userRepository,
+        private SupabaseClient $supabaseClient
     ) {}
 
     /**
@@ -53,7 +55,7 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        $users = $this->userRepository->search($validated['term']);
+        $users = $this->userRepository->search($validated);
 
         return response()->json([
             'error' => false,
@@ -65,11 +67,11 @@ class UserController extends Controller
     /**
      * Store a new admin user.
      */
-    public function store(CreateAdminUserRequest $request, SupabaseClient $supabaseClient): JsonResponse
+    public function store(CreateAdminUserRequest $request): JsonResponse
     {
         $data = $request->validated();
 
-        $supabaseResponse = $supabaseClient->createUser($data);
+        $supabaseResponse = $this->supabaseClient->createUser($data);
         $data['supabase_id'] = $supabaseResponse['id'];
 
         $user = User::registerUser($data);
@@ -90,6 +92,37 @@ class UserController extends Controller
             'error' => false,
             'message' => 'User retrieved successfully',
             'data' => new UserResource($user),
+        ]);
+    }
+
+    /**
+     * Update user details.
+     */
+    public function update(UpdateUserRequest $request, User $user): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $this->supabaseClient->updateUser($user->supabase_id, $validated);
+        $user->update($validated);
+
+        return response()->json([
+            'error' => false,
+            'message' => 'User updated successfully',
+            'data' => new UserResource($user),
+        ]);
+    }
+
+    /**
+     * Delete a user.
+     */
+    public function destroy(User $user): JsonResponse
+    {
+        $this->supabaseClient->deleteUser($user->supabase_id);
+        $user->delete();
+
+        return response()->json([
+            'error' => false,
+            'message' => 'User deleted successfully',
         ]);
     }
 }

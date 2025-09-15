@@ -15,8 +15,8 @@ class FrameworkRepository
      */
     public function getFilteredFrameworks(User $user, array $filters = []): LengthAwarePaginator
     {
-        $query = Framework::where('user_id', $user->id);
-        
+        $query = Framework::where('user_id', $user->id)->with('media')->withCount('controls', 'requirements');
+
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
         });

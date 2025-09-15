@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SearchUsersRequest extends FormRequest
+class SearchControlRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -17,13 +17,13 @@ class SearchUsersRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<int, string>>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'term' => ['required', 'string', 'min:2'],
-            'role' => ['nullable', 'string'],
+            'name' => ['string', 'min:2'],
+            'per_page' => ['integer', 'min:1'],
         ];
     }
 }

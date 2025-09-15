@@ -14,9 +14,13 @@ class UserRepository
      *
      * @return Collection<int, User>
      */
-    public function search(string $term, array $relations = []): Collection
+    public function search(array $searchQuery, array $relations = []): Collection
     {
+        $term = $searchQuery['term'] ?? null;
+        $role = $searchQuery['role'] ?? null;
+
         return User::with($relations)
+            ->when($role, fn ($query) => $query->where('role', $role))
             ->where(function ($query) use ($term) {
                 $query->where('name', 'like', "%{$term}%")
                     ->orWhere('email', 'like', "%{$term}%");

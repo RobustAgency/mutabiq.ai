@@ -19,7 +19,7 @@ class OrganizationController extends Controller
     public function index(SearchOrganizationsRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $organizations = $this->organizationRepository->getFilteredOrganizationsForAdmin($validated);
+        $organizations = $this->organizationRepository->getFilteredOrganizations($validated);
 
         return response()->json([
             'error' => false,

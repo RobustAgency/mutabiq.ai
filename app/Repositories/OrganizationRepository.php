@@ -14,7 +14,7 @@ class OrganizationRepository
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator<int, Organization>
      */
-    public function getFilteredOrganizationsForAdmin(array $filters = []): LengthAwarePaginator
+    public function getFilteredOrganizations(array $filters = []): LengthAwarePaginator
     {
         $query = Organization::query();
 
