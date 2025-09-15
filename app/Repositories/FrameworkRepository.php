@@ -45,9 +45,9 @@ class FrameworkRepository
     }
 
     /**
-     * Get available frameworks with optional filters.
+     * Get available frameworks for user with optional filters.
      */
-    public function getAvailableFrameworks(array $filters = []): LengthAwarePaginator
+    public function getAvailableFrameworksForUser(array $filters = []): LengthAwarePaginator
     {
         $query = Framework::where('is_published', true);
 

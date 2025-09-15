@@ -73,7 +73,7 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertEquals(15, $results->total());
     }
 
-    public function test_it_can_get_available_frameworks(): void
+    public function test_it_can_get_available_frameworks_for_user(): void
     {
         $user = User::factory()->create();
 
@@ -88,7 +88,7 @@ class FrameworkRepositoryTest extends TestCase
         ]);
 
         $repository = app(FrameworkRepository::class);
-        $results = $repository->getAvailableFrameworks();
+        $results = $repository->getAvailableFrameworksForUser();
 
         $this->assertCount(1, $results);
         $this->assertTrue($results->first()->is_published);

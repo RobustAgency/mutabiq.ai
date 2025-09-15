@@ -12,7 +12,7 @@ class FrameworkControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_it_can_retrieve_available_frameworks(): void
+    public function test_user_can_retrieve_available_frameworks(): void
     {
         $user = User::factory()->create();
 

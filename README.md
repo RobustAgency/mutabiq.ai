@@ -1,61 +1,114 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Mutabiq.ai  
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel project running on PHP 8.2+, set up for local development with PHPUnit tests and Xdebug coverage enabled.  
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📦 Requirements
+- **PHP**: ^8.2  
+- **Composer**: ^2.7  
+- **Laravel**: 12.x  
+- **MySQL**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Setup Instructions  
 
-## Learning Laravel
+### 1. Clone the repository
+```bash
+git clone https://github.com/RobustAgency/mutabiq.ai.git
+cd mutabiq.ai
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 2. Install dependencies
+```bash
+composer install
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 3. Configure environment
+Copy the test environment file:
+```bash
+cp .env.test .env
+```
+Update the following in `.env`:
+```ini
+APP_NAME=MutabiqAI
+APP_ENV=local
+APP_KEY= # will be generated below
+DB_DATABASE=mvp_skeleton
+DB_USERNAME=your_mysql_user
+DB_PASSWORD=your_mysql_password
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 4. Generate application key
+```bash
+php artisan key:generate
+```
 
-## Laravel Sponsors
+### 5. Create a new database and run migrations
+Create the database in MySQL CLI or your DB client:
+```sql
+CREATE DATABASE mvp_skeleton CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+Run migrations:
+```bash
+php artisan migrate
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🐞 Xdebug Setup (for coverage)
+Ensure Xdebug is installed and enabled. On macOS with Homebrew:
+```bash
+pecl install xdebug
+```
+Add to your php.ini (check with `php --ini` to locate the file):
+```ini
+zend_extension="xdebug.so"
+xdebug.mode = debug, coverage
+```
+Restart PHP-FPM or your terminal session to apply changes.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Verify installation:
+```bash
+php -v
+```
+You should see something like:
+```
+with Xdebug v3.x.x, Copyright (c) 2002-2025, by Derick Rethans
+```
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## ✅ Running Tests
+Run all tests:
+```bash
+php artisan test
+```
+Run with coverage:
+```bash
+vendor/bin/phpunit --coverage-text
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🔧 Useful Commands
+Clear cache:
+```bash
+php artisan cache:clear
+```
+Run migrations fresh with seeders:
+```bash
+php artisan migrate:fresh --seed
+```
+Serve the application:
+```bash
+php artisan serve
+```
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📖 Notes
+- Always run tests before pushing changes.
+- Ensure your PHP and Composer versions match the project requirements.
+- Coverage via `php artisan test --coverage` may not work on some environments; use `vendor/bin/phpunit --coverage-text` instead.

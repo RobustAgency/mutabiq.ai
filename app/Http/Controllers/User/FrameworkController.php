@@ -15,7 +15,7 @@ class FrameworkController extends Controller
 
     public function index(FrameworkRequest $request)
     {
-        $frameworks = $this->frameworkRepository->getAvailableFrameworks($request->validated());
+        $frameworks = $this->frameworkRepository->getAvailableFrameworksForUser($request->validated());
 
         return response()->json([
             'error' => false,
