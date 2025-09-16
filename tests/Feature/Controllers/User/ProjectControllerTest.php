@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\GovernancePilar;
+use App\Enums\GovernancePillar;
 use App\Enums\UserProjectRole;
 use App\Enums\UserRole;
 use App\Models\User;
@@ -67,7 +67,7 @@ class ProjectControllerTest extends TestCase
         $projectData = [
             'name' => 'Project Name',
             'description' => $this->faker->paragraph,
-            'governance_pilar' => GovernancePilar::AI_GOVERNANCE,
+            'governance_pillar' => GovernancePillar::AI_GOVERNANCE,
         ];
 
         $response = $this->postJson('/api/projects', $projectData);

@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum GovernancePilar: string
+enum GovernancePillar: string
 {
     case AI_GOVERNANCE = 'AI Governance';
     case DATA_GOVERNANCE = 'Data Governance';

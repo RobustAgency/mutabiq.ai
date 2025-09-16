@@ -18,7 +18,7 @@ class ProjectResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'governance_pilar' => $this->governance_pilar,
+            'governance_pillar' => $this->governance_pillar,
             'progress' => $this->progress,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),

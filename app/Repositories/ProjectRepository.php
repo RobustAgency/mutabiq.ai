@@ -19,8 +19,8 @@ class ProjectRepository
             $query->where('name', 'like', '%' . $filters['name'] . '%');
         });
 
-        $query->when(! empty($filters['governance_pilar']), function ($query) use ($filters) {
-            $query->where('governance_pilar', $filters['governance_pilar']);
+        $query->when(! empty($filters['governance_pillar']), function ($query) use ($filters) {
+            $query->where('governance_pillar', $filters['governance_pillar']);
         });
 
         $perPage = $filters['per_page'] ?? 10;

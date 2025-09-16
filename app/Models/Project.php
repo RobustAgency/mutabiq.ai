@@ -11,7 +11,7 @@ class Project extends Model
     /** @use \Illuminate\Database\Eloquent\Factories\HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'governance_pilar', 'progress'];
+    protected $fillable = ['name', 'description', 'governance_pillar', 'progress'];
 
     /**
      * The users that belong to the project.

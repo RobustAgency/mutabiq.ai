@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Enums\GovernancePilar;
+use App\Enums\GovernancePillar;
 
 class StoreProjectRequest extends FormRequest
 {
@@ -26,9 +26,9 @@ class StoreProjectRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'governance_pilar' => [
+            'governance_pillar' => [
                 'required',
-                Rule::in(array_map(fn($c) => $c->value, GovernancePilar::cases())),
+                Rule::in(array_map(fn($c) => $c->value, GovernancePillar::cases())),
             ],
         ];
     }

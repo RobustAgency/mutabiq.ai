@@ -12,7 +12,7 @@ use App\Models\Requirement;
 use App\Models\Control;
 use App\Repositories\ProjectRepository;
 use App\Models\User;
-use App\Enums\GovernancePilar;
+use App\Enums\GovernancePillar;
 
 class ProjectRepositoryTest extends TestCase
 {
@@ -92,22 +92,22 @@ class ProjectRepositoryTest extends TestCase
         $this->assertEquals('AI Governance Project', $results->first()->name);
     }
 
-    public function test_it_can_filter_project_by_governance_pilar()
+    public function test_it_can_filter_project_by_governance_pillar()
     {
         $user = User::factory()->create();
 
         Project::factory()->create([
             'name' => 'AI Governance Project',
-            'governance_pilar' => GovernancePilar::AI_GOVERNANCE,
+            'governance_pillar' => GovernancePillar::AI_GOVERNANCE,
         ])->users()->attach($user->id, ['role' => UserProjectRole::OWNER]);
 
         Project::factory()->create([
             'name' => 'Data Privacy Project',
-            'governance_pilar' => GovernancePilar::DATA_GOVERNANCE,
+            'governance_pillar' => GovernancePillar::DATA_GOVERNANCE,
         ])->users()->attach($user->id, ['role' => UserProjectRole::OWNER]);
 
         $repository = app(ProjectRepository::class);
-        $results = $repository->getFilteredProjects($user->id, ['governance_pilar' => GovernancePilar::AI_GOVERNANCE]);
+        $results = $repository->getFilteredProjects($user->id, ['governance_pillar' => GovernancePillar::AI_GOVERNANCE]);
 
         $this->assertCount(1, $results);
         $this->assertEquals('AI Governance Project', $results->first()->name);
@@ -118,7 +118,7 @@ class ProjectRepositoryTest extends TestCase
         $projectData = [
             'name' => 'New Project',
             'description' => 'Project Description',
-            'governance_pilar' => GovernancePilar::AI_GOVERNANCE,
+            'governance_pillar' => GovernancePillar::AI_GOVERNANCE,
             'progress' => 0,
         ];
 

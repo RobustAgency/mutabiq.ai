@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->float('progress')->default(0);
-            $table->string('governance_pilar');
+            $table->string('governance_pillar');
             $table->timestamps();
         });
 
