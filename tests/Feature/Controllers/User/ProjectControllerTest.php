@@ -117,7 +117,6 @@ class ProjectControllerTest extends TestCase
 
     public function test_non_owner_cannot_add_a_new_member()
     {
-
         $owner = User::factory()->create();
         $this->actingAs($owner);
         $project = Project::factory()->create();

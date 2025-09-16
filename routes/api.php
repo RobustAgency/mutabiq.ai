@@ -14,8 +14,6 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\TeamInvitationController;
 use App\Http\Controllers\User\ProjectController;
-use App\Models\Project;
-use App\Models\User;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
 Route::post('accept-invite', [TeamInvitationController::class, 'acceptInvitation']);
