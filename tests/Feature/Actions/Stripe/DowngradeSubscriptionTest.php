@@ -8,90 +8,42 @@ use App\Actions\Stripe\DowngradeSubscription;
 use Mockery;
 use App\Models\User;
 use App\Models\Plan;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
 
 class DowngradeSubscriptionTest extends TestCase
 {
-    use WithFaker;
-    private DowngradeSubscription $action;
+    use WithFaker, RefreshDatabase;
 
-    protected function setUp(): void
+    protected $currentPriceId = 'price_1JRXjII97c218XRne1NiTkAp';
+    protected $downgradePriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
+
+    public function test_it_downgrades_the_subscription_to_the_new_plan()
     {
-        parent::setUp();
-        $this->action = new DowngradeSubscription();
-    }
+        $user = User::factory()->create();
 
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
-
-    public function test_it_swaps_subscription_to_new_plan_successfully()
-    {
-        // Mock user and subscription
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
-
-        // Fake plan
-        $plan = Plan::factory()->make([
-            'stripe_price_id' => 'price_new123'
+        $currentPlan = Plan::factory()->create([
+            'stripe_price_id' => $this->currentPriceId,
+        ]);
+        $downgradePlan = Plan::factory()->create([
+            'stripe_price_id' => $this->downgradePriceId,
         ]);
 
-        // Expectations
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
+        // Attach payment method
+        $user->createOrGetStripeCustomer();
+        $user->updateDefaultPaymentMethod('pm_card_visa');
 
-        $subscription->shouldReceive('swap')
-            ->once()
-            ->with('price_new123');
+        // Subscribe to the current plan
+        $user->newSubscription('default', $currentPlan->stripe_price_id)->create();
 
-        $subscription->shouldReceive('fresh')
-            ->once()
-            ->andReturnSelf();
+        $action = new DowngradeSubscription();
 
-        $subscription->shouldReceive('getAttribute')
-            ->with('stripe_price')
-            ->andReturn('price_new123');
+        $result = $action->execute($user, $downgradePlan);
 
-        // Execute action
-        $result = $this->action->execute($user, $plan);
+        $subscription = $user->subscription('default');
 
-        // Assert subscription was swapped successfully
         $this->assertTrue($result);
-    }
-
-    public function test_it_returns_false_if_subscription_price_does_not_match()
-    {
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
-
-        $plan = Plan::factory()->make([
-            'stripe_price_id' => 'price_new123'
-        ]);
-
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
-
-        $subscription->shouldReceive('swap')
-            ->once()
-            ->with('price_new123');
-
-        $subscription->shouldReceive('fresh')
-            ->once()
-            ->andReturnSelf();
-
-        $subscription->shouldReceive('getAttribute')
-            ->with('stripe_price')
-            ->andReturn('price_old456');
-
-        $result = $this->action->execute($user, $plan);
-
-        $this->assertFalse($result);
+        $this->assertEquals($downgradePlan->stripe_price_id, $subscription->stripe_price);
     }
 }

@@ -22,7 +22,8 @@ class FrameworkRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'per_page' => ['integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
+            'type' => ['sometimes', 'string', 'max:100'],
         ];
     }
 }

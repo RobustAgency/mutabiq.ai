@@ -13,72 +13,35 @@ use Laravel\Cashier\Subscription;
 
 class ResumeSubscriptionTest extends TestCase
 {
-    use WithFaker;
-    private ResumeSubscription $action;
+    use RefreshDatabase, WithFaker;
 
-    protected function setUp(): void
+    protected $stripeTestPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
+
+    public function test_it_resumes_a_cancelled_subscription_and_returns_true()
     {
-        parent::setUp();
-        $this->action = new ResumeSubscription();
-    }
+        $user = User::factory()->create();
+        $plan = Plan::factory()->create([
+            'stripe_price_id' => $this->stripeTestPriceId,
+        ]);
 
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+        // Attach payment method
+        $user->createOrGetStripeCustomer();
+        $user->updateDefaultPaymentMethod('pm_card_visa');
 
-    public function test_it_resumes_subscription_successfully()
-    {
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
-        $plan = Plan::factory()->make();
+        // Subscribe to the plan
+        $user->newSubscription('default', $plan->stripe_price_id)->create();
 
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
+        // Cancel the subscription (put on grace period)
+        $user->subscription('default')->cancel();
 
-        $subscription->shouldReceive('resume')
-            ->once();
+        // Resume the subscription
+        $action = new ResumeSubscription();
+        $result = $action->execute($user, $plan);
 
-        $subscription->shouldReceive('onGracePeriod')
-            ->once()
-            ->andReturn(false);
-
-        $subscription->shouldReceive('ended')
-            ->once()
-            ->andReturn(false);
-
-        $result = $this->action->execute($user, $plan);
+        $subscription = $user->subscription('default');
 
         $this->assertTrue($result);
-    }
-
-    public function test_it_returns_false_if_subscription_is_ended()
-    {
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
-        $plan = Plan::factory()->make();
-
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
-
-        $subscription->shouldReceive('resume')
-            ->once();
-
-        $subscription->shouldReceive('onGracePeriod')
-            ->once()
-            ->andReturn(false);
-
-        $subscription->shouldReceive('ended')
-            ->once()
-            ->andReturn(true);
-
-        $result = $this->action->execute($user, $plan);
-
-        $this->assertFalse($result);
+        $this->assertFalse($subscription->onGracePeriod());
+        $this->assertFalse($subscription->ended());
     }
 }

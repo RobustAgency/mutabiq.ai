@@ -13,13 +13,13 @@ class FrameworkControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_user_can_retrieve_available_frameworks(): void
+    public function test_user_can_retrieve_published_frameworks(): void
     {
         $user = User::factory()->create([
-            'role' => UserRole::SUPER_ADMIN,
+            'role' => UserRole::OWNER,
         ]);
 
-        Framework::factory()->count(10)->create(['user_id' => $user->id, 'is_published' => true]);
+        Framework::factory()->count(10)->create(['is_published' => true]);
 
         // Explicitly set per_page to 10 to match rules and avoid ambiguity
         $response = $this->actingAs($user)->getJson('/api/frameworks');
@@ -29,6 +29,44 @@ class FrameworkControllerTest extends TestCase
         $response->assertJson([
             'error' => false,
             'message' => 'Frameworks retrieved successfully',
+        ]);
+    }
+
+    public function test_user_can_retrieve_published_frameworks_with_type_filter()
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        Framework::factory()->create(['name' => 'EU AI Act', 'is_published' => true, 'type' => 'AI']);
+        Framework::factory()->create(['name' => 'ISO 42001', 'is_published' => true, 'type' => 'Security']);
+
+        $response = $this->actingAs($user)->getJson('/api/frameworks?type=AI');
+        $data = $response->json('data.data') ?? $response->json('data');
+        $this->assertCount(1, $data);
+        $this->assertEquals('EU AI Act', $data[0]['name']);
+        $response->assertOk();
+        $response->assertJson([
+            'error' => false,
+            'message' => 'Frameworks retrieved successfully',
+        ]);
+    }
+
+    public function test_user_can_retrieve_framework_by_id()
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::OWNER,
+        ]);
+
+        $framework = Framework::factory()->create(['is_published' => true]);
+
+        $response = $this->actingAs($user)->getJson("/api/frameworks/{$framework->id}");
+        $data = $response->json('data');
+        $this->assertEquals($framework->id, $data['id']);
+        $response->assertOk();
+        $response->assertJson([
+            'error' => false,
+            'message' => 'Framework retrieved successfully',
         ]);
     }
 }

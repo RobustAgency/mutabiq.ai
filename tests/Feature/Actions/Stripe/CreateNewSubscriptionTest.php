@@ -14,61 +14,26 @@ use Laravel\Cashier\Subscription;
 class CreateNewSubscriptionTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
-    private CreateNewSubscription $action;
-    private $user;
-    private Plan $plan;
+    
+    protected $stripeTestPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    protected function setUp(): void
+    public function test_it_creates_a_new_subscription_and_returns_true()
     {
-        parent::setUp();
-
-        $this->action = new CreateNewSubscription();
-
-        $this->user = Mockery::mock(User::class);
-
-        $this->plan = Plan::factory()->create([
-            'stripe_price_id' => 'price_test123'
+        $user = User::factory()->create();
+        $plan = Plan::factory()->create([
+            'stripe_price_id' => $this->stripeTestPriceId,
         ]);
-    }
 
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+        // Attach a payment method (required for Stripe)
+        $user->createOrGetStripeCustomer();
+        $user->updateDefaultPaymentMethod('pm_card_visa');
 
-    public function test_it_creates_new_subscription()
-    {
-        // Mock the subscription
-        $subscription = new Subscription();
+        $action = new CreateNewSubscription();
 
-        $subscription->stripe_status = 'active';
-        $subscription->stripe_price = 'price_test123';
+        $result = $action->execute($user, $plan);
 
-        // Set up mock expectations
-        $this->user->shouldReceive('newSubscription')
-            ->once()
-            ->with('default', 'price_test123')
-            ->andReturnSelf();
-
-        $this->user->shouldReceive('create')
-            ->once()
-            ->andReturn($subscription);
-
-        $this->user->shouldReceive('subscribed')
-            ->once()
-            ->with('default')
-            ->andReturn(true);
-
-        $this->user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
-
-        // Execute the action
-        $result = $this->action->execute($this->user, $this->plan);
-
-        // Assert the subscription was created successfully
         $this->assertTrue($result);
+        $this->assertTrue($user->subscribed('default'));
+        $this->assertTrue($user->subscription('default')->active());
     }
 }

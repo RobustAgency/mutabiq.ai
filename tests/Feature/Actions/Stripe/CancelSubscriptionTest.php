@@ -2,91 +2,59 @@
 
 namespace Tests\Feature\Actions\Stripe;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Laravel\Cashier\Subscription;
-use Mockery;
-use App\Actions\Stripe\CancelSubscription;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Actions\Stripe\CancelSubscription;
 
 class CancelSubscriptionTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
-    private CancelSubscription $action;
+    use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->action = new CancelSubscription();
-    }
+    // Use your actual Stripe test Price ID
+    protected $stripeTestPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    protected function tearDown(): void
+    public function test_it_cancels_active_subscription_and_returns_true()
     {
-        Mockery::close();
-        parent::tearDown();
+        $user = User::factory()->create();
+        $paymentMethod = 'pm_card_visa';
+
+        $user->createOrGetStripeCustomer();
+        $user->updateDefaultPaymentMethod($paymentMethod);
+        $user->newSubscription('default', $this->stripeTestPriceId)->create($paymentMethod);
+
+        $action = new CancelSubscription();
+
+        $result = $action->execute($user);
+
+        $this->assertTrue($result);
+        $this->assertTrue($user->subscription('default')->onGracePeriod());
     }
 
     public function test_it_returns_false_if_no_subscription_exists()
     {
-        $user = Mockery::mock(User::class);
+        $user = User::factory()->create();
+        $action = new CancelSubscription();
 
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn(null);
-
-        $result = $this->action->execute($user);
+        $result = $action->execute($user);
 
         $this->assertFalse($result);
     }
 
-    public function test_it_returns_false_if_subscription_already_canceled()
+    public function test_it_returns_false_if_subscription_already_cancelled()
     {
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
+        $user = User::factory()->create();
+        $paymentMethod = 'pm_card_visa';
 
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
+        $user->createOrGetStripeCustomer();
+        $user->updateDefaultPaymentMethod($paymentMethod);
+        $subscription = $user->newSubscription('default', $this->stripeTestPriceId)->create($paymentMethod);
+        $subscription->cancel();
 
-        $subscription->shouldReceive('canceled')
-            ->once()
-            ->andReturn(true);
+        $action = new CancelSubscription();
 
-        $result = $this->action->execute($user);
+        $result = $action->execute($user);
 
         $this->assertFalse($result);
-    }
-
-    public function test_it_cancels_active_subscription_and_returns_true()
-    {
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
-
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
-
-        $subscription->shouldReceive('canceled')
-            ->once()
-            ->andReturn(false);
-
-        $subscription->shouldReceive('cancel')
-            ->once();
-
-        $subscription->shouldReceive('fresh')
-            ->once()
-            ->andReturnSelf();
-
-        $subscription->shouldReceive('onGracePeriod')
-            ->once()
-            ->andReturn(true);
-
-        $result = $this->action->execute($user);
-
-        $this->assertTrue($result);
     }
 }

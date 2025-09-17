@@ -18,7 +18,7 @@ class FrameworkRepository
         $query = Framework::where('user_id', $user->id)->with('media')->withCount('controls', 'requirements');
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
-            $query->where('name', 'like', '%'.$filters['name'].'%');
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
         });
 
         $query->when(! empty($filters['status']), function ($query) use ($filters) {
@@ -46,11 +46,26 @@ class FrameworkRepository
 
     /**
      * Get available frameworks for user with optional filters.
+     * 
+     * @param array $filters
+     * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getAvailableFrameworksForUser(array $filters = []): LengthAwarePaginator
+    public function getPublishedFrameworks(array $filters = []): LengthAwarePaginator
     {
-        $query = Framework::where('is_published', true);
+        $query = Framework::where('is_published', true)
+            ->with('media')
+            ->withCount('controls', 'requirements');
+
+        // Apply type filter if provided (like in getFilteredFrameworks)
+        $query->when(!empty($filters['type']), function ($query) use ($filters) {
+            $query->where('type', $filters['type']);
+        });
 
         return $query->latest()->paginate($filters['per_page'] ?? 10);
+    }
+
+    public function getFrameworkByID(int $id): Framework
+    {
+        return Framework::with('media')->withCount('controls', 'requirements')->find($id);
     }
 }

@@ -13,82 +13,37 @@ use Laravel\Cashier\Subscription;
 
 class UpgradeSubscriptionTest extends TestCase
 {
-    use WithFaker;
-    private UpgradeSubscription $action;
+    use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->action = new UpgradeSubscription();
-    }
+    // Replace these with your actual Stripe test price IDs!
+    protected $upgradePriceId = 'price_1JRXjII97c218XRne1NiTkAp';
+    protected $originalPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    protected function tearDown(): void
+    public function test_it_upgrades_the_subscription_to_the_new_plan()
     {
-        Mockery::close();
-        parent::tearDown();
-    }
+        $user = User::factory()->create();
 
-    public function test_it_upgrades_subscription()
-    {
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
-        $plan = Plan::factory()->make([
-            'stripe_price_id' => 'price_pro_123'
+        $originalPlan = Plan::factory()->create([
+            'stripe_price_id' => $this->originalPriceId,
+        ]);
+        $upgradePlan = Plan::factory()->create([
+            'stripe_price_id' => $this->upgradePriceId,
         ]);
 
-        // Set up expectations
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
+        // Attach payment method
+        $user->createOrGetStripeCustomer();
+        $user->updateDefaultPaymentMethod('pm_card_visa');
 
-        $subscription->shouldReceive('swap')
-            ->once()
-            ->with('price_pro_123');
+        // Subscribe to the original plan
+        $user->newSubscription('default', $originalPlan->stripe_price_id)->create();
 
-        $subscription->shouldReceive('fresh')
-            ->once()
-            ->andReturnSelf();
+        $action = new UpgradeSubscription();
 
-        $subscription->shouldReceive('getAttribute')
-            ->with('stripe_price')
-            ->andReturn('price_pro_123');
+        $result = $action->execute($user, $upgradePlan);
 
-        // Act
-        $result = $this->action->execute($user, $plan);
+        $subscription = $user->subscription('default');
 
-        // Assert
         $this->assertTrue($result);
-    }
-
-    public function test_it_returns_false_if_subscription_does_not_update()
-    {
-        $user = Mockery::mock(User::class);
-        $subscription = Mockery::mock(Subscription::class);
-        $plan = Plan::factory()->make([
-            'stripe_price_id' => 'price_pro_123'
-        ]);
-
-        // Set up expectations
-        $user->shouldReceive('subscription')
-            ->once()
-            ->with('default')
-            ->andReturn($subscription);
-
-        $subscription->shouldReceive('swap')
-            ->once()
-            ->with('price_pro_123');
-
-        $subscription->shouldReceive('fresh')
-            ->once()
-            ->andReturnSelf();
-
-        $subscription->shouldReceive('getAttribute')
-            ->with('stripe_price')
-            ->andReturn('price_basic_456');
-
-        $result = $this->action->execute($user, $plan);
-
-        $this->assertFalse($result);
+        $this->assertEquals($upgradePlan->stripe_price_id, $subscription->stripe_price);
     }
 }

@@ -28,5 +28,8 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
 
-    Route::get('frameworks', [FrameworkController::class, 'index']);
+    Route::prefix('frameworks')->controller(FrameworkController::class)->group(function () {
+        Route::get('', 'index');
+        Route::get('{framework}', 'show');
+    });
 });
