@@ -1,15 +1,9 @@
 <?php
 
-namespace Tests\Unit\Actions\Stripe;
+namespace Tests\Feature\Actions\Stripe;
 
 use App\Actions\Stripe\SetupStripeAccount;
-use Mockery;
 use Tests\TestCase;
-use Stripe\Price;
-use Stripe\Product;
-use Stripe\Service\PriceService;
-use Stripe\Service\ProductService;
-use Stripe\StripeClient;
 
 class SetupStripeAccountTest extends TestCase
 {
