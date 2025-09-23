@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
 use App\Models\Framework;
@@ -11,6 +11,7 @@ use App\Repositories\FrameworkRepository;
 use App\Http\Requests\StoreFrameworkRequest;
 use App\Http\Requests\SearchFrameworkRequest;
 use App\Http\Requests\UpdateFrameworkRequest;
+use App\Http\Controllers\Controller;
 
 class FrameworkController extends Controller
 {
