@@ -56,4 +56,88 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertCount(1, $results);
         $this->assertEquals('Published Framework', $results->first()->name);
     }
+
+    public function test_it_applies_pagination_correctly(): void
+    {
+        $user = User::factory()->create();
+
+        Framework::factory()->count(15)->create([
+            'user_id' => $user->id,
+        ]);
+
+        $repository = app(FrameworkRepository::class);
+        $results = $repository->getFilteredFrameworks($user, ['per_page' => 5]);
+
+        $this->assertCount(5, $results);
+        $this->assertEquals(5, $results->perPage());
+        $this->assertEquals(15, $results->total());
+    }
+
+    public function test_it_can_get_published_frameworks() 
+    {
+        Framework::factory()->create([
+            'name' => 'Published Framework 1',
+            'is_published' => true,
+        ]);
+
+        Framework::factory()->create([
+            'name' => 'Published Framework 2',
+            'is_published' => true,
+        ]);
+
+        Framework::factory()->create([
+            'name' => 'Draft Framework',
+            'is_published' => false,
+        ]);
+
+        $repository = app(FrameworkRepository::class);
+        $results = $repository->getPublishedFrameworks(['per_page' => 10]);
+
+        $this->assertCount(2, $results);
+        $this->assertEquals(10, $results->perPage());
+        $this->assertEquals(2, $results->total());
+    }
+
+    public function test_it_can_get_framework_by_id()
+    {
+        $user = User::factory()->create();
+
+        $framework = Framework::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Framework',
+        ]);
+
+        $repository = app(FrameworkRepository::class);
+        $fetchedFramework = $repository->getFrameworkByID($framework->id);
+
+        $this->assertNotNull($fetchedFramework);
+        $this->assertEquals('Test Framework', $fetchedFramework->name);
+    }
+
+    public function test_it_can_get_published_frameworks_with_type_filter()
+    {
+        Framework::factory()->create([
+            'name' => 'Type A Framework',
+            'type' => 'Type A',
+            'is_published' => true,
+        ]);
+
+        Framework::factory()->create([
+            'name' => 'Type B Framework',
+            'type' => 'Type B',
+            'is_published' => true,
+        ]);
+
+        Framework::factory()->create([
+            'name' => 'Draft Type A Framework',
+            'type' => 'Type A',
+            'is_published' => false,
+        ]);
+
+        $repository = app(FrameworkRepository::class);
+        $results = $repository->getPublishedFrameworks(['type' => 'Type A', 'per_page' => 10]);
+
+        $this->assertCount(1, $results);
+        $this->assertEquals('Type A Framework', $results->first()->name);
+    }
 }
