@@ -4,10 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Organization;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\TeamInvitationController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\User\FrameworkController;
+use App\Http\Controllers\User\MemberController;
+use App\Http\Controllers\User\OrganizationController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -31,5 +32,15 @@ Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('frameworks')->controller(FrameworkController::class)->group(function () {
         Route::get('', 'index');
         Route::get('{framework}', 'show');
+    });
+
+    Route::prefix('organizations')->controller(OrganizationController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store')->can('create', Organization::class);
+    });
+
+    Route::prefix('members')->controller(MemberController::class)->group(function () {
+        Route::put('{user}', 'update');
+        Route::delete('{user}', 'destroy');
     });
 });
