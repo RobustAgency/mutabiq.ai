@@ -13,6 +13,7 @@ use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\TeamInvitationController;
+use App\Http\Controllers\User\AiController;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
 Route::post('accept-invite', [TeamInvitationController::class, 'acceptInvitation']);
@@ -80,4 +81,11 @@ Route::middleware(['auth:supabase'])->group(function () {
     Route::post('organizations', [OrganizationController::class, 'store'])->can('create', Organization::class);
 
     Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
+
+    Route::prefix('ai-models', [AiController::class])->group(function() {
+        Route::get('', [AiController::class, 'index']);
+        Route::post('', [AiController::class, 'store']);
+        Route::get('{aiModel}', [AiController::class, 'show']);
+    });
+
 });
