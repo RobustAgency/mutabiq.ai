@@ -14,6 +14,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\TeamInvitationController;
 use App\Http\Controllers\User\AiController;
+use App\Http\Controllers\User\AiModelVersionController;
 
 Route::post('/auth/login', [SupabaseController::class, 'login']);
 Route::post('accept-invite', [TeamInvitationController::class, 'acceptInvitation']);
@@ -86,6 +87,12 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{aiModel}', 'show');
+    });
+
+    Route::prefix('ai-model-versions')->controller(AiModelVersionController::class)->group(function() {
+        Route::post('', 'store');
+        Route::get('{aiModelVersion}', 'show');
+        Route::post('{aiModelVersion}', 'update');
     });
 
 });
