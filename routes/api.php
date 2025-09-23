@@ -82,10 +82,10 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
 
-    Route::prefix('ai-models', [AiController::class])->group(function() {
-        Route::get('', [AiController::class, 'index']);
-        Route::post('', [AiController::class, 'store']);
-        Route::get('{aiModel}', [AiController::class, 'show']);
+    Route::prefix('ai-models')->controller(AiController::class)->group(function() {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiModel}', 'show');
     });
 
 });
