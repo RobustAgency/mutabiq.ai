@@ -133,7 +133,7 @@ class UserControllerTest extends TestCase
             'name' => 'Jane Smith',
         ]);
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/users/search?term=John');
+        $response = $this->actingAs($admin)->getJson('/api/admin/users/search?term=John&role=owner');
 
         $response->assertOk();
 
@@ -157,12 +157,41 @@ class UserControllerTest extends TestCase
             'role' => UserRole::OWNER,
             'email' => 'jane.smith@example.com',
         ]);
-        $response = $this->actingAs($admin)->getJson('/api/admin/users/search?term=john.doe');
+
+        $response = $this->actingAs($admin)->getJson('/api/admin/users/search?term=john.doe&role=owner');
 
         $response->assertOk();
+
         $responseData = $response->json();
         $this->assertFalse($responseData['error']);
+        $this->assertEquals('Users retrieved successfully', $responseData['message']);
         $this->assertEquals('john.doe@example.com', $responseData['data'][0]['email']);
+    }
+
+    public function test_super_admin_can_filter_users_by_role(): void
+    {
+        Notification::fake();
+        $admin = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
+
+        User::factory()->create([
+            'role' => UserRole::OWNER,
+            'name' => 'Owner User',
+        ]);
+
+        User::factory()->create([
+            'role' => UserRole::ADMIN,
+            'name' => 'Manager User',
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/admin/users/search?term=User&role=owner');
+
+        $response->assertOk();
+
+        $responseData = $response->json();
+        $this->assertFalse($responseData['error']);
+        $this->assertEquals('Users retrieved successfully', $responseData['message']);
+        $this->assertCount(1, $responseData['data']);
+        $this->assertEquals('Owner User', $responseData['data'][0]['name']);
     }
 
     public function test_admin_can_update_user_details(): void
