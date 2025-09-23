@@ -25,8 +25,6 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::get('profile', [ProfileController::class, 'show']);
 
-    Route::post('organizations', [OrganizationController::class, 'store'])->can('create', Organization::class);
-
     Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
 
     Route::prefix('frameworks')->controller(FrameworkController::class)->group(function () {
