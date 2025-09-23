@@ -20,8 +20,6 @@ class AiModelControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    use RefreshDatabase;
-
     protected string $baseEndpoint = '/api/ai-models';
 
     protected function enumValue(string $enumClass): string
