@@ -32,16 +32,16 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_retrieve_published_frameworks_with_type_filter()
+    public function test_user_can_retrieve_published_frameworks_with_authority_publisher_filter()
     {
         $user = User::factory()->create([
             'role' => UserRole::ADMIN,
         ]);
 
-        Framework::factory()->create(['name' => 'EU AI Act', 'is_published' => true, 'type' => 'AI']);
-        Framework::factory()->create(['name' => 'ISO 42001', 'is_published' => true, 'type' => 'Security']);
+        Framework::factory()->create(['name' => 'EU AI Act', 'is_published' => true, 'authority_publisher' => 'Publisher A']);
+        Framework::factory()->create(['name' => 'ISO 42001', 'is_published' => true, 'authority_publisher' => 'Publisher B']);
 
-        $response = $this->actingAs($user)->getJson('/api/frameworks?type=AI');
+        $response = $this->actingAs($user)->getJson('/api/frameworks?authority_publisher=Publisher A');
         $data = $response->json('data.data') ?? $response->json('data');
         $this->assertCount(1, $data);
         $this->assertEquals('EU AI Act', $data[0]['name']);
