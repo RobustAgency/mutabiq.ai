@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateMemberRequest;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Illuminate\Http\JsonResponse;
 
 class MemberController extends Controller
 {
     public function __construct(private UserRepository $userRepository) {}
 
-    public function update(UpdateMemberRequest $request, User $user)
+    public function update(UpdateMemberRequest $request, User $user): JsonResponse
     {
         $validated = $request->validated();
         $updatedMember = $this->userRepository->updateUser($user, $validated);
@@ -23,7 +24,7 @@ class MemberController extends Controller
         ]);
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): JsonResponse
     {
         $this->userRepository->deleteUser($user);
 

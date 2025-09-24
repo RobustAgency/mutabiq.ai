@@ -16,9 +16,11 @@ class OrganizationController extends Controller
      */
     public function __construct(private OrganizationRepository $organizationRepository) {}
 
-    public function index() : JsonResponse
+    public function index(): JsonResponse
     {
+        /** @var int $userID */
         $userID = Auth::id();
+
         $organizations = $this->organizationRepository->getOrganizationWithMembersByUserID($userID);
 
         return response()->json([

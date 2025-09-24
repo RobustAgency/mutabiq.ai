@@ -78,7 +78,7 @@ class OrganizationControllerTest extends TestCase
         ]);
     }
 
-    private function createUserWithOrganizationAndMembers()
+    private function createUserWithOrganizationAndMembers(): User
     {
         $user = User::factory()->create(['role' => UserRole::OWNER]);
         $organization = Organization::factory()->create(['user_id' => $user->id]);

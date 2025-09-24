@@ -77,9 +77,7 @@ class UserRepository
     public function updateUser(User $user, array $data) : UserResource
     {
         // This is because email is required by Supabase but optional in our update
-        if (empty($data['email'])) {
-            $data['email'] = $user->email;
-        }
+        $data['email'] = $data['email'] ?? $user->email;
 
         $this->supabaseClient->updateUser($user->supabase_id, $data);
 
@@ -91,7 +89,7 @@ class UserRepository
     /**
      * Delete a user and remove from Supabase.
      */
-    public function deleteUser(User $user)
+    public function deleteUser(User $user) : void
     {
         $this->supabaseClient->deleteUser($user->supabase_id);
         $user->delete();

@@ -16,7 +16,7 @@ class MemberControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_user_can_update_member()
+    public function test_user_can_update_member(): void
     {
         Notification::fake();
 
@@ -78,7 +78,7 @@ class MemberControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_delete_member()
+    public function test_user_can_delete_member(): void
     {
         Notification::fake();
 
@@ -104,7 +104,7 @@ class MemberControllerTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $member->id]);
     }
 
-    private function createUserWithOrganizationAndMembers()
+    private function createUserWithOrganizationAndMembers(): User
     {
         $user = User::factory()->create(['role' => UserRole::OWNER->value]);
         $organization = Organization::factory()->create(['user_id' => $user->id]);
