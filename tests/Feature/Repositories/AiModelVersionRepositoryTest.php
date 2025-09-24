@@ -6,6 +6,7 @@ use App\Models\AiModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Models\AiModelVersion;
+use App\Repositories\AiModelVersionRepository;
 use Tests\TestCase;
 
 class AiModelVersionRepositoryTest extends TestCase
@@ -16,7 +17,7 @@ class AiModelVersionRepositoryTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->aiModelVersionRepository = new \App\Repositories\AiModelVersionRepository();
+        $this->aiModelVersionRepository = app(AiModelVersionRepository::class);
     }
 
     public function test_it_can_create_ai_model_version()
