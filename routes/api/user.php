@@ -10,6 +10,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\User\FrameworkController;
 use App\Http\Controllers\User\AiController;
 use App\Http\Controllers\User\AiModelVersionController;
+use App\Http\Controllers\User\AiModelCardController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -45,5 +46,10 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store');
         Route::get('{aiModelVersion}', 'show');
         Route::post('{aiModelVersion}', 'update');
+    });
+
+    Route::prefix('ai-model-cards')->controller(AiModelCardController::class)->group(function() {
+        Route::post('', 'store');
+        Route::post('{aiModelCard}', 'update');
     });
 });

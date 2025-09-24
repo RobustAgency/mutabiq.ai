@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AiModelVersion extends Model
 {
+    /** @use HasFactory<\Database\Factories\AiModelVersionFactory> */
     use HasFactory;
     
     protected $fillable = [
