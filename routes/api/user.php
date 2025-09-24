@@ -10,6 +10,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\User\FrameworkController;
 use App\Http\Controllers\User\AiController;
 use App\Http\Controllers\User\AiModelVersionController;
+use App\Http\Controllers\User\ProjectController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -45,5 +46,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store');
         Route::get('{aiModelVersion}', 'show');
         Route::post('{aiModelVersion}', 'update');
+    });
+
+    Route::prefix('projects')->controller(ProjectController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{project}', 'show');
+        Route::post('{project}/add-member', 'addMember')->can('addMember', 'project');
+        Route::post('{project}/add-frameworks', 'addFrameworks');
     });
 });
