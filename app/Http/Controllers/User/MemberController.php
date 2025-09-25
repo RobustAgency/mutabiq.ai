@@ -7,10 +7,24 @@ use App\Http\Requests\UpdateMemberRequest;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class MemberController extends Controller
 {
     public function __construct(private UserRepository $userRepository) {}
+
+    public function index(): JsonResponse
+    {
+        $user = Auth::user();
+        $organizationID = $user->organization_id;
+        $members = $this->userRepository->getUsersByOrganizationID($organizationID);
+
+        return response()->json([
+            'error' => false,
+            'message' => 'Members retrieved successfully',
+            'data' => $members,
+        ]);
+    }
 
     public function update(UpdateMemberRequest $request, User $user): JsonResponse
     {

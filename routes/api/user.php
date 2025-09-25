@@ -40,6 +40,7 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('members')->controller(MemberController::class)->group(function () {
+        Route::get('', 'index');
         Route::put('{user}', 'update');
         Route::delete('{user}', 'destroy');
     });
