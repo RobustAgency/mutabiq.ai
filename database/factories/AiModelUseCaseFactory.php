@@ -45,7 +45,7 @@ class AiModelUseCaseFactory extends Factory
             'aia' => $this->faker->boolean,
             'data_availability_status' => $this->faker->word,
             'data_readiness_level' => $this->faker->word,
-            'data_\freshness' => $this->faker->word,
+            'data_freshness' => $this->faker->word,
         ];
     }
 }
