@@ -19,7 +19,7 @@ class UpgradeSubscriptionTest extends TestCase
     protected $upgradePriceId = 'price_1JRXjII97c218XRne1NiTkAp';
     protected $originalPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    public function test_it_upgrades_the_subscription_to_the_new_plan()
+    public function test_it_upgrades_the_subscription_to_the_new_plan(): void
     {
         $user = User::factory()->create();
 
@@ -37,7 +37,7 @@ class UpgradeSubscriptionTest extends TestCase
         // Subscribe to the original plan
         $user->newSubscription('default', $originalPlan->stripe_price_id)->create();
 
-        $action = new UpgradeSubscription();
+        $action = app(UpgradeSubscription::class);
 
         $result = $action->execute($user, $upgradePlan);
 

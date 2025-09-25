@@ -2,13 +2,16 @@
 
 namespace App\Repositories;
 
+use App\Clients\SupabaseClient;
 use App\Models\User;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Http\Resources\UserResource;
 
 class UserRepository
 {
+    public function __construct(private SupabaseClient $supabaseClient) {}
     /**
      * Search users based on the provided search term.
      *
@@ -66,5 +69,29 @@ class UserRepository
         }
 
         return $query->latest()->paginate($perPage);
+    }
+
+    /**
+     * Update user details and sync with Supabase.
+     */
+    public function updateUser(User $user, array $data) : UserResource
+    {
+        // This is because email is required by Supabase but optional in our update
+        $data['email'] = $data['email'] ?? $user->email;
+
+        $this->supabaseClient->updateUser($user->supabase_id, $data);
+
+        $user->update($data);
+
+        return new UserResource($user);
+    }
+
+    /**
+     * Delete a user and remove from Supabase.
+     */
+    public function deleteUser(User $user) : void
+    {
+        $this->supabaseClient->deleteUser($user->supabase_id);
+        $user->delete();
     }
 }

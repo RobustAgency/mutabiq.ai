@@ -14,7 +14,7 @@ class CancelSubscriptionTest extends TestCase
     // Use your actual Stripe test Price ID
     protected $stripeTestPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    public function test_it_cancels_active_subscription_and_returns_true()
+    public function test_it_cancels_active_subscription_and_returns_true(): void
     {
         $user = User::factory()->create();
         $paymentMethod = 'pm_card_visa';
@@ -23,7 +23,7 @@ class CancelSubscriptionTest extends TestCase
         $user->updateDefaultPaymentMethod($paymentMethod);
         $user->newSubscription('default', $this->stripeTestPriceId)->create($paymentMethod);
 
-        $action = new CancelSubscription();
+        $action = app(CancelSubscription::class);
 
         $result = $action->execute($user);
 
@@ -31,17 +31,17 @@ class CancelSubscriptionTest extends TestCase
         $this->assertTrue($user->subscription('default')->onGracePeriod());
     }
 
-    public function test_it_returns_false_if_no_subscription_exists()
+    public function test_it_returns_false_if_no_subscription_exists(): void
     {
         $user = User::factory()->create();
-        $action = new CancelSubscription();
+        $action = app(CancelSubscription::class);
 
         $result = $action->execute($user);
 
         $this->assertFalse($result);
     }
 
-    public function test_it_returns_false_if_subscription_already_cancelled()
+    public function test_it_returns_false_if_subscription_already_cancelled(): void
     {
         $user = User::factory()->create();
         $paymentMethod = 'pm_card_visa';
@@ -51,7 +51,7 @@ class CancelSubscriptionTest extends TestCase
         $subscription = $user->newSubscription('default', $this->stripeTestPriceId)->create($paymentMethod);
         $subscription->cancel();
 
-        $action = new CancelSubscription();
+        $action = app(CancelSubscription::class);
 
         $result = $action->execute($user);
 
