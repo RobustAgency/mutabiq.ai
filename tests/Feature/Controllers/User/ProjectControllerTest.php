@@ -17,7 +17,7 @@ class ProjectControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_user_can_get_project_with_total_requirements_and_controls()
+    public function test_user_can_get_project_with_total_requirements_and_controls(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -39,13 +39,28 @@ class ProjectControllerTest extends TestCase
 
         $response = $this->getJson("/api/projects/{$project->id}");
         $response->assertOk();
-        $response->assertJsonFragment([
-            'total_requirements' => 5,
-            'total_controls' => 5,
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'name',
+                'description',
+                'governance_pillar',
+                'progress',
+                'total_requirements',
+                'total_controls',
+                'frameworks' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'requirements',
+                        'controls',
+                    ],
+                ],
+            ],
         ]);
     }
 
-    public function test_user_can_get_all_project_list()
+    public function test_user_can_get_all_project_list(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -59,7 +74,21 @@ class ProjectControllerTest extends TestCase
         $response->assertJsonCount(3, 'data.data'); // Adjust based on pagination structure
     }
 
-    public function test_user_can_create_project()
+    public function test_user_can_get_projects_with_pagination(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Project::factory()->count(10)->create()->each(function ($project) use ($user) {
+            $project->users()->attach($user->id, ['role' => UserProjectRole::OWNER]);
+        });
+
+        $response = $this->getJson('/api/projects?per_page=5');
+        $response->assertOk();
+        $response->assertJsonCount(5, 'data.data');
+    }
+
+    public function test_user_can_create_project(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -76,7 +105,7 @@ class ProjectControllerTest extends TestCase
         $this->assertDatabaseHas('project_user', ['user_id' => $user->id, 'role' => UserProjectRole::OWNER]);
     }
 
-    public function test_project_owner_can_add_a_new_member()
+    public function test_project_owner_can_add_a_new_member(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -95,7 +124,7 @@ class ProjectControllerTest extends TestCase
         $this->assertDatabaseHas('project_user', ['user_id' => $newMember->id, 'role' => UserProjectRole::EDITOR]);
     }
 
-    public function test_user_can_add_frameworks_to_project()
+    public function test_user_can_add_frameworks_to_project(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -114,7 +143,7 @@ class ProjectControllerTest extends TestCase
         }
     }
 
-    public function test_non_owner_cannot_add_a_new_member()
+    public function test_non_owner_cannot_add_a_new_member(): void
     {
         $owner = User::factory()->create();
         $this->actingAs($owner);

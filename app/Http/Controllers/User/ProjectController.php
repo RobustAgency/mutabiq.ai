@@ -33,15 +33,11 @@ class ProjectController extends Controller
 
     public function show(Project $project): JsonResponse
     {
-        $projectData = $this->projectRepository->getProjectByID($project->id);
+        $projectData = $this->projectRepository->getProjectByID($project);
         return response()->json([
             'error' => false,
             'message' => 'Project retrieved successfully',
-            'data' => [
-                'project' => new ProjectResource($projectData['project']),
-                'total_requirements' => $projectData['total_requirements'],
-                'total_controls' => $projectData['total_controls'],
-            ],
+            'data' => new ProjectResource($projectData),
         ]);
     }
 
@@ -53,6 +49,7 @@ class ProjectController extends Controller
         $this->projectRepository->createProject($user, $validated);
 
         return response()->json([
+            'data' => null,
             'error' => false,
             'message' => 'Project created successfully',
         ], 201);
@@ -65,6 +62,7 @@ class ProjectController extends Controller
         $this->projectRepository->addMemberToProject($project, $validated);
 
         return response()->json([
+            'data' => null,
             'error' => false,
             'message' => 'Member added to project successfully',
         ]);
@@ -77,6 +75,7 @@ class ProjectController extends Controller
         $this->projectRepository->addFrameworksToProject($project, $validated['framework_ids']);
 
         return response()->json([
+            'data' => null,
             'error' => false,
             'message' => 'Frameworks added to project successfully',
         ]);

@@ -22,8 +22,8 @@ class AddFrameworksToProject extends FormRequest
     public function rules(): array
     {
         return [
-            'framework_ids' => 'required|array',
-            'framework_ids.*' => 'exists:frameworks,id',
+            'framework_ids' => ['required', 'array'],
+            'framework_ids.*' => ['exists:frameworks,id'],
         ];
     }
 }

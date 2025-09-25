@@ -15,7 +15,7 @@ class ProjectPolicy
     public function addMember(User $user, Project $project): bool
     {
         return $project->users()
-            ->wherePivot('role', UserProjectRole::OWNER->value)
+            ->wherePivot('role', UserProjectRole::OWNER)
             ->whereKey($user->getKey())
             ->exists();
     }

@@ -22,9 +22,9 @@ class SearchProjectsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
-            'governance_pillar' => 'sometimes|string|max:255',
-            'per_page' => 'sometimes|integer|min:1|max:100',
+            'name' => ['sometimes', 'string', 'max:255'],
+            'governance_pillar' => ['sometimes', 'string', 'max:255'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ];
     }
 }

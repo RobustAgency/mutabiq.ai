@@ -26,6 +26,8 @@ class ProjectResource extends JsonResource
             'progress' => $this->progress,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'total_requirements' => $this->total_requirements,
+            'total_controls' => $this->total_controls,
             'users' => UserResource::collection($this->whenLoaded('users')),
             'frameworks' => FrameworkResource::collection($this->whenLoaded('frameworks')),
         ];

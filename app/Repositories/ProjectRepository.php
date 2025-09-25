@@ -35,19 +35,10 @@ class ProjectRepository
         return $query->latest()->paginate($perPage);
     }
 
-    public function getProjectByID(int $projectID): array
+    public function getProjectByID(Project $project): Project
     {
-        $project = Project::with(['users', 'frameworks.requirements', 'frameworks.controls'])
-            ->findOrFail($projectID);
-
-        $totalRequirements = $project->frameworks->sum(fn($fw) => $fw->requirements->count());
-        $totalControls = $project->frameworks->sum(fn($fw) => $fw->controls->count());
-
-        return [
-            'project' => $project,
-            'total_requirements' => $totalRequirements,
-            'total_controls' => $totalControls,
-        ];
+        $project->load('users', 'frameworks.requirements', 'frameworks.controls');
+        return $project;
     }
 
 

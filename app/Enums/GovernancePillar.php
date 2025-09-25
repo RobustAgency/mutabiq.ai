@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum GovernancePillar: string
 {
-    case AI_GOVERNANCE = 'AI Governance';
-    case DATA_GOVERNANCE = 'Data Governance';
-    case PRIVACY_PDPL = 'Privacy / PDPL';
+    case AI_GOVERNANCE = 'ai_governance';
+    case DATA_GOVERNANCE = 'data_governance';
+    case PRIVACY_PDPL = 'privacy_pdpl';
 }
