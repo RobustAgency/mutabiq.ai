@@ -8,12 +8,13 @@ use App\Http\Resources\AiModelResource;
 use App\Models\AiModel;
 use App\Repositories\AiModelRepository;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class AiController extends Controller
 {
     public function __construct(private AiModelRepository $aiModelRepository) {}
 
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         if (! $user->organization_id) {
@@ -23,14 +24,14 @@ class AiController extends Controller
             ], 403);
         }
         $aiModels = $this->aiModelRepository->getAllAiModelsByOrganizationID($user->organization_id);
-        
+
         return response()->json([
             'error' => 'false',
             'data' => $aiModels
         ], 200);
     }
 
-    public function store(StoreAiModelRequest $request)
+    public function store(StoreAiModelRequest $request): JsonResponse
     {
         $user = Auth::user();
         if (! $user->organization_id) {
@@ -53,7 +54,7 @@ class AiController extends Controller
         ], 201);
     }
 
-    public function show(AiModel $aiModel)
+    public function show(AiModel $aiModel): JsonResponse
     {
         $aiModelID = $aiModel->id;
         $aiModel = $this->aiModelRepository->getAiModelByID($aiModelID);
