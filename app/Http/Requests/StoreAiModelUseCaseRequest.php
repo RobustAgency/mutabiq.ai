@@ -42,16 +42,16 @@ class StoreAiModelUseCaseRequest extends FormRequest
             'increase_in_revenue' => ['nullable', 'numeric'],
             'risk_avoidance' => ['nullable', 'numeric'],
             'fte_capacity_saved' => ['nullable', 'numeric'],
-            'use_case_type' => ['nullable', 'string', 'max:255'],
-            'value_driver' => ['nullable', 'string', 'max:255'],
+            'use_case_type' => ['required', 'string', 'max:255'],
+            'value_driver' => ['required', 'string', 'max:255'],
             'risk_level' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, RiskLevel::cases()))],
             'overall_risk_score' => ['nullable', 'numeric'],
-            'human_oversight_mode' => ['nullable', 'string', 'max:255'],
+            'human_oversight_mode' => ['required', 'string', 'max:255'],
             'dpia' => ['nullable', 'boolean'],
             'aia' => ['nullable', 'boolean'],
-            'data_availability_status' => ['nullable', 'string', 'max:255'],
-            'data_readiness_level' => ['nullable', 'string', 'max:255'],
-            'data_freshness' => ['nullable', 'string', 'max:255'],
+            'data_availability_status' => ['required', 'string', 'max:255'],
+            'data_readiness_level' => ['required', 'string', 'max:255'],
+            'data_freshness' => ['required', 'string', 'max:255'],
         ];
     }
 }
