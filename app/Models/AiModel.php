@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AiModel extends Model
 {
-    // Use the SoftDeletes trait for soft deletion functionality
+    /** @use HasFactory<\Database\Factories\AiModelFactory> */
     use SoftDeletes, HasFactory;
 
     protected $fillable = [
@@ -33,12 +33,22 @@ class AiModel extends Model
         'updated_by',
     ];
 
+    /**
+     * Get the user that created the AI model.
+     * 
+     * @return BelongsTo<User, $this>
+     */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function updatedBy() : BelongsTo
+    /**
+     * Get the user that last updated the AI model.
+     * 
+     * @return BelongsTo<User, $this>
+     */
+    public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }

@@ -11,6 +11,7 @@ use App\Http\Controllers\User\MemberController;
 use App\Http\Controllers\User\OrganizationController;
 use App\Http\Controllers\User\AiController;
 use App\Http\Controllers\User\AiModelVersionController;
+use App\Http\Controllers\User\ProjectController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -42,6 +43,14 @@ Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('members')->controller(MemberController::class)->group(function () {
         Route::put('{user}', 'update');
         Route::delete('{user}', 'destroy');
+    });
+
+    Route::prefix('projects')->controller(ProjectController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{project}', 'show');
+        Route::post('{project}/add-member', 'addMember')->can('addMember', 'project');
+        Route::post('{project}/add-frameworks', 'addFrameworks');
     });
 
     Route::prefix('ai-models')->controller(AiController::class)->group(function () {
