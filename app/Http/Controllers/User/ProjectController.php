@@ -11,12 +11,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Project;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Resources\ProjectResource;
+use Illuminate\Http\JsonResponse;
 
 class ProjectController extends Controller
 {
     public function __construct(private ProjectRepository $projectRepository) {}
 
-    public function index(SearchProjectsRequest $request)
+    public function index(SearchProjectsRequest $request): JsonResponse
     {
         $user = Auth::user();
         $validated = $request->validated();
@@ -30,20 +31,21 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function show(Project $project)
+    public function show(Project $project): JsonResponse
     {
         $projectData = $this->projectRepository->getProjectByID($project->id);
         return response()->json([
             'error' => false,
             'message' => 'Project retrieved successfully',
-            'data' => ['project' => new ProjectResource($projectData['project']),
-                       'total_requirements' => $projectData['total_requirements'],
-                       'total_controls' => $projectData['total_controls'],
+            'data' => [
+                'project' => new ProjectResource($projectData['project']),
+                'total_requirements' => $projectData['total_requirements'],
+                'total_controls' => $projectData['total_controls'],
             ],
         ]);
     }
 
-    public function store(StoreProjectRequest $request)
+    public function store(StoreProjectRequest $request): JsonResponse
     {
         $user = Auth::user();
         $validated = $request->validated();
@@ -56,7 +58,7 @@ class ProjectController extends Controller
         ], 201);
     }
 
-    public function addMember(AddMemberToProjectRequest $request, Project $project)
+    public function addMember(AddMemberToProjectRequest $request, Project $project): JsonResponse
     {
         $validated = $request->validated();
 
@@ -68,7 +70,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function addFrameworks(AddFrameworksToProject $request, Project $project)
+    public function addFrameworks(AddFrameworksToProject $request, Project $project): JsonResponse
     {
         $validated = $request->validated();
 

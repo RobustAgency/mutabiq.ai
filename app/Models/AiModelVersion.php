@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class AiModelVersion extends Model
 {
+    /** @use HasFactory<\Database\Factories\AiModelVersionFactory> */
     use HasFactory;
-    
+
     protected $fillable = [
         'ai_model_id',
         'version_number',
@@ -41,5 +42,4 @@ class AiModelVersion extends Model
         'has_performance_data' => 'boolean',
         'performance_baseline_established' => 'boolean',
     ];
-
 }

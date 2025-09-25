@@ -4,7 +4,6 @@ namespace Tests\Feature\Controllers\User;
 
 use App\Enums\GovernancePillar;
 use App\Enums\UserProjectRole;
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -134,6 +133,5 @@ class ProjectControllerTest extends TestCase
 
         $response = $this->postJson("/api/projects/{$project->id}/add-member", $memberData);
         $response->assertForbidden();
-    
     }
 }

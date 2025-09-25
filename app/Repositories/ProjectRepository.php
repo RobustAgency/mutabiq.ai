@@ -9,6 +9,13 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProjectRepository
 {
+    /**
+     * Get filtered projects for a user with optional filters.
+     *
+     * @param int $userID
+     * @param array $filters
+     * @return LengthAwarePaginator<int, Project>
+     */
     public function getFilteredProjects(int $userID, array $filters = []): LengthAwarePaginator
     {
         $query = Project::whereHas('users', function ($q) use ($userID) {
