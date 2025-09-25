@@ -96,7 +96,7 @@ class UserRepository
     }
 
     /**
-     * Get all users.
+     * Get all users by organization ID.
      *
      * @return Collection<int, User>
      */
