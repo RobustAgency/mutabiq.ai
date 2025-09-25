@@ -13,7 +13,7 @@ class TagRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_it_can_filter_tags_by_name(): void
+    public function test_it_filter_tags_by_name(): void
     {
         $user = User::factory()->create();
 
@@ -34,7 +34,7 @@ class TagRepositoryTest extends TestCase
         $this->assertEquals('High Risk AI Requirement', $results->first()->name);
     }
 
-    public function test_it_can_filter_tags_by_group(): void
+    public function test_it_filter_tags_by_group(): void
     {
         $user = User::factory()->create();
 
