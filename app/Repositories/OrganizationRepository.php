@@ -57,4 +57,12 @@ class OrganizationRepository
 
         return $organization;
     }
+
+    /**
+     * Get an organization with its members by user ID.
+     */
+    public function getOrganizationWithMembersByUserID(int $userID): Organization
+    {
+        return Organization::with('members')->where('user_id', $userID)->first();
+    }
 }

@@ -13,7 +13,7 @@ class FrameworkRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_it_can_filter_frameworks_by_name(): void
+    public function test_it_filter_frameworks_by_name(): void
     {
         $user = User::factory()->create();
 
@@ -34,7 +34,7 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertEquals('EU AI Act', $results->first()->name);
     }
 
-    public function test_it_can_filter_frameworks_by_status(): void
+    public function test_it_filter_frameworks_by_status(): void
     {
         $user = User::factory()->create();
 
@@ -73,7 +73,7 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertEquals(15, $results->total());
     }
 
-    public function test_it_can_get_published_frameworks() 
+    public function test_it_get_published_frameworks(): void
     {
         Framework::factory()->create([
             'name' => 'Published Framework 1',
@@ -98,7 +98,7 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertEquals(2, $results->total());
     }
 
-    public function test_it_can_get_framework_by_id()
+    public function test_it_get_framework_by_id(): void
     {
         $user = User::factory()->create();
 
@@ -114,7 +114,7 @@ class FrameworkRepositoryTest extends TestCase
         $this->assertEquals('Test Framework', $fetchedFramework->name);
     }
 
-    public function test_it_can_get_published_frameworks_with_type_filter()
+    public function test_it_get_published_frameworks_with_type_filter(): void
     {
         Framework::factory()->create([
             'name' => 'Type A Framework',

@@ -13,7 +13,7 @@ class ControlRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_it_can_filter_controls_by_name(): void
+    public function test_it_filter_controls_by_name(): void
     {
         $user = User::factory()->create();
 

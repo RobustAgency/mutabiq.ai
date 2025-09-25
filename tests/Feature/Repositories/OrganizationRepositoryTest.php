@@ -13,7 +13,7 @@ class OrganizationRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_it_can_filter_organizations_by_name(): void
+    public function test_it_filter_organizations_by_name(): void
     {
         $user = User::factory()->create();
 
@@ -41,7 +41,7 @@ class OrganizationRepositoryTest extends TestCase
         $this->assertEquals('High Risk AI', $results->first()->name);
     }
 
-    public function test_it_can_filter_organizations_by_country(): void
+    public function test_it_filter_organizations_by_country(): void
     {
         $user = User::factory()->create();
 
@@ -69,7 +69,7 @@ class OrganizationRepositoryTest extends TestCase
         $this->assertEquals('Pakistan', $results->first()->country);
     }
 
-    public function test_it_can_filter_organizations_by_status(): void
+    public function test_it_filter_organizations_by_status(): void
     {
         $user = User::factory()->create();
 
