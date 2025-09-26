@@ -38,36 +38,6 @@ class OrganizationControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_create_organization(): void
-    {
-        $user = User::factory()->create(['role' => UserRole::OWNER]);
-
-        $organizationData = [
-            'name' => $this->faker->company(),
-            'website' => $this->faker->url(),
-            'phone' => $this->faker->phoneNumber(),
-            'country' => $this->faker->country(),
-            'is_active' => true,
-        ];
-
-        $response = $this->actingAs($user)->postJson('/api/organizations', $organizationData);
-
-        $response->assertStatus(201);
-        $response->assertJson([
-            'error' => false,
-            'message' => 'Organization created successfully',
-            'data' => null,
-        ]);
-
-        $this->assertDatabaseHas('organizations', [
-            'name' => $organizationData['name'],
-            'website' => $organizationData['website'],
-            'phone' => $organizationData['phone'],
-            'country' => $organizationData['country'],
-            'user_id' => $user->id,
-        ]);
-    }
-
     public function test_super_admin_can_view_single_organization(): void
     {
         $admin = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);

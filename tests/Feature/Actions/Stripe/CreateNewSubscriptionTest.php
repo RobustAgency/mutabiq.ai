@@ -14,10 +14,10 @@ use Laravel\Cashier\Subscription;
 class CreateNewSubscriptionTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
-    
+
     protected $stripeTestPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    public function test_it_creates_a_new_subscription_and_returns_true()
+    public function test_it_creates_a_new_subscription_and_returns_true(): void
     {
         $user = User::factory()->create();
         $plan = Plan::factory()->create([
@@ -28,7 +28,7 @@ class CreateNewSubscriptionTest extends TestCase
         $user->createOrGetStripeCustomer();
         $user->updateDefaultPaymentMethod('pm_card_visa');
 
-        $action = new CreateNewSubscription();
+        $action = app(CreateNewSubscription::class);
 
         $result = $action->execute($user, $plan);
 

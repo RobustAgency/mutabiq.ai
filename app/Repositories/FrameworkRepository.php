@@ -43,7 +43,7 @@ class FrameworkRepository
      * Get available frameworks for user with optional filters.
      * 
      * @param array $filters
-     * @return \Illuminate\Pagination\LengthAwarePaginator
+     * @return \Illuminate\Pagination\LengthAwarePaginator<int, Framework>
      */
     public function getPublishedFrameworks(array $filters = []): Collection
     {

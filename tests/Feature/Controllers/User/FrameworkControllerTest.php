@@ -32,7 +32,8 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_retrieve_published_frameworks_with_authority_publisher_filter()
+
+    public function test_user_can_retrieve_published_frameworks_with_type_filter(): void
     {
         $user = User::factory()->create([
             'role' => UserRole::ADMIN,
@@ -52,7 +53,7 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_retrieve_framework_by_id()
+    public function test_user_can_retrieve_framework_by_id(): void
     {
         $user = User::factory()->create([
             'role' => UserRole::OWNER,

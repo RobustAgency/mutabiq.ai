@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\FrameworkRepository;
 use App\Http\Requests\SearchFrameworkRequest;
 use App\Models\Framework;
+use Illuminate\Http\JsonResponse;
 
 class FrameworkController extends Controller
 {
@@ -14,7 +15,7 @@ class FrameworkController extends Controller
      */
     public function __construct(private FrameworkRepository $frameworkRepository) {}
 
-    public function index(SearchFrameworkRequest $request)
+    public function index(SearchFrameworkRequest $request): JsonResponse
     {
         $frameworks = $this->frameworkRepository->getPublishedFrameworks($request->validated());
 
@@ -25,7 +26,7 @@ class FrameworkController extends Controller
         ]);
     }
 
-    public function show(Framework $framework)
+    public function show(Framework $framework): JsonResponse
     {
         $framework = $this->frameworkRepository->getFrameworkByID($framework->id);
 
