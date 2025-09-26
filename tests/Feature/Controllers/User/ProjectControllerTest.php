@@ -177,8 +177,8 @@ class ProjectControllerTest extends TestCase
 
         $response = $this->getJson("/api/projects/{$project->id}");
         $response->assertOk();
-        $response->assertJsonPath('data.users.0.project_role', UserProjectRole::OWNER);
-        $response->assertJsonPath('data.users.1.project_role', UserProjectRole::EDITOR);
-        $response->assertJsonPath('data.users.2.project_role', UserProjectRole::REVIEWER);
+        $response->assertJsonPath('data.users.0.project_user_role', UserProjectRole::OWNER);
+        $response->assertJsonPath('data.users.1.project_user_role', UserProjectRole::EDITOR);
+        $response->assertJsonPath('data.users.2.project_user_role', UserProjectRole::REVIEWER);
     }
 }

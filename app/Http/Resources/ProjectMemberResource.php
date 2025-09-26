@@ -22,7 +22,7 @@ class ProjectMemberResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'organization_id' => $this->organization_id,
-            'project_role' => $this->pivot->role ?? null,
+            'project_user_role' => $this->pivot->role ?? null,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
