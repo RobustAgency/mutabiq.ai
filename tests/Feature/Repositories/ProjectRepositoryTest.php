@@ -54,10 +54,11 @@ class ProjectRepositoryTest extends TestCase
 
     public function test_it_get_project_by_id_with_no_framework(): void
     {
-        $project = Project::factory()->create();
+        $project = Project::factory()->create([
+            'framework_id' => null,
+        ]);
         $result = $this->projectRepository->getProjectByID($project);
-        $this->assertEquals(0, $result->total_requirements);
-        $this->assertEquals(0, $result->total_controls);
+        $this->assertEquals(null, $result->framework);
     }
 
     public function test_it_get_project_by_id_with_framework_but_no_requirements_or_controls(): void
@@ -67,8 +68,8 @@ class ProjectRepositoryTest extends TestCase
             'framework_id' => $framework->id,
         ]);
         $result = $this->projectRepository->getProjectByID($project);
-        $this->assertEquals(0, $result->total_requirements);
-        $this->assertEquals(0, $result->total_controls);
+        $this->assertEquals(0, $result->framework->requirements_count);
+        $this->assertEquals(0, $result->framework->controls_count);
     }
 
     public function test_it_get_projects_by_user_id_having_different_roles(): void
