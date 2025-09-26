@@ -18,6 +18,18 @@ class ProjectResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $framework = $this->framework;
+
+        $totalRequirements = 0;
+        $totalControls = 0;
+
+        if ($framework) {
+            $totalRequirements = $framework->requirements_count
+                ?? ($framework->relationLoaded('requirements') ? $framework->requirements->count() : 0);
+            $totalControls = $framework->controls_count
+                ?? ($framework->relationLoaded('controls') ? $framework->controls->count() : 0);
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -26,12 +38,10 @@ class ProjectResource extends JsonResource
             'progress' => $this->progress,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
-            'total_requirements' => $this->framework->requirements_count
-                ?? ($this->framework->relationLoaded('requirements') ? $this->framework->requirements->count() : 0),
-            'total_controls' => $this->framework->controls_count
-                ?? ($this->framework->relationLoaded('controls') ? $this->framework->controls->count() : 0),
+            'total_requirements' => $totalRequirements,
+            'total_controls' => $totalControls,
             'users' => UserResource::collection($this->whenLoaded('users')),
-            'framework' => new FrameworkResource($this->whenLoaded('framework')),
+            'framework' => $framework ? new FrameworkResource($this->whenLoaded('framework')) : null,
         ];
     }
 }

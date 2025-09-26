@@ -62,7 +62,10 @@ class ProjectRepositoryTest extends TestCase
 
     public function test_it_get_project_by_id_with_framework_but_no_requirements_or_controls(): void
     {
-        $project = Project::factory()->create();
+        $framework = Framework::factory()->create();
+        $project = Project::factory()->create([
+            'framework_id' => $framework->id,
+        ]);
         $result = $this->projectRepository->getProjectByID($project);
         $this->assertEquals(0, $result->total_requirements);
         $this->assertEquals(0, $result->total_controls);
