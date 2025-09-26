@@ -26,10 +26,12 @@ class ProjectResource extends JsonResource
             'progress' => $this->progress,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
-            'total_requirements' => $this->total_requirements,
-            'total_controls' => $this->total_controls,
+            'total_requirements' => $this->framework->requirements_count
+                ?? ($this->framework->relationLoaded('requirements') ? $this->framework->requirements->count() : 0),
+            'total_controls' => $this->framework->controls_count
+                ?? ($this->framework->relationLoaded('controls') ? $this->framework->controls->count() : 0),
             'users' => UserResource::collection($this->whenLoaded('users')),
-            'frameworks' => FrameworkResource::collection($this->whenLoaded('frameworks')),
+            'framework' => new FrameworkResource($this->whenLoaded('framework')),
         ];
     }
 }

@@ -51,7 +51,7 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store');
         Route::get('{project}', 'show');
         Route::post('{project}/add-member', 'addMember')->can('addMember', 'project');
-        Route::post('{project}/add-frameworks', 'addFrameworks');
+        Route::post('{project}/add-framework', 'addFramework');
     });
 
     Route::prefix('ai-models')->controller(AiController::class)->group(function () {
