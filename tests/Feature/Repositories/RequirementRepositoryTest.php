@@ -13,7 +13,7 @@ class RequirementRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_it_can_filter_requirements_by_name(): void
+    public function test_it_filter_requirements_by_name(): void
     {
         $user = User::factory()->create();
 

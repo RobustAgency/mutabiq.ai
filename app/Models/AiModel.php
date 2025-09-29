@@ -34,20 +34,21 @@ class AiModel extends Model
     ];
 
     /**
-     * Get the createdBt for the aiModel.
-     *
+     * Get the user that created the AI model.
+     * 
      * @return BelongsTo<User, $this>
      */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
     /**
-     * Get the user for the aiModel.
-     *
+     * Get the user that last updated the AI model.
+     * 
      * @return BelongsTo<User, $this>
      */
-    public function updatedBy() : BelongsTo
+    public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }

@@ -8,7 +8,7 @@ use Tests\TestCase;
 class SetupStripeAccountTest extends TestCase
 {
 
-    public function test_execute_creates_product_and_prices_on_stripe()
+    public function test_execute_creates_product_and_prices_on_stripe(): void
     {
         // Arrange
         $productName = 'Test Product ' . uniqid();
@@ -17,7 +17,7 @@ class SetupStripeAccountTest extends TestCase
             ['name' => 'Pro', 'amount' => 2000],
         ];
 
-        $action = new SetupStripeAccount();
+        $action = app(SetupStripeAccount::class);
 
         // Act
         $result = $action->execute($productName, $plans);

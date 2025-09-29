@@ -17,7 +17,7 @@ class ResumeSubscriptionTest extends TestCase
 
     protected $stripeTestPriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    public function test_it_resumes_a_cancelled_subscription_and_returns_true()
+    public function test_it_resumes_a_cancelled_subscription_and_returns_true(): void
     {
         $user = User::factory()->create();
         $plan = Plan::factory()->create([
@@ -35,7 +35,7 @@ class ResumeSubscriptionTest extends TestCase
         $user->subscription('default')->cancel();
 
         // Resume the subscription
-        $action = new ResumeSubscription();
+        $action = app(ResumeSubscription::class);
         $result = $action->execute($user, $plan);
 
         $subscription = $user->subscription('default');

@@ -19,7 +19,7 @@ class DowngradeSubscriptionTest extends TestCase
     protected $currentPriceId = 'price_1JRXjII97c218XRne1NiTkAp';
     protected $downgradePriceId = 'price_1JRX5iI97c218XRnR2nHlpBb';
 
-    public function test_it_downgrades_the_subscription_to_the_new_plan()
+    public function test_it_downgrades_the_subscription_to_the_new_plan(): void
     {
         $user = User::factory()->create();
 
@@ -37,7 +37,7 @@ class DowngradeSubscriptionTest extends TestCase
         // Subscribe to the current plan
         $user->newSubscription('default', $currentPlan->stripe_price_id)->create();
 
-        $action = new DowngradeSubscription();
+        $action = app(DowngradeSubscription::class);
 
         $result = $action->execute($user, $downgradePlan);
 
