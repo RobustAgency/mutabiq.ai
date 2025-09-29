@@ -23,7 +23,7 @@ class AiModelCardControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_user_can_create_an_ai_model_card()
+    public function test_user_can_create_an_ai_model_card(): void
     {
         $user = User::factory()->create();
         $aiModel = AiModel::factory()->create();
@@ -60,10 +60,10 @@ class AiModelCardControllerTest extends TestCase
         $response = $this->postJson('/api/ai-model-cards', $data);
 
         $response->assertStatus(201)
-                 ->assertJson([
-                     'error' => false,
-                     'message' => 'AI Model Card created successfully',
-                 ]);
+            ->assertJson([
+                'error' => false,
+                'message' => 'AI Model Card created successfully',
+            ]);
 
         $this->assertDatabaseHas('ai_model_cards', [
             'title' => $data['title'],
@@ -72,7 +72,7 @@ class AiModelCardControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_update_an_ai_model_card()
+    public function test_user_can_update_an_ai_model_card(): void
     {
         $user = User::factory()->create();
         $aiModel = AiModel::factory()->create();
@@ -94,10 +94,10 @@ class AiModelCardControllerTest extends TestCase
         $response = $this->postJson("/api/ai-model-cards/{$aiModelCard->id}", $updateData);
 
         $response->assertStatus(200)
-                 ->assertJson([
-                     'error' => false,
-                     'message' => 'AI Model Card updated successfully',
-                 ]);
+            ->assertJson([
+                'error' => false,
+                'message' => 'AI Model Card updated successfully',
+            ]);
 
         $this->assertDatabaseHas('ai_model_cards', [
             'id' => $aiModelCard->id,

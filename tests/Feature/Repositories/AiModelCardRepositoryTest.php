@@ -30,7 +30,7 @@ class AiModelCardRepositoryTest extends TestCase
         $this->aiModelCardRepository = app(AiModelCardRepository::class);
     }
 
-    public function test_it_create_an_ai_model_card()
+    public function test_it_create_an_ai_model_card(): void
     {
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
@@ -75,7 +75,7 @@ class AiModelCardRepositoryTest extends TestCase
         ]);
     }
 
-    public function test_it_update_an_ai_model_card()
+    public function test_it_update_an_ai_model_card(): void
     {
         $aiModelCard = AiModelCard::factory()->create([
             'title' => 'Original Title',

@@ -9,7 +9,6 @@ use App\Models\AiModel;
 use App\Repositories\AiModelRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Js;
 
 class AiController extends Controller
 {
@@ -25,7 +24,7 @@ class AiController extends Controller
             ], 403);
         }
         $aiModels = $this->aiModelRepository->getAllAiModelsByOrganizationID($user->organization_id);
-        
+
         return response()->json([
             'error' => 'false',
             'data' => $aiModels
