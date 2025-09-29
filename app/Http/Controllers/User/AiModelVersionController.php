@@ -8,12 +8,13 @@ use App\Http\Requests\UpdateAiModelVersionRequest;
 use App\Http\Resources\AiModelVersionResource;
 use App\Models\AiModelVersion;
 use App\Repositories\AiModelVersionRepository;
+use Illuminate\Http\JsonResponse;
 
 class AiModelVersionController extends Controller
 {
     public function __construct(private AiModelVersionRepository $aiModelVersionRepository) {}
 
-    public function store(StoreAiModelVersionRequest $request)
+    public function store(StoreAiModelVersionRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -25,7 +26,7 @@ class AiModelVersionController extends Controller
         ], 201);
     }
 
-    public function show(AiModelVersion $aiModelVersion)
+    public function show(AiModelVersion $aiModelVersion): JsonResponse
     {
         $aiModelVersionID = $aiModelVersion->id;
         $aiModelVersion = $this->aiModelVersionRepository->getAiModelVersionByID($aiModelVersionID);
@@ -37,7 +38,7 @@ class AiModelVersionController extends Controller
         ], 200);
     }
 
-    public function update(UpdateAiModelVersionRequest $request, AiModelVersion $aiModelVersion)
+    public function update(UpdateAiModelVersionRequest $request, AiModelVersion $aiModelVersion): JsonResponse
     {
         $validated = $request->validated();
 

@@ -2,9 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\AiModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin AiModel
+ */
 class AiModelResource extends JsonResource
 {
     /**

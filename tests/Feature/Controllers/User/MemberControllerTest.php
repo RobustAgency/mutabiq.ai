@@ -104,6 +104,46 @@ class MemberControllerTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $member->id]);
     }
 
+    public function test_user_can_list_members(): void
+    {
+        $user = $this->createUserWithOrganizationAndMembers();
+
+        $response = $this->actingAs($user)->getJson('/api/members');
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'error',
+            'message',
+            'data' => [
+                '*' => [
+                    'id',
+                    'name',
+                    'email',
+                    'organization_id',
+                    'role',
+                    'created_at',
+                    'updated_at',
+                ],
+            ],
+        ]);
+
+        $responseData = $response->json();
+
+        $this->assertFalse($responseData['error']);
+        $this->assertEquals('Members retrieved successfully', $responseData['message']);
+        $this->assertCount(3, $responseData['data']);
+
+        foreach ($responseData['data'] as $member) {
+            $this->assertArrayHasKey('id', $member);
+            $this->assertArrayHasKey('name', $member);
+            $this->assertArrayHasKey('email', $member);
+            $this->assertArrayHasKey('organization_id', $member);
+            $this->assertArrayHasKey('role', $member);
+            $this->assertArrayHasKey('created_at', $member);
+            $this->assertArrayHasKey('updated_at', $member);
+        }
+    }
+
     private function createUserWithOrganizationAndMembers(): User
     {
         $user = User::factory()->create(['role' => UserRole::OWNER->value]);
