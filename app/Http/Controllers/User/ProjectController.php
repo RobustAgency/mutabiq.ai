@@ -46,10 +46,10 @@ class ProjectController extends Controller
         $user = Auth::user();
         $validated = $request->validated();
 
-        $this->projectRepository->createProject($user, $validated);
+        $project = $this->projectRepository->createProject($user, $validated);
 
         return response()->json([
-            'data' => null,
+            'data' => new ProjectResource($project),
             'error' => false,
             'message' => 'Project created successfully',
         ], 201);

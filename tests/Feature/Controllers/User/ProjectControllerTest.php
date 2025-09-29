@@ -159,4 +159,22 @@ class ProjectControllerTest extends TestCase
         $response = $this->postJson("/api/projects/{$project->id}/add-member", $memberData);
         $response->assertForbidden();
     }
+
+    public function test_it_return_the_user_with__project_user_role(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $user3 = User::factory()->create();
+        $this->actingAs($user1);
+        $project = Project::factory()->create();
+        $project->users()->attach($user1->id, ['role' => UserProjectRole::OWNER]);
+        $project->users()->attach($user2->id, ['role' => UserProjectRole::EDITOR]);
+        $project->users()->attach($user3->id, ['role' => UserProjectRole::REVIEWER]);
+
+        $response = $this->getJson("/api/projects/{$project->id}");
+        $response->assertOk();
+        $response->assertJsonPath('data.users.0.project_user_role', UserProjectRole::OWNER);
+        $response->assertJsonPath('data.users.1.project_user_role', UserProjectRole::EDITOR);
+        $response->assertJsonPath('data.users.2.project_user_role', UserProjectRole::REVIEWER);
+    }
 }
