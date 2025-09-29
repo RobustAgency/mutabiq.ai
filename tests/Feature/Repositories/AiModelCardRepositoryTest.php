@@ -12,6 +12,7 @@ use App\Enums\WorkflowStage;
 use App\Enums\TechnicalReviewStatus;
 use App\Enums\EthicsReviewStatus;
 use App\Enums\ComplianceReviewStatus;
+use App\Enums\CreatorRole;
 use App\Enums\PublicationStatus;
 use App\Models\AiModel;
 use App\Models\AiModelVersion;
@@ -39,7 +40,7 @@ class AiModelCardRepositoryTest extends TestCase
             'ai_model_version_id' => $aiModelVersion->id,
             'title' => $this->faker->sentence,
             'version' => '1.0.0',
-            'creator_role' => 'developer',
+            'creator_role' => CreatorRole::INTERNAL_TEAM,
             'owner_email' => $this->faker->email,
             'access_level' => AccessLevel::INTERNAL,
             'format' => CardFormat::STANDARD,
