@@ -7,7 +7,6 @@ use App\Http\Requests\StoreAiModelRequest;
 use App\Http\Resources\AiModelResource;
 use App\Models\AiModel;
 use App\Repositories\AiModelRepository;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 
