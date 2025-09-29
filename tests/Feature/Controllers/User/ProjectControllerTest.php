@@ -41,6 +41,8 @@ class ProjectControllerTest extends TestCase
 
         $response = $this->getJson("/api/projects/{$project->id}");
         $response->assertOk();
+        $response->assertJsonPath('data.total_requirements', 5);
+        $response->assertJsonPath('data.total_controls', 5);
         $response->assertJsonStructure([
             'data' => [
                 'id',
