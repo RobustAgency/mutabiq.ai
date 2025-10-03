@@ -7,6 +7,7 @@ use App\Enums\AiModelUseCase\RiskLevel;
 use App\Enums\AiModelUseCase\Status;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\AiModelUseCase\RegulatoryScope;
 
 class StoreAiModelUseCaseRequest extends FormRequest
 {
@@ -33,7 +34,8 @@ class StoreAiModelUseCaseRequest extends FormRequest
             'business_domain' => ['required', 'string', 'max:255'],
             'business_owner_email' => ['required', 'email', 'max:255'],
             'technical_owner_email' => ['required', 'email', 'max:255'],
-            'regulatory_scope' => ['required', 'string', 'max:255'],
+            'regulatory_scope' => ['required', 'array'],
+            'regulatory_scope.*' => [Rule::in(array_map(fn($c) => $c->value, RegulatoryScope::cases()))],
             'data_sensitivity' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, DataSensitivity::cases()))],
             'go_live_date' => ['nullable', 'date'],
             'expected_roi' => ['nullable', 'numeric'],

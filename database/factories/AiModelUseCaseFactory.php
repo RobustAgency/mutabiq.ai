@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\AiModelUseCase\DataSensitivity;
+use App\Enums\AiModelUseCase\RegulatoryScope;
 use App\Enums\AiModelUseCase\Status;
 use App\Enums\AiModelUseCase\RiskLevel;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,7 +28,7 @@ class AiModelUseCaseFactory extends Factory
             'business_domain' => $this->faker->word,
             'business_owner_email' => $this->faker->email,
             'technical_owner_email' => $this->faker->email,
-            'regulatory_scope' => $this->faker->word,
+            'regulatory_scope' => [RegulatoryScope::AI_ACT, RegulatoryScope::CCPA],
             'data_sensitivity' => DataSensitivity::CONFIDENTIAL,
             'go_live_date' => $this->faker->date,
             'expected_roi' => $this->faker->randomFloat(2, 0, 100),

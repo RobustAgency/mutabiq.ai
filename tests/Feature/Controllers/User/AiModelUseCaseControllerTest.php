@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\AiModelUseCase;
 use App\Enums\AiModelUseCase\Status;
 use App\Enums\AiModelUseCase\DataSensitivity;
+use App\Enums\AiModelUseCase\RegulatoryScope;
 use App\Enums\AiModelUseCase\RiskLevel;
 use Tests\TestCase;
 
@@ -39,7 +40,7 @@ class AiModelUseCaseControllerTest extends TestCase
             'business_domain' => 'IT',
             'business_owner_email' => 'owner@example.com',
             'technical_owner_email' => 'tech@example.com',
-            'regulatory_scope' => 'GDPR',
+            'regulatory_scope' => [RegulatoryScope::GDPR, RegulatoryScope::CCPA],
             'data_sensitivity' => DataSensitivity::CONFIDENTIAL,
             'go_live_date' => now()->addMonth(),
             'expected_roi' => 20.5,

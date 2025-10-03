@@ -41,6 +41,7 @@ class AiModelUseCase extends Model
     ];
 
     protected $casts = [
+        'regulatory_scope' => 'array',
         'go_live_date' => 'date',
         'expected_roi' => 'float',
         'reduction_in_time' => 'float',
