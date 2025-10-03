@@ -28,6 +28,7 @@ class StoreAiModelUseCaseRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'business_objective' => ['nullable', 'string'],
             'status' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, Status::cases()))],
             'business_domain' => ['required', 'string', 'max:255'],
             'business_owner_email' => ['required', 'email', 'max:255'],

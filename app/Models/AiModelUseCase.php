@@ -13,6 +13,7 @@ class AiModelUseCase extends Model
     protected $fillable = [
         'title',
         'description',
+        'business_objective',
         'status',
         'business_domain',
         'business_owner_email',

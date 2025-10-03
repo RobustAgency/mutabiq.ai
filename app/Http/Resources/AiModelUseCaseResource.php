@@ -22,6 +22,7 @@ class AiModelUseCaseResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            'business_objective' => $this->business_objective,
             'status' => $this->status,
             'business_domain' => $this->business_domain,
             'business_owner_email' => $this->business_owner_email,

@@ -22,6 +22,7 @@ class AiModelUseCaseFactory extends Factory
         return [
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
+            'business_objective' => $this->faker->paragraph,
             'status' => Status::IN_DEVELOPMENT,
             'business_domain' => $this->faker->word,
             'business_owner_email' => $this->faker->email,
