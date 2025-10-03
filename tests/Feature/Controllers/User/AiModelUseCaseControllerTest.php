@@ -100,4 +100,59 @@ class AiModelUseCaseControllerTest extends TestCase
             'message' => 'AI Model Use Case retrieved successfully',
         ]);
     }
+
+    public function test_user_can_not_create_ai_model_use_case_with_duplicate_regulatory_scope(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $data = [
+            'title' => 'Use Case with Duplicate Scopes',
+            'description' => 'This use case has duplicate regulatory scopes.',
+            'status' => Status::IN_DEVELOPMENT->value,
+            'business_domain' => 'IT',
+            'business_owner_email' => 'owner@example.com',
+            'technical_owner_email' => 'tech@example.com',
+            'regulatory_scope' => [RegulatoryScope::GDPR->value, RegulatoryScope::CCPA->value, RegulatoryScope::GDPR->value], // Duplicate GDPR
+            'data_sensitivity' => DataSensitivity::CONFIDENTIAL->value,
+            'go_live_date' => now()->addMonth(),
+            'expected_roi' => 20.5,
+            'implementation_cost' => 10000,
+            'reduction_in_time' => 30.0,
+            'reduction_in_cost' => 5000,
+            'increase_in_revenue' => 10000,
+            'risk_avoidance' => 2000,
+            'fte_capacity_saved' => 1,
+            'use_case_type' => 'Automation',
+            'value_driver' => 'Efficiency',
+            'risk_level' => RiskLevel::MEDIUM->value,
+            'overall_risk_score' => 5,
+            'human_oversight_mode' => 'Manual',
+            'dpia' => true,
+            'aia' => false,
+            'data_availability_status' => 'Available',
+            'data_readiness_level' => 'Ready',
+            'data_freshness' => 'Fresh',
+        ];
+
+        $response = $this->postJson('/api/ai-model-use-cases', $data);
+        $response->assertUnprocessable();
+
+        // Check that validation errors exist for duplicate values
+        $response->assertJsonValidationErrors(['regulatory_scope.0', 'regulatory_scope.2']);
+
+        // Check that the response contains validation errors structure
+        $response->assertJsonStructure([
+            'message',
+            'errors' => [
+                'regulatory_scope.0',
+                'regulatory_scope.2'
+            ]
+        ]);
+
+        // Ensure no record was created in the database
+        $this->assertDatabaseMissing('ai_model_use_cases', [
+            'title' => 'Use Case with Duplicate Scopes',
+        ]);
+    }
 }
