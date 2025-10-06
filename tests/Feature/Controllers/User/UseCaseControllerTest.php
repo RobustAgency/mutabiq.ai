@@ -5,30 +5,30 @@ namespace Tests\Feature\Controllers\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Models\User;
-use App\Models\AiModelUseCase;
-use App\Enums\AiModelUseCase\Status;
-use App\Enums\AiModelUseCase\DataSensitivity;
-use App\Enums\AiModelUseCase\RegulatoryScope;
-use App\Enums\AiModelUseCase\RiskLevel;
+use App\Models\UseCase;
+use App\Enums\UseCase\Status;
+use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\RegulatoryScope;
+use App\Enums\UseCase\RiskLevel;
 use Tests\TestCase;
 
-class AiModelUseCaseControllerTest extends TestCase
+class UseCaseControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_user_can_get_ai_model_use_cases(): void
+    public function test_user_can_get_use_cases(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        AiModelUseCase::factory()->count(3)->create();
+        UseCase::factory()->count(3)->create();
 
-        $response = $this->getJson('/api/ai-model-use-cases?per_page=2');
+        $response = $this->getJson('/api/use-cases?per_page=2');
         $response->assertOk();
         $response->assertJsonCount(2, 'data.data');
     }
 
-    public function test_user_can_create_ai_model_use_case(): void
+    public function test_user_can_create_use_case(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -63,33 +63,33 @@ class AiModelUseCaseControllerTest extends TestCase
         ];
 
 
-        $response = $this->postJson('/api/ai-model-use-cases', $data);
+        $response = $this->postJson('/api/use-cases', $data);
         $response->assertCreated();
 
         $response->assertJsonFragment([
             'error' => false,
-            'message' => 'AI Model Use Case created successfully',
+            'message' => 'Use Case created successfully',
         ]);
 
-        $this->assertDatabaseHas('ai_model_use_cases', [
+        $this->assertDatabaseHas('use_cases', [
             'title' => 'New Use Case',
             'description' => 'Description of the new use case',
             'status' => Status::IN_DEVELOPMENT,
         ]);
     }
 
-    public function test_user_can_get_specific_ai_model_use_case(): void
+    public function test_user_can_get_specific_use_case(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $useCase = AiModelUseCase::factory()->create([
+        $useCase = UseCase::factory()->create([
             'title' => 'Specific Use Case',
             'description' => 'Details of the specific use case.',
             'status' => 'active',
         ]);
 
-        $response = $this->getJson("/api/ai-model-use-cases/{$useCase->id}");
+        $response = $this->getJson("/api/use-cases/{$useCase->id}");
         $response->assertOk();
         $response->assertJsonFragment([
             'id' => $useCase->id,
@@ -97,11 +97,11 @@ class AiModelUseCaseControllerTest extends TestCase
             'description' => 'Details of the specific use case.',
             'status' => 'active',
             'error' => false,
-            'message' => 'AI Model Use Case retrieved successfully',
+            'message' => 'Use Case retrieved successfully',
         ]);
     }
 
-    public function test_user_can_not_create_ai_model_use_case_with_duplicate_regulatory_scope(): void
+    public function test_user_can_not_create_use_case_with_duplicate_regulatory_scope(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -135,7 +135,7 @@ class AiModelUseCaseControllerTest extends TestCase
             'data_freshness' => 'Fresh',
         ];
 
-        $response = $this->postJson('/api/ai-model-use-cases', $data);
+        $response = $this->postJson('/api/use-cases', $data);
         $response->assertUnprocessable();
 
         // Check that validation errors exist for duplicate values
@@ -151,7 +151,7 @@ class AiModelUseCaseControllerTest extends TestCase
         ]);
 
         // Ensure no record was created in the database
-        $this->assertDatabaseMissing('ai_model_use_cases', [
+        $this->assertDatabaseMissing('use_cases', [
             'title' => 'Use Case with Duplicate Scopes',
         ]);
     }

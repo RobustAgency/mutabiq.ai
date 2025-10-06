@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums\AiModelUseCase;
+namespace App\Enums\UseCase;
 
 enum RegulatoryScope: string
 {

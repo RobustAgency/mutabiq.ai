@@ -2,14 +2,14 @@
 
 namespace App\Http\Resources;
 
-use App\Models\AiModelUseCase;
+use App\Models\UseCase;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin AiModelUseCase
+ * @mixin UseCase
  */
-class AiModelUseCaseResource extends JsonResource
+class UseCaseResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

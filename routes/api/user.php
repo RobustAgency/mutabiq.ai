@@ -12,7 +12,7 @@ use App\Http\Controllers\User\OrganizationController;
 use App\Http\Controllers\User\AiController;
 use App\Http\Controllers\User\ProjectController;
 use App\Http\Controllers\User\AiModelVersionController;
-use App\Http\Controllers\User\AiModelUseCaseController;
+use App\Http\Controllers\User\UseCaseController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -67,9 +67,9 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('{aiModelVersion}', 'update');
     });
 
-    Route::prefix('ai-model-use-cases')->controller(AiModelUseCaseController::class)->group(function () {
+    Route::prefix('use-cases')->controller(UseCaseController::class)->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
-        Route::get('{aiModelUseCase}', 'show');
+        Route::get('{useCase}', 'show');
     });
 });

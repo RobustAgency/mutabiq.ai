@@ -2,16 +2,16 @@
 
 namespace Database\Factories;
 
-use App\Enums\AiModelUseCase\DataSensitivity;
-use App\Enums\AiModelUseCase\RegulatoryScope;
-use App\Enums\AiModelUseCase\Status;
-use App\Enums\AiModelUseCase\RiskLevel;
+use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\RegulatoryScope;
+use App\Enums\UseCase\Status;
+use App\Enums\UseCase\RiskLevel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AiModelUseCase>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UseCase>
  */
-class AiModelUseCaseFactory extends Factory
+class UseCaseFactory extends Factory
 {
     /**
      * Define the model's default state.

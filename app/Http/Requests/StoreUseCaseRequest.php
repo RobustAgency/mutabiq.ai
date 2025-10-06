@@ -2,14 +2,14 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\AiModelUseCase\DataSensitivity;
-use App\Enums\AiModelUseCase\RiskLevel;
-use App\Enums\AiModelUseCase\Status;
+use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\RiskLevel;
+use App\Enums\UseCase\Status;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Enums\AiModelUseCase\RegulatoryScope;
+use App\Enums\UseCase\RegulatoryScope;
 
-class StoreAiModelUseCaseRequest extends FormRequest
+class StoreUseCaseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

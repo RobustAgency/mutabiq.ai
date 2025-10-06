@@ -2,35 +2,35 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Enums\AiModelUseCase\Status;
+use App\Enums\UseCase\Status;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use App\Repositories\AiModelUseCaseRepository;
-use App\Models\AiModelUseCase;
-use App\Enums\AiModelUseCase\DataSensitivity;
-use App\Enums\AiModelUseCase\RiskLevel;
+use App\Repositories\UseCaseRepository;
+use App\Models\UseCase;
+use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\RiskLevel;
 use Tests\TestCase;
 
-class AiModelUseCaseRepositoryTest extends TestCase
+class UseCaseRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    private AiModelUseCaseRepository $aiModelUseCaseRepository;
+    private UseCaseRepository $useCaseRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->aiModelUseCaseRepository = new AiModelUseCaseRepository();
+        $this->useCaseRepository = new UseCaseRepository();
     }
 
-    public function test_it_gets_filtered_ai_model_use_cases(): void
+    public function test_it_gets_filtered_use_cases(): void
     {
-        AiModelUseCase::factory()->create(['title' => 'Test Use Case 1', 'status' => 'active']);
-        AiModelUseCase::factory()->create(['title' => 'Another Use Case', 'status' => 'inactive']);
-        AiModelUseCase::factory()->create(['title' => 'Test Use Case 2', 'status' => 'active']);
+        UseCase::factory()->create(['title' => 'Test Use Case 1', 'status' => 'active']);
+        UseCase::factory()->create(['title' => 'Another Use Case', 'status' => 'inactive']);
+        UseCase::factory()->create(['title' => 'Test Use Case 2', 'status' => 'active']);
 
         $filters = ['title' => 'Test', 'status' => 'active', 'per_page' => 2];
-        $result = $this->aiModelUseCaseRepository->getFilteredAiModelUseCases($filters);
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
 
         $this->assertCount(2, $result->items());
         foreach ($result->items() as $useCase) {
@@ -39,7 +39,7 @@ class AiModelUseCaseRepositoryTest extends TestCase
         }
     }
 
-    public function test_it_creates_ai_model_use_case(): void
+    public function test_it_creates_use_case(): void
     {
         $data = [
             'title' => 'New Use Case',
@@ -70,20 +70,20 @@ class AiModelUseCaseRepositoryTest extends TestCase
             'data_freshness' => 'Fresh',
         ];
 
-        $useCase = $this->aiModelUseCaseRepository->createAiModelUseCase($data);
+        $useCase = $this->useCaseRepository->createUseCase($data);
 
-        $this->assertInstanceOf(AiModelUseCase::class, $useCase);
+        $this->assertInstanceOf(UseCase::class, $useCase);
         $this->assertEquals('New Use Case', $useCase->title);
         $this->assertEquals('Description of the new use case', $useCase->description);
         $this->assertEquals(Status::IN_DEVELOPMENT, $useCase->status);
-        $this->assertDatabaseHas('ai_model_use_cases', ['title' => 'New Use Case']);
+        $this->assertDatabaseHas('use_cases', ['title' => 'New Use Case']);
     }
 
-    public function test_it_gets_filtered_ai_model_use_cases_with_no_filters(): void
+    public function test_it_gets_filtered_use_cases_with_no_filters(): void
     {
-        AiModelUseCase::factory()->count(5)->create();
+        UseCase::factory()->count(5)->create();
 
-        $result = $this->aiModelUseCaseRepository->getFilteredAiModelUseCases();
+        $result = $this->useCaseRepository->getFilteredUseCases();
 
         $this->assertCount(5, $result->items());
     }
