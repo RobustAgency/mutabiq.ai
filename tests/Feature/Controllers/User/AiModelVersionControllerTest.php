@@ -18,7 +18,7 @@ class AiModelVersionControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_use_can_get_all_ai_model_versions(): void
+    public function test_user_can_get_all_ai_model_versions(): void
     {
         $user = User::factory()->create();
         $aiModel = AiModel::factory()->create();
