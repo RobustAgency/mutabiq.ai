@@ -1,10 +1,29 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\AiModelVersion;
+use Illuminate\Database\Eloquent\Collection;
 
 class AiModelVersionRepository
 {
+    /**
+     * Retrieve all AI model versions, optionally filtered by AI model ID.
+     *
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Collection<int, AiModelVersion>
+     */
+    public function getAllAiModelVersions(array $filters = []): Collection
+    {
+        $query = AiModelVersion::query();
+
+        if (isset($filters['ai_model_id'])) {
+            $query->where('ai_model_id', $filters['ai_model_id']);
+        }
+
+        return $query->get();
+    }
+
     public function create(array $data): AiModelVersion
     {
         return AiModelVersion::create($data);

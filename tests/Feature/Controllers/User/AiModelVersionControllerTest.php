@@ -4,7 +4,6 @@ namespace Tests\Feature\Controllers\User;
 
 use App\Enums\VersionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\AiModel;
 use App\Models\AiModelVersion;
@@ -17,9 +16,54 @@ use App\Enums\ValidationStatus;
 
 class AiModelVersionControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
 
-    public function test_user_can_create_ai_model_version()
+    public function test_use_can_get_all_ai_model_versions(): void
+    {
+        $user = User::factory()->create();
+        $aiModel = AiModel::factory()->create();
+        AiModelVersion::factory()->count(5)->create(['ai_model_id' => $aiModel->id]);
+        $url = '/api/ai-model-versions?ai_model_id=' . $aiModel->id;
+
+        $response = $this->actingAs($user)->getJson($url);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'error',
+                'message',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'ai_model_id',
+                        'version_number',
+                        'version_type',
+                        'description',
+                        'release_notes',
+                        'release_date',
+                        'architecture_type',
+                        'model_file_size_gb',
+                        'training_duration_hours',
+                        'complexity_level',
+                        'deployment_status',
+                        'lifecycle_stage',
+                        'validation_status',
+                        'compliance_check_status',
+                        'parameter_count',
+                        'input_modalities',
+                        'output_modalities',
+                        'deployment_environments',
+                        'rollback_available',
+                        'has_performance_data',
+                        'performance_baseline_established',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+            ]);
+        $this->assertCount(5, $response->json('data'));
+    }
+
+    public function test_user_can_create_ai_model_version(): void
     {
         $user = User::factory()->create();
         $aiModel = AiModel::factory()->create();
@@ -55,7 +99,7 @@ class AiModelVersionControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_update_ai_model_version()
+    public function test_user_can_update_ai_model_version(): void
     {
         $user = User::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create();
@@ -78,7 +122,7 @@ class AiModelVersionControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_get_ai_model_version()
+    public function test_user_can_get_ai_model_version(): void
     {
         $user = User::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create();
