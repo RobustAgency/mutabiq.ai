@@ -10,8 +10,9 @@ use App\Http\Controllers\User\FrameworkController;
 use App\Http\Controllers\User\MemberController;
 use App\Http\Controllers\User\OrganizationController;
 use App\Http\Controllers\User\AiController;
-use App\Http\Controllers\User\AiModelVersionController;
 use App\Http\Controllers\User\ProjectController;
+use App\Http\Controllers\User\AiModelVersionController;
+use App\Http\Controllers\User\UseCaseController;
 use App\Http\Controllers\User\AiModelCardController;
 
 Route::middleware(['auth:supabase'])->group(function () {
@@ -70,5 +71,11 @@ Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('ai-model-cards')->controller(AiModelCardController::class)->group(function () {
         Route::post('', 'store');
         Route::post('{aiModelCard}', 'update');
+    });
+
+    Route::prefix('use-cases')->controller(UseCaseController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{useCase}', 'show');
     });
 });
