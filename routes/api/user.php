@@ -63,6 +63,7 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('ai-model-versions')->controller(AiModelVersionController::class)->group(function () {
+        Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{aiModelVersion}', 'show');
         Route::post('{aiModelVersion}', 'update');

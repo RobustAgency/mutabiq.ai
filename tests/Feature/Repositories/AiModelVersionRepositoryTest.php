@@ -20,7 +20,29 @@ class AiModelVersionRepositoryTest extends TestCase
         $this->aiModelVersionRepository = app(AiModelVersionRepository::class);
     }
 
-    public function test_it_can_create_ai_model_version()
+    public function test_it_gets_all_ai_model_versions(): void
+    {
+        $aiModel = AiModel::factory()->create();
+        AiModelVersion::factory()->count(10)->create(['ai_model_id' => $aiModel->id]);
+
+        $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions(['ai_model_id' => $aiModel->id]);
+
+        $this->assertCount(10, $aiModelVersions);
+        $this->assertInstanceOf(AiModelVersion::class, $aiModelVersions->first());
+    }
+
+    public function test_it_gets_all_ai_model_versions_without_filter(): void
+    {
+        AiModelVersion::factory()->count(5)->create();
+        AiModelVersion::factory()->count(3)->create();
+
+        $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions();
+
+        $this->assertCount(8, $aiModelVersions);
+        $this->assertInstanceOf(AiModelVersion::class, $aiModelVersions->first());
+    }
+
+    public function test_it_can_create_ai_model_version(): void
     {
         $aiModel = AiModel::factory()->create();
         $data = [
@@ -57,7 +79,7 @@ class AiModelVersionRepositoryTest extends TestCase
         ]);
     }
 
-    public function test_it_can_get_ai_model_version_by_id()
+    public function test_it_can_get_ai_model_version_by_id(): void
     {
         $aiModelVersion = AiModelVersion::factory()->create();
 
@@ -67,7 +89,7 @@ class AiModelVersionRepositoryTest extends TestCase
         $this->assertEquals($aiModelVersion->id, $fetchedVersion->id);
     }
 
-    public function test_it_can_update_ai_model_version()
+    public function test_it_can_update_ai_model_version(): void
     {
         $aiModelVersion = AiModelVersion::factory()->create();
 
