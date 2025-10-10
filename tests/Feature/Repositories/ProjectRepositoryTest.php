@@ -28,42 +28,48 @@ class ProjectRepositoryTest extends TestCase
 
     public function test_it_get_project_by_id(): void
     {
-        $project = Project::factory()->create();
-        $framework1 = Framework::factory()->create();
-        $framework2 = Framework::factory()->create();
-        $project->frameworks()->attach([$framework1->id, $framework2->id]);
+
+        $framework = Framework::factory()->create();
+
 
         $requirements1 = Requirement::factory()->count(2)->create();
         $requirements2 = Requirement::factory()->count(3)->create();
-        $framework1->requirements()->attach($requirements1->pluck('id'));
-        $framework2->requirements()->attach($requirements2->pluck('id'));
+        $framework->requirements()->attach($requirements1->pluck('id'));
+        $framework->requirements()->attach($requirements2->pluck('id'));
 
         $controls1 = Control::factory()->count(1)->create();
         $controls2 = Control::factory()->count(4)->create();
-        $framework1->controls()->attach($controls1->pluck('id'));
-        $framework2->controls()->attach($controls2->pluck('id'));
+        $framework->controls()->attach($controls1->pluck('id'));
+        $framework->controls()->attach($controls2->pluck('id'));
+
+        $project = Project::factory()->create([
+            'framework_id' => $framework->id,
+        ]);
+
 
         $result = $this->projectRepository->getProjectByID($project);
-        $this->assertEquals(5, $result->total_requirements);
-        $this->assertEquals(5, $result->total_controls);
+        $this->assertEquals(5, $result->framework->requirements_count);
+        $this->assertEquals(5, $result->framework->controls_count);
     }
 
-    public function test_it_get_project_by_id_with_no_frameworks(): void
+    public function test_it_get_project_by_id_with_no_framework(): void
     {
-        $project = Project::factory()->create();
+        $project = Project::factory()->create([
+            'framework_id' => null,
+        ]);
         $result = $this->projectRepository->getProjectByID($project);
-        $this->assertEquals(0, $result->total_requirements);
-        $this->assertEquals(0, $result->total_controls);
+        $this->assertEquals(null, $result->framework);
     }
 
-    public function test_it_get_project_by_id_with_frameworks_but_no_requirements_or_controls(): void
+    public function test_it_get_project_by_id_with_framework_but_no_requirements_or_controls(): void
     {
-        $project = Project::factory()->create();
         $framework = Framework::factory()->create();
-        $project->frameworks()->attach($framework->id);
+        $project = Project::factory()->create([
+            'framework_id' => $framework->id,
+        ]);
         $result = $this->projectRepository->getProjectByID($project);
-        $this->assertEquals(0, $result->total_requirements);
-        $this->assertEquals(0, $result->total_controls);
+        $this->assertEquals(0, $result->framework->requirements_count);
+        $this->assertEquals(0, $result->framework->controls_count);
     }
 
     public function test_it_get_projects_by_user_id_having_different_roles(): void
@@ -134,21 +140,16 @@ class ProjectRepositoryTest extends TestCase
         ]);
     }
 
-    public function test_it_assign_multiple_frameworks_to_project(): void
+    public function test_it_assign_single_framework_to_project(): void
     {
         $project = Project::factory()->create();
-        $framework1 = Framework::factory()->create();
-        $framework2 = Framework::factory()->create();
+        $framework = Framework::factory()->create();
 
-        $this->projectRepository->addFrameworksToProject($project, [$framework1->id, $framework2->id]);
+        $this->projectRepository->addFrameworkToProject($project, $framework->id);
 
-        $this->assertDatabaseHas('framework_project', [
-            'project_id' => $project->id,
-            'framework_id' => $framework1->id,
-        ]);
-        $this->assertDatabaseHas('framework_project', [
-            'project_id' => $project->id,
-            'framework_id' => $framework2->id,
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'framework_id' => $framework->id,
         ]);
     }
 

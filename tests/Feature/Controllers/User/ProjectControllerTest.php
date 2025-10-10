@@ -21,24 +21,28 @@ class ProjectControllerTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        $project = Project::factory()->create();
-        $project->users()->attach($user->id, ['role' => UserProjectRole::OWNER]);
-        $framework1 = Framework::factory()->create();
-        $framework2 = Framework::factory()->create();
-        $project->frameworks()->attach([$framework1->id, $framework2->id]);
+
+        $framework = Framework::factory()->create();
 
         $requirements1 = Requirement::factory()->count(2)->create();
         $requirements2 = Requirement::factory()->count(3)->create();
-        $framework1->requirements()->attach($requirements1->pluck('id'));
-        $framework2->requirements()->attach($requirements2->pluck('id'));
+        $framework->requirements()->attach($requirements1->pluck('id'));
+        $framework->requirements()->attach($requirements2->pluck('id'));
 
         $controls1 = Control::factory()->count(1)->create();
         $controls2 = Control::factory()->count(4)->create();
-        $framework1->controls()->attach($controls1->pluck('id'));
-        $framework2->controls()->attach($controls2->pluck('id'));
+        $framework->controls()->attach($controls1->pluck('id'));
+        $framework->controls()->attach($controls2->pluck('id'));
+
+        $project = Project::factory()->create([
+            'framework_id' => $framework->id,
+        ]);
+        $project->users()->attach($user->id, ['role' => UserProjectRole::OWNER]);
 
         $response = $this->getJson("/api/projects/{$project->id}");
         $response->assertOk();
+        $response->assertJsonPath('data.total_requirements', 5);
+        $response->assertJsonPath('data.total_controls', 5);
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -48,13 +52,9 @@ class ProjectControllerTest extends TestCase
                 'progress',
                 'total_requirements',
                 'total_controls',
-                'frameworks' => [
-                    '*' => [
-                        'id',
-                        'name',
-                        'requirements',
-                        'controls',
-                    ],
+                'framework' => [
+                    'id',
+                    'name',
                 ],
             ],
         ]);
@@ -124,23 +124,21 @@ class ProjectControllerTest extends TestCase
         $this->assertDatabaseHas('project_user', ['user_id' => $newMember->id, 'role' => UserProjectRole::EDITOR]);
     }
 
-    public function test_user_can_add_frameworks_to_project(): void
+    public function test_user_can_add_framework_to_project(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
         $project = Project::factory()->create();
         $project->users()->attach($user->id, ['role' => UserProjectRole::OWNER]);
 
-        $frameworks = Framework::factory()->count(2)->create();
-        $frameworkIDs = $frameworks->pluck('id')->toArray();
-        $data = ['framework_ids' => $frameworkIDs];
+        $framework = Framework::factory()->create();
 
-        $response = $this->postJson("/api/projects/{$project->id}/add-frameworks", $data);
+        $data = ['framework_id' => $framework->id];
+
+        $response = $this->postJson("/api/projects/{$project->id}/add-framework", $data);
         $response->assertOk();
-        $response->assertJson(['error' => false, 'message' => 'Frameworks added to project successfully']);
-        foreach ($frameworkIDs as $fwID) {
-            $this->assertDatabaseHas('framework_project', ['project_id' => $project->id, 'framework_id' => $fwID]);
-        }
+        $response->assertJson(['error' => false, 'message' => 'Framework added to project successfully']);
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'framework_id' => $framework->id]);
     }
 
     public function test_non_owner_cannot_add_a_new_member(): void
