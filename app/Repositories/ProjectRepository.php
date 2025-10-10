@@ -20,7 +20,7 @@ class ProjectRepository
     {
         $query = Project::whereHas('users', function ($q) use ($userID) {
             $q->where('user_id', $userID);
-        })->with('users', 'frameworks')->withCount('users', 'frameworks');
+        })->with('users', 'framework')->withCount('users', 'framework');
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%' . $filters['name'] . '%');
@@ -37,7 +37,12 @@ class ProjectRepository
 
     public function getProjectByID(Project $project): Project
     {
-        $project->load('users', 'frameworks.requirements', 'frameworks.controls');
+        $project->load([
+            'users',
+            'framework' => function ($query) {
+                $query->withCount(['requirements', 'controls']);
+            }
+        ]);
         return $project;
     }
 
@@ -57,9 +62,10 @@ class ProjectRepository
         return $project;
     }
 
-    public function addFrameworksToProject(Project $project, array $frameworkIDs): Project
+    public function addFrameworkToProject(Project $project, int $frameworkID): Project
     {
-        $project->frameworks()->syncWithoutDetaching($frameworkIDs);
+        $project->framework_id = $frameworkID;
+        $project->save();
 
         return $project;
     }

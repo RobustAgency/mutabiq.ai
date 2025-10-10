@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Validation\Rules\In;
 
 class Project extends Model
 {
@@ -13,8 +13,6 @@ class Project extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'description', 'governance_pillar', 'progress'];
-
-    protected $appends = ['total_requirements', 'total_controls'];
 
     /**
      * The users that belong to the project.
@@ -27,36 +25,12 @@ class Project extends Model
     }
 
     /**
-     * The frameworks that belong to the project.
+     * The framework that belong to the project.
      *
-     * @return BelongsToMany<Framework, $this>
+     * @return BelongsTo<Framework, $this>
      */
-    public function frameworks(): BelongsToMany
+    public function framework(): BelongsTo
     {
-        return $this->belongsToMany(Framework::class);
-    }
-
-    /**
-     * Get the total number of requirements across all frameworks in the project.
-     *
-     * @return int
-     */
-    public function getTotalRequirementsAttribute(): int
-    {
-        return $this->frameworks->sum(function ($framework) {
-            return $framework->requirements->count();
-        });
-    }
-
-    /**
-     * Get the total number of controls across all frameworks in the project.
-     *
-     * @return int
-     */
-    public function getTotalControlsAttribute(): int
-    {
-        return $this->frameworks->sum(function ($framework) {
-            return $framework->controls->count();
-        });
+        return $this->belongsTo(Framework::class);
     }
 }

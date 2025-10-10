@@ -1,0 +1,158 @@
+<?php
+
+namespace Tests\Feature\Controllers\User;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
+use App\Models\User;
+use App\Models\UseCase;
+use App\Enums\UseCase\Status;
+use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\RegulatoryScope;
+use App\Enums\UseCase\RiskLevel;
+use Tests\TestCase;
+
+class UseCaseControllerTest extends TestCase
+{
+    use RefreshDatabase, WithFaker;
+
+    public function test_user_can_get_use_cases(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        UseCase::factory()->count(3)->create();
+
+        $response = $this->getJson('/api/use-cases?per_page=2');
+        $response->assertOk();
+        $response->assertJsonCount(2, 'data.data');
+    }
+
+    public function test_user_can_create_use_case(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $data = [
+            'title' => 'New Use Case',
+            'description' => 'Description of the new use case',
+            'status' => Status::IN_DEVELOPMENT,
+            'business_domain' => 'IT',
+            'business_owner_email' => 'owner@example.com',
+            'technical_owner_email' => 'tech@example.com',
+            'regulatory_scope' => [RegulatoryScope::GDPR, RegulatoryScope::CCPA],
+            'data_sensitivity' => DataSensitivity::CONFIDENTIAL,
+            'go_live_date' => now()->addMonth(),
+            'expected_roi' => 20.5,
+            'implementation_cost' => 10000,
+            'reduction_in_time' => 30.0,
+            'reduction_in_cost' => 5000,
+            'increase_in_revenue' => 10000,
+            'risk_avoidance' => 2000,
+            'fte_capacity_saved' => 1,
+            'use_case_type' => 'Automation',
+            'value_driver' => 'Efficiency',
+            'risk_level' => RiskLevel::MEDIUM,
+            'overall_risk_score' => 5,
+            'human_oversight_mode' => 'Manual',
+            'dpia' => true,
+            'aia' => false,
+            'data_availability_status' => 'Available',
+            'data_readiness_level' => 'Ready',
+            'data_freshness' => 'Fresh',
+        ];
+
+
+        $response = $this->postJson('/api/use-cases', $data);
+        $response->assertCreated();
+
+        $response->assertJsonFragment([
+            'error' => false,
+            'message' => 'Use Case created successfully',
+        ]);
+
+        $this->assertDatabaseHas('use_cases', [
+            'title' => 'New Use Case',
+            'description' => 'Description of the new use case',
+            'status' => Status::IN_DEVELOPMENT,
+        ]);
+    }
+
+    public function test_user_can_get_specific_use_case(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $useCase = UseCase::factory()->create([
+            'title' => 'Specific Use Case',
+            'description' => 'Details of the specific use case.',
+            'status' => 'active',
+        ]);
+
+        $response = $this->getJson("/api/use-cases/{$useCase->id}");
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'id' => $useCase->id,
+            'title' => 'Specific Use Case',
+            'description' => 'Details of the specific use case.',
+            'status' => 'active',
+            'error' => false,
+            'message' => 'Use Case retrieved successfully',
+        ]);
+    }
+
+    public function test_user_can_not_create_use_case_with_duplicate_regulatory_scope(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $data = [
+            'title' => 'Use Case with Duplicate Scopes',
+            'description' => 'This use case has duplicate regulatory scopes.',
+            'status' => Status::IN_DEVELOPMENT->value,
+            'business_domain' => 'IT',
+            'business_owner_email' => 'owner@example.com',
+            'technical_owner_email' => 'tech@example.com',
+            'regulatory_scope' => [RegulatoryScope::GDPR->value, RegulatoryScope::CCPA->value, RegulatoryScope::GDPR->value], // Duplicate GDPR
+            'data_sensitivity' => DataSensitivity::CONFIDENTIAL->value,
+            'go_live_date' => now()->addMonth(),
+            'expected_roi' => 20.5,
+            'implementation_cost' => 10000,
+            'reduction_in_time' => 30.0,
+            'reduction_in_cost' => 5000,
+            'increase_in_revenue' => 10000,
+            'risk_avoidance' => 2000,
+            'fte_capacity_saved' => 1,
+            'use_case_type' => 'Automation',
+            'value_driver' => 'Efficiency',
+            'risk_level' => RiskLevel::MEDIUM->value,
+            'overall_risk_score' => 5,
+            'human_oversight_mode' => 'Manual',
+            'dpia' => true,
+            'aia' => false,
+            'data_availability_status' => 'Available',
+            'data_readiness_level' => 'Ready',
+            'data_freshness' => 'Fresh',
+        ];
+
+        $response = $this->postJson('/api/use-cases', $data);
+        $response->assertUnprocessable();
+
+        // Check that validation errors exist for duplicate values
+        $response->assertJsonValidationErrors(['regulatory_scope.0', 'regulatory_scope.2']);
+
+        // Check that the response contains validation errors structure
+        $response->assertJsonStructure([
+            'message',
+            'errors' => [
+                'regulatory_scope.0',
+                'regulatory_scope.2'
+            ]
+        ]);
+
+        // Ensure no record was created in the database
+        $this->assertDatabaseMissing('use_cases', [
+            'title' => 'Use Case with Duplicate Scopes',
+        ]);
+    }
+}

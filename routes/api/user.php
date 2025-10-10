@@ -10,8 +10,10 @@ use App\Http\Controllers\User\FrameworkController;
 use App\Http\Controllers\User\MemberController;
 use App\Http\Controllers\User\OrganizationController;
 use App\Http\Controllers\User\AiController;
-use App\Http\Controllers\User\AiModelVersionController;
 use App\Http\Controllers\User\ProjectController;
+use App\Http\Controllers\User\AiModelVersionController;
+use App\Http\Controllers\User\UseCaseController;
+use App\Http\Controllers\User\AiModelCardController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -51,7 +53,7 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store');
         Route::get('{project}', 'show');
         Route::post('{project}/add-member', 'addMember')->can('addMember', 'project');
-        Route::post('{project}/add-frameworks', 'addFrameworks');
+        Route::post('{project}/add-framework', 'addFramework');
     });
 
     Route::prefix('ai-models')->controller(AiController::class)->group(function () {
@@ -61,8 +63,20 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('ai-model-versions')->controller(AiModelVersionController::class)->group(function () {
+        Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{aiModelVersion}', 'show');
         Route::post('{aiModelVersion}', 'update');
+    });
+
+    Route::prefix('ai-model-cards')->controller(AiModelCardController::class)->group(function () {
+        Route::post('', 'store');
+        Route::post('{aiModelCard}', 'update');
+    });
+
+    Route::prefix('use-cases')->controller(UseCaseController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{useCase}', 'show');
     });
 });

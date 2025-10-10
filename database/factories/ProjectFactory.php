@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\GovernancePillar;
+use App\Models\Framework;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,7 @@ class ProjectFactory extends Factory
     {
         return [
             'name' => $this->faker->sentence(3),
+            'framework_id' => Framework::factory(),
             'description' => $this->faker->paragraph,
             'governance_pillar' => $this->faker->randomElement(GovernancePillar::cases()),
             'progress' => $this->faker->numberBetween(0, 100),
