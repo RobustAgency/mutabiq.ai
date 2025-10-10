@@ -13,7 +13,7 @@ class AiModelVersionRepository
      * @param array $filters
      * @return \Illuminate\Database\Eloquent\Collection<int, AiModelVersion>
      */
-    public function getAllAiModelVersions(array $filters = []): Collection
+    public function getFilteredAiModelVersions(array $filters = []): Collection
     {
         $query = AiModelVersion::query();
 

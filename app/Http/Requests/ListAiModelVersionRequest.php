@@ -22,7 +22,7 @@ class ListAiModelVersionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_model_id' => 'sometimes|integer|exists:ai_models,id',
+            'ai_model_id' => ['sometimes', 'integer', 'exists:ai_models,id'],
         ];
     }
 }

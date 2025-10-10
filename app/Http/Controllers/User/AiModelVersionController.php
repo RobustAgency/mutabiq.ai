@@ -18,7 +18,7 @@ class AiModelVersionController extends Controller
     public function index(ListAiModelVersionRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $aiModelVersions = $this->aiModelVersionRepository->getAllAiModelVersions($validated);
+        $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions($validated);
 
         return response()->json([
             'error' => false,
@@ -41,9 +41,6 @@ class AiModelVersionController extends Controller
 
     public function show(AiModelVersion $aiModelVersion): JsonResponse
     {
-        $aiModelVersionID = $aiModelVersion->id;
-        $aiModelVersion = $this->aiModelVersionRepository->getAiModelVersionByID($aiModelVersionID);
-
         return response()->json([
             'error' => false,
             'message' => 'AI Model Version retrieved successfully',
