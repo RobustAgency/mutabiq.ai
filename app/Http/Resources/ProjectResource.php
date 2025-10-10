@@ -18,17 +18,7 @@ class ProjectResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $framework = $this->framework;
-
-        $totalRequirements = 0;
-        $totalControls = 0;
-
-        if ($framework) {
-            $totalRequirements = $framework->requirements_count
-                ?? ($framework->relationLoaded('requirements') ? $framework->requirements->count() : 0);
-            $totalControls = $framework->controls_count
-                ?? ($framework->relationLoaded('controls') ? $framework->controls->count() : 0);
-        }
+        $frameworkCounts = $this->getFrameworkCounts();
 
         return [
             'id' => $this->id,
@@ -38,10 +28,38 @@ class ProjectResource extends JsonResource
             'progress' => $this->progress,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
-            'total_requirements' => $totalRequirements,
-            'total_controls' => $totalControls,
+            'total_requirements' => $frameworkCounts['requirements'],
+            'total_controls' => $frameworkCounts['controls'],
             'users' => ProjectMemberResource::collection($this->whenLoaded('users')),
-            'framework' => $framework ? new FrameworkResource($this->whenLoaded('framework')) : null,
+            'framework' => $this->framework ? new FrameworkResource($this->whenLoaded('framework')) : null,
+        ];
+    }
+
+    /**
+     * Get the framework requirements and controls counts.
+     *
+     * @return array<string, int>
+     */
+    private function getFrameworkCounts(): array
+    {
+        $framework = $this->framework;
+
+        if (!$framework) {
+            return [
+                'requirements' => 0,
+                'controls' => 0,
+            ];
+        }
+
+        $requirements = $framework->requirements_count
+            ?? ($framework->relationLoaded('requirements') ? $framework->requirements->count() : 0);
+
+        $controls = $framework->controls_count
+            ?? ($framework->relationLoaded('controls') ? $framework->controls->count() : 0);
+
+        return [
+            'requirements' => $requirements,
+            'controls' => $controls,
         ];
     }
 }
