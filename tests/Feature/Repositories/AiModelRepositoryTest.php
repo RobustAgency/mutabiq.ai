@@ -26,7 +26,7 @@ class AiModelRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->aiModelRepository = app(AiModelRepository::class); // ensure it is bound or exists
+        $this->aiModelRepository = app(AiModelRepository::class);
     }
 
     private function enumFirstValue(string $enumClass): string
@@ -87,7 +87,6 @@ class AiModelRepositoryTest extends TestCase
 
         $this->assertCount(4, $results);
         $this->assertEquals($organization->id, $results->first()->organization_id);
-
     }
 
     public function test_it_can_get_the_ai_model_by_id()
