@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Framework;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class FrameworkRepository
 {
@@ -43,7 +44,7 @@ class FrameworkRepository
      * Get available frameworks for user with optional filters.
      * 
      * @param array $filters
-     * @return \Illuminate\Pagination\LengthAwarePaginator<int, Framework>
+     * @return \Illuminate\Database\Eloquent\Collection<int, Framework>
      */
     public function getPublishedFrameworks(array $filters = []): Collection
     {
@@ -61,7 +62,12 @@ class FrameworkRepository
         return Framework::with('media')->withCount('controls', 'requirements')->find($id);
     }
 
-    private function applyFilters($query, array $filters)
+    /**
+     * @param \Illuminate\Database\Eloquent\Builder<\App\Models\Framework> $query
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder<\App\Models\Framework>
+     */
+    private function applyFilters(Builder $query, array $filters): Builder
     {
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%' . $filters['name'] . '%');
