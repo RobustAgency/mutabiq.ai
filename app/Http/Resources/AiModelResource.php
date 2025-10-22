@@ -35,8 +35,8 @@ class AiModelResource extends JsonResource
             'source_organization' => $this->source_organization,
             'current_owner' => $this->current_owner,
             'development_source' => $this->development_source,
-            'created_by' => $this->whenLoaded('createdBy')->name,
-            'updated_by' => $this->whenLoaded('updatedBy')->name,
+            'created_by' => $this->whenLoaded('createdBy', fn() => $this->createdBy?->name),
+            'updated_by' => $this->whenLoaded('updatedBy', fn() => $this->updatedBy?->name),
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];
