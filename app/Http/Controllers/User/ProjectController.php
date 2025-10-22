@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AddFrameworksToProject;
+use App\Http\Requests\AddFrameworkToProject;
 use App\Http\Requests\AddMemberToProjectRequest;
 use App\Http\Requests\SearchProjectsRequest;
 use App\Repositories\ProjectRepository;
@@ -68,16 +68,16 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function addFrameworks(AddFrameworksToProject $request, Project $project): JsonResponse
+    public function addFramework(AddFrameworkToProject $request, Project $project): JsonResponse
     {
         $validated = $request->validated();
 
-        $this->projectRepository->addFrameworksToProject($project, $validated['framework_ids']);
+        $this->projectRepository->addFrameworkToProject($project, $validated['framework_id']);
 
         return response()->json([
             'data' => null,
             'error' => false,
-            'message' => 'Frameworks added to project successfully',
+            'message' => 'Framework added to project successfully',
         ]);
     }
 }

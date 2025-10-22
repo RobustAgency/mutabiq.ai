@@ -26,7 +26,7 @@ class AiModelRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->aiModelRepository = app(AiModelRepository::class); // ensure it is bound or exists
+        $this->aiModelRepository = app(AiModelRepository::class);
     }
 
     private function enumFirstValue(string $enumClass): string
@@ -62,7 +62,7 @@ class AiModelRepositoryTest extends TestCase
         ], $overrides);
     }
 
-    public function test_it_can_creates_an_ai_model()
+    public function test_it_can_creates_an_ai_model(): void
     {
         $payload = $this->validPayload();
 
@@ -75,7 +75,7 @@ class AiModelRepositoryTest extends TestCase
         ]);
     }
 
-    public function test_it_can_get_ai_models_by_organization_id()
+    public function test_it_can_get_ai_models_by_organization_id(): void
     {
         $organization = Organization::factory()->create();
 
@@ -87,10 +87,9 @@ class AiModelRepositoryTest extends TestCase
 
         $this->assertCount(4, $results);
         $this->assertEquals($organization->id, $results->first()->organization_id);
-
     }
 
-    public function test_it_can_get_the_ai_model_by_id()
+    public function test_it_can_get_the_ai_model_by_id(): void
     {
         $aiModel = AiModel::factory()->create();
         $results = $this->aiModelRepository->getAiModelByID($aiModel->id);

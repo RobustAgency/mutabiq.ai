@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AddFrameworksToProject extends FormRequest
+class ListStakeholderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +22,8 @@ class AddFrameworksToProject extends FormRequest
     public function rules(): array
     {
         return [
-            'framework_ids' => ['required', 'array'],
-            'framework_ids.*' => ['exists:frameworks,id'],
+            'type' => ['nullable', 'string'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 }

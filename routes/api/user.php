@@ -14,6 +14,8 @@ use App\Http\Controllers\User\ProjectController;
 use App\Http\Controllers\User\AiModelVersionController;
 use App\Http\Controllers\User\UseCaseController;
 use App\Http\Controllers\User\AiModelUseCaseController;
+use App\Http\Controllers\User\AiModelCardController;
+use App\Http\Controllers\User\StakeholderController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -53,7 +55,7 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store');
         Route::get('{project}', 'show');
         Route::post('{project}/add-member', 'addMember')->can('addMember', 'project');
-        Route::post('{project}/add-frameworks', 'addFrameworks');
+        Route::post('{project}/add-framework', 'addFramework');
     });
 
     Route::prefix('ai-models')->controller(AiController::class)->group(function () {
@@ -63,9 +65,15 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('ai-model-versions')->controller(AiModelVersionController::class)->group(function () {
+        Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{aiModelVersion}', 'show');
         Route::post('{aiModelVersion}', 'update');
+    });
+
+    Route::prefix('ai-model-cards')->controller(AiModelCardController::class)->group(function () {
+        Route::post('', 'store');
+        Route::post('{aiModelCard}', 'update');
     });
 
     Route::prefix('use-cases')->controller(UseCaseController::class)->group(function () {
@@ -80,5 +88,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{aiModelUseCase}', 'show');
         Route::post('{aiModelUseCase}', 'update');
         Route::delete('{aiModelUseCase}', 'destroy');
+    });
+
+    Route::prefix('stakeholders')->controller(StakeholderController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{stakeholder}', 'show');
+        Route::post('{stakeholder}', 'update');
+        Route::delete('{stakeholder}', 'destroy');
     });
 });
