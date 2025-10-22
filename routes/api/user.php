@@ -14,6 +14,7 @@ use App\Http\Controllers\User\ProjectController;
 use App\Http\Controllers\User\AiModelVersionController;
 use App\Http\Controllers\User\UseCaseController;
 use App\Http\Controllers\User\AiModelCardController;
+use App\Http\Controllers\User\StakeholderController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -78,5 +79,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{useCase}', 'show');
+    });
+
+    Route::prefix('stakeholders')->controller(StakeholderController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{stakeholder}', 'show');
+        Route::post('{stakeholder}', 'update');
+        Route::delete('{stakeholder}', 'destroy');
     });
 });
