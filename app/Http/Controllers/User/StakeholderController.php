@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ListStakeholderRequest;
 use App\Http\Requests\StoreStakeholderRequest;
 use App\Models\Stakeholder;
 use App\Repositories\StakeholderRepository;
@@ -12,12 +13,16 @@ class StakeholderController extends Controller
 {
     public function __construct(private StakeholderRepository $stakeholderRepository) {}
 
-    public function index(): JsonResponse
+    public function index(ListStakeholderRequest $request): JsonResponse
     {
-        $filters = request()->only(['type', 'per_page']);
+        $filters = $request->validated();
         $stakeholders = $this->stakeholderRepository->getFilteredStakeholders($filters);
 
-        return response()->json($stakeholders);
+        return response()->json([
+            'error' => false,
+            'message' => 'Stakeholders retrieved successfully.',
+            'data' => $stakeholders,
+        ]);
     }
 
     public function store(StoreStakeholderRequest $request): JsonResponse
@@ -32,6 +37,15 @@ class StakeholderController extends Controller
         ]);
     }
 
+    public function show(Stakeholder $stakeholder): JsonResponse
+    {
+        return response()->json([
+            'error' => false,
+            'message' => 'Stakeholder retrieved successfully.',
+            'data' => $stakeholder,
+        ]);
+    }
+
     public function update(StoreStakeholderRequest $request, Stakeholder $stakeholder): JsonResponse
     {
         $validated = $request->validated();
@@ -40,6 +54,17 @@ class StakeholderController extends Controller
         return response()->json([
             'error' => false,
             'message' => 'Stakeholder updated successfully.',
+            'data' => null,
+        ]);
+    }
+
+    public function destroy(Stakeholder $stakeholder): JsonResponse
+    {
+        $stakeholder->delete();
+
+        return response()->json([
+            'error' => false,
+            'message' => 'Stakeholder deleted successfully.',
             'data' => null,
         ]);
     }
