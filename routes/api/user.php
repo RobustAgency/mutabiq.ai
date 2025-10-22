@@ -13,6 +13,7 @@ use App\Http\Controllers\User\AiController;
 use App\Http\Controllers\User\ProjectController;
 use App\Http\Controllers\User\AiModelVersionController;
 use App\Http\Controllers\User\UseCaseController;
+use App\Http\Controllers\User\AiModelUseCaseController;
 use App\Http\Controllers\User\AiModelCardController;
 use App\Http\Controllers\User\StakeholderController;
 
@@ -79,6 +80,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{useCase}', 'show');
+    });
+
+    Route::prefix('ai-model-use-cases')->controller(AiModelUseCaseController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiModelUseCase}', 'show');
+        Route::post('{aiModelUseCase}', 'update');
+        Route::delete('{aiModelUseCase}', 'destroy');
     });
 
     Route::prefix('stakeholders')->controller(StakeholderController::class)->group(function () {
