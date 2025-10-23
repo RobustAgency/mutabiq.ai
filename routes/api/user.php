@@ -17,6 +17,7 @@ use App\Http\Controllers\User\AiModelUseCaseController;
 use App\Http\Controllers\User\AiModelCardController;
 use App\Http\Controllers\User\StakeholderController;
 use App\Http\Controllers\User\DataSourceController;
+use App\Http\Controllers\User\DatasetController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -105,5 +106,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{dataSource}', 'show');
         Route::post('{dataSource}', 'update');
         Route::delete('{dataSource}', 'destroy');
+    });
+
+    Route::prefix('datasets')->controller(DatasetController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{dataset}', 'show');
+        Route::post('{dataset}', 'update');
+        Route::delete('{dataset}', 'destroy');
     });
 });
