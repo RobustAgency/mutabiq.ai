@@ -15,7 +15,8 @@ class DatasetRepository
      */
     public function getPaginatedDatasets(int $perPage = 15): LengthAwarePaginator
     {
-        return Dataset::paginate($perPage);
+        $query = Dataset::with(['dataElements']);
+        return $query->paginate($perPage);
     }
 
     /**
