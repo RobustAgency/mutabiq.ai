@@ -20,6 +20,7 @@ use App\Http\Controllers\User\DataSourceController;
 use App\Http\Controllers\User\DatasetController;
 use App\Http\Controllers\User\DataElementController;
 use App\Http\Controllers\User\DatasetElementController;
+use App\Http\Controllers\User\DatasetSnapshotController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -128,5 +129,13 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix(('associate-data-element-with-dataset'))->controller(DatasetElementController::class)->group(function () {
         Route::post('', 'store');
+    });
+
+    Route::prefix('dataset-snapshots')->controller(DatasetSnapshotController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{datasetSnapshot}', 'show');
+        Route::post('{datasetSnapshot}', 'update');
+        Route::delete('{datasetSnapshot}', 'destroy');
     });
 });
