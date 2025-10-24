@@ -21,6 +21,7 @@ use App\Http\Controllers\User\DatasetController;
 use App\Http\Controllers\User\DataElementController;
 use App\Http\Controllers\User\DatasetElementController;
 use App\Http\Controllers\User\DatasetSnapshotController;
+use App\Http\Controllers\User\AiModelDatasetController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -137,5 +138,9 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{datasetSnapshot}', 'show');
         Route::post('{datasetSnapshot}', 'update');
         Route::delete('{datasetSnapshot}', 'destroy');
+    });
+
+    Route::prefix('ai-model-datasets')->controller(AiModelDatasetController::class)->group(function () {
+        Route::post('', 'store');
     });
 });
