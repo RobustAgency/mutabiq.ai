@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dataset extends Model
 {
@@ -73,5 +74,15 @@ class Dataset extends Model
                 'deprecated',
             ])
             ->withTimestamps();
+    }
+
+    /**
+     * Get the snapshots for the dataset.
+     *
+     * @return HasMany<DatasetSnapshot, $this>
+     */
+    public function snapshots(): HasMany
+    {
+        return $this->hasMany(DatasetSnapshot::class);
     }
 }
