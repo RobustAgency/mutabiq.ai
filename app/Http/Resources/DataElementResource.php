@@ -2,15 +2,14 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin Dataset
+ * @mixin \App\Models\DataElement
  * @property mixed $pivot
  */
-class DatasetResource extends JsonResource
+class DataElementResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,35 +21,21 @@ class DatasetResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'source_ids' => $this->source_ids,
-            'purpose' => $this->purpose,
-            'schema_summary' => $this->schema_summary,
+            'business_definition' => $this->business_definition,
+            'data_type' => $this->data_type,
+            'format' => $this->format,
             'sensitivity' => $this->sensitivity,
-            'contains_pii' => $this->contains_pii,
-            'data_subject_categories' => $this->data_subject_categories,
-            'controller_role' => $this->controller_role,
-            'lawful_basis' => $this->lawful_basis,
-            'lawful_basis_detail' => $this->lawful_basis_detail,
-            'consent_required' => $this->consent_required,
-            'consent_coverage_pct' => $this->consent_coverage_pct,
-            'consent_source_ref' => $this->consent_source_ref,
-            'licensing_basis' => $this->licensing_basis,
-            'license_type' => $this->license_type,
-            'privacy_notice_ref' => $this->privacy_notice_ref,
-            'cross_border_transfer' => $this->cross_border_transfer,
-            'data_structure' => $this->data_structure,
-            'storage_format' => $this->storage_format,
-            'content_types' => $this->content_types,
-            'retention_policy_ref' => $this->retention_policy_ref,
-            'dpia_ref' => $this->dpia_ref,
-            'aia_ref' => $this->aia_ref,
+            'pii_flag' => $this->pii_flag,
+            'personal_data_category' => $this->personal_data_category,
+            'special_category_flag' => $this->special_category_flag,
+            'cde_flag' => $this->cde_flag,
+            'cde_category' => $this->cde_category,
             'owner_team' => $this->owner_team,
-            'refresh_cadence' => $this->refresh_cadence,
-            'quality_SLA' => $this->quality_SLA,
-            'catalog_asset_id' => $this->catalog_asset_id,
-            'catalog_uri' => $this->catalog_uri,
+            'quality_rules_ref' => $this->quality_rules_ref,
+            'catalog_column_id' => $this->catalog_column_id,
             'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
+            'datasets' => DatasetResource::collection($this->whenLoaded('datasets')),
             'pivot' => $this->whenPivotLoaded('dataset_element', function () {
                 $pivot = $this->pivot;
                 return [

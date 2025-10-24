@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Models\DataElement;
+use App\Models\DatasetDataElement;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+
+class DataElementRepository
+{
+    /**
+     * Get paginated data elements.
+     * @param int $perPage
+     * @return LengthAwarePaginator<int, DataElement>
+     */
+    public function getPaginatedDataElements(int $perPage = 15): LengthAwarePaginator
+    {
+        $query = DataElement::query()->with('datasets');
+        return $query->paginate($perPage);
+    }
+
+    public function createDataElement(array $data): DataElement
+    {
+        return DataElement::create($data);
+    }
+
+    public function getDataElementByID(int $id): ?DataElement
+    {
+        $query = DataElement::with('datasets');
+        return $query->find($id);
+    }
+
+    public function updateDataElement(DataElement $dataElement, array $data): DataElement
+    {
+        $dataElement->update($data);
+
+        return $dataElement->fresh();
+    }
+
+    public function delete(DataElement $dataElement): bool
+    {
+        return $dataElement->delete() ?? false;
+    }
+
+    public function associateDataElementWithDataset(array $data): DatasetDataElement
+    {
+        return DatasetDataElement::create($data);
+    }
+}

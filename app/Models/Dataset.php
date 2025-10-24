@@ -4,13 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Dataset extends Model
 {
-    /**
-     * @method static \Database\Factories\DatasetFactory factory(...$parameters)
-     * @use \Illuminate\Database\Eloquent\Factories\HasFactory<\Database\Factories\DatasetFactory>
-     */
+    /** @use HasFactory<\Database\Factories\DatasetFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -54,5 +52,26 @@ class Dataset extends Model
             'consent_required' => 'boolean',
             'consent_coverage_pct' => 'integer',
         ];
+    }
+
+    /**
+     * @return BelongsToMany<DataElement, $this>
+     */
+    public function dataElements(): BelongsToMany
+    {
+        return $this->belongsToMany(DataElement::class, 'dataset_element')
+            ->withPivot([
+                'column_name',
+                'nullable',
+                'sensitivity_override',
+                'pii_override',
+                'transform_applied',
+                'quality_rules_applied',
+                'cde_in_dataset',
+                'cde_category_in_dataset',
+                'lineage_source_column',
+                'deprecated',
+            ])
+            ->withTimestamps();
     }
 }
