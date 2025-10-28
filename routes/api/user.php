@@ -29,6 +29,7 @@ use App\Http\Controllers\User\DatasetSubjectPopulationController;
 use App\Http\Controllers\User\PdpProcessingRegisterController;
 use App\Http\Controllers\User\VendorController;
 use App\Http\Controllers\User\AgreementController;
+use App\Http\Controllers\User\AiAssetController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -205,5 +206,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{agreement}', 'show');
         Route::post('{agreement}', 'update');
         Route::delete('{agreement}', 'destroy');
+    });
+
+    Route::prefix('ai-assets')->controller(AiAssetController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiAsset}', 'show');
+        Route::post('{aiAsset}', 'update');
+        Route::delete('{aiAsset}', 'destroy');
     });
 });
