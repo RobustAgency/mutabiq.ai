@@ -18,6 +18,18 @@ use App\Http\Controllers\User\AiModelCardController;
 use App\Http\Controllers\User\StakeholderController;
 use App\Http\Controllers\User\DataSourceController;
 use App\Http\Controllers\User\DatasetController;
+use App\Http\Controllers\User\DataElementController;
+use App\Http\Controllers\User\DatasetElementController;
+use App\Http\Controllers\User\DatasetSnapshotController;
+use App\Http\Controllers\User\AiModelDatasetController;
+use App\Http\Controllers\User\UserConsentController;
+use App\Http\Controllers\User\ConsentScopeController;
+use App\Http\Controllers\User\ConsentCoverageController;
+use App\Http\Controllers\User\DatasetSubjectPopulationController;
+use App\Http\Controllers\User\PdpProcessingRegisterController;
+use App\Http\Controllers\User\VendorController;
+use App\Http\Controllers\User\AgreementController;
+use App\Http\Controllers\User\AiAssetController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -114,5 +126,93 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{dataset}', 'show');
         Route::post('{dataset}', 'update');
         Route::delete('{dataset}', 'destroy');
+    });
+
+    Route::prefix('data-elements')->controller(DataElementController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{dataElement}', 'show');
+        Route::post('{dataElement}', 'update');
+        Route::delete('{dataElement}', 'destroy');
+    });
+
+    Route::prefix(('associate-data-element-with-dataset'))->controller(DatasetElementController::class)->group(function () {
+        Route::post('', 'store');
+    });
+
+    Route::prefix('dataset-snapshots')->controller(DatasetSnapshotController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{datasetSnapshot}', 'show');
+        Route::post('{datasetSnapshot}', 'update');
+        Route::delete('{datasetSnapshot}', 'destroy');
+    });
+
+    Route::prefix('ai-model-datasets')->controller(AiModelDatasetController::class)->group(function () {
+        Route::post('', 'store');
+    });
+
+    Route::prefix('user-consents')->controller(UserConsentController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{userConsent}', 'show');
+        Route::put('{userConsent}', 'update');
+        Route::delete('{userConsent}', 'destroy');
+    });
+
+    Route::prefix('consent-scopes')->controller(ConsentScopeController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{consentScope}', 'show');
+        Route::put('{consentScope}', 'update');
+        Route::delete('{consentScope}', 'destroy');
+    });
+
+    Route::prefix('consent-coverages')->controller(ConsentCoverageController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{consentCoverage}', 'show');
+        Route::post('{consentCoverage}', 'update');
+        Route::delete('{consentCoverage}', 'destroy');
+    });
+
+    Route::prefix('dataset-subject-populations')->controller(DatasetSubjectPopulationController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{datasetSubjectPopulation}', 'show');
+        Route::post('{datasetSubjectPopulation}', 'update');
+        Route::delete('{datasetSubjectPopulation}', 'destroy');
+    });
+
+    Route::prefix('pdp-processing-registers')->controller(PdpProcessingRegisterController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{pdpProcessingRegister}', 'show');
+        Route::post('{pdpProcessingRegister}', 'update');
+        Route::delete('{pdpProcessingRegister}', 'destroy');
+    });
+
+    Route::prefix('vendors')->controller(VendorController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{vendor}', 'show');
+        Route::post('{vendor}', 'update');
+        Route::delete('{vendor}', 'destroy');
+    });
+
+    Route::prefix('agreements')->controller(AgreementController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{agreement}', 'show');
+        Route::post('{agreement}', 'update');
+        Route::delete('{agreement}', 'destroy');
+    });
+
+    Route::prefix('ai-assets')->controller(AiAssetController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiAsset}', 'show');
+        Route::post('{aiAsset}', 'update');
+        Route::delete('{aiAsset}', 'destroy');
     });
 });

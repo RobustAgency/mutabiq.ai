@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class DatasetSnapshot extends Model
+{
+    /** @use HasFactory<\Database\Factories\DatasetSnapshotFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'dataset_id',
+        'version_tag',
+        'time_range_start',
+        'time_range_end',
+        'row_count',
+        'quality_checksums',
+        'pii_element_count',
+        'special_category_element_count',
+        'masking_anonymization_method',
+        'privacy_transform_evidence_ref',
+        'residency_zone',
+        'storage_uri',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'time_range_start' => 'datetime',
+            'time_range_end' => 'datetime',
+            'row_count' => 'integer',
+            'pii_element_count' => 'integer',
+            'special_category_element_count' => 'integer',
+        ];
+    }
+
+    /**
+     * Get the dataset that owns the snapshot.
+     *
+     * @return BelongsTo<Dataset, $this>
+     */
+    public function dataset(): BelongsTo
+    {
+        return $this->belongsTo(Dataset::class);
+    }
+}

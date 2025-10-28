@@ -8,6 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin Dataset
+ * @property mixed $pivot
  */
 class DatasetResource extends JsonResource
 {
@@ -49,7 +50,24 @@ class DatasetResource extends JsonResource
             'catalog_asset_id' => $this->catalog_asset_id,
             'catalog_uri' => $this->catalog_uri,
             'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at->toDateTimeString(),
+            'pivot' => $this->whenPivotLoaded('dataset_element', function () {
+                $pivot = $this->pivot;
+                return [
+                    'dataset_id' => $pivot->dataset_id,
+                    'data_element_id' => $pivot->data_element_id,
+                    'column_name' => $pivot->column_name,
+                    'nullable' => $pivot->nullable,
+                    'sensitivity_override' => $pivot->sensitivity_override,
+                    'pii_override' => $pivot->pii_override,
+                    'transform_applied' => $pivot->transform_applied,
+                    'quality_rules_applied' => $pivot->quality_rules_applied,
+                    'cde_in_dataset' => $pivot->cde_in_dataset,
+                    'cde_category_in_dataset' => $pivot->cde_category_in_dataset,
+                    'lineage_source_column' => $pivot->lineage_source_column,
+                    'deprecated' => $pivot->deprecated,
+                ];
+            }),
         ];
     }
 }
