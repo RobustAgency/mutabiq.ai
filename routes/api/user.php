@@ -26,6 +26,7 @@ use App\Http\Controllers\User\UserConsentController;
 use App\Http\Controllers\User\ConsentScopeController;
 use App\Http\Controllers\User\ConsentCoverageController;
 use App\Http\Controllers\User\DatasetSubjectPopulationController;
+use App\Http\Controllers\User\PdpProcessingRegisterController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -178,5 +179,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{datasetSubjectPopulation}', 'show');
         Route::post('{datasetSubjectPopulation}', 'update');
         Route::delete('{datasetSubjectPopulation}', 'destroy');
+    });
+
+    Route::prefix('pdp-processing-registers')->controller(PdpProcessingRegisterController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{pdpProcessingRegister}', 'show');
+        Route::post('{pdpProcessingRegister}', 'update');
+        Route::delete('{pdpProcessingRegister}', 'destroy');
     });
 });
