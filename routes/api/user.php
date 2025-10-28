@@ -22,6 +22,7 @@ use App\Http\Controllers\User\DataElementController;
 use App\Http\Controllers\User\DatasetElementController;
 use App\Http\Controllers\User\DatasetSnapshotController;
 use App\Http\Controllers\User\AiModelDatasetController;
+use App\Http\Controllers\User\UserConsentController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -142,5 +143,13 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('ai-model-datasets')->controller(AiModelDatasetController::class)->group(function () {
         Route::post('', 'store');
+    });
+
+    Route::prefix('user-consents')->controller(UserConsentController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{userConsent}', 'show');
+        Route::put('{userConsent}', 'update');
+        Route::delete('{userConsent}', 'destroy');
     });
 });
