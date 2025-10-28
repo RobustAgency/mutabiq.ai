@@ -25,6 +25,7 @@ use App\Http\Controllers\User\AiModelDatasetController;
 use App\Http\Controllers\User\UserConsentController;
 use App\Http\Controllers\User\ConsentScopeController;
 use App\Http\Controllers\User\ConsentCoverageController;
+use App\Http\Controllers\User\DatasetSubjectPopulationController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -169,5 +170,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{consentCoverage}', 'show');
         Route::post('{consentCoverage}', 'update');
         Route::delete('{consentCoverage}', 'destroy');
+    });
+
+    Route::prefix('dataset-subject-populations')->controller(DatasetSubjectPopulationController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{datasetSubjectPopulation}', 'show');
+        Route::post('{datasetSubjectPopulation}', 'update');
+        Route::delete('{datasetSubjectPopulation}', 'destroy');
     });
 });
