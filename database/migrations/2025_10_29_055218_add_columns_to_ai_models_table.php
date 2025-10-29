@@ -13,11 +13,33 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Step 1: Make the old column nullable (in case it’s NOT NULL)
+        Schema::table('ai_models', function (Blueprint $table) {
+            $table->string('source_organization')->nullable()->change();
+        });
+
+        // Step 2: Drop the old column
         Schema::table('ai_models', function (Blueprint $table) {
             $table->dropColumn('source_organization');
-            $table->foreignIdFor(Stakeholder::class, 'source_organization_id')->constrained('stakeholders')->cascadeOnDelete()->after('description');
-            $table->foreignIdFor(Stakeholder::class, 'custodian_id')->constrained('stakeholders')->cascadeOnDelete()->after('source_organization_id');
-            $table->foreignIdFor(Vendor::class)->nullable()->constrained('vendors')->onDelete('set null')->after('custodian_id');
+        });
+
+        // Step 3: Add the new foreign key columns
+        Schema::table('ai_models', function (Blueprint $table) {
+            $table->foreignIdFor(Stakeholder::class, 'source_organization_id')
+                ->constrained('stakeholders')
+                ->cascadeOnDelete()
+                ->after('description');
+
+            $table->foreignIdFor(Stakeholder::class, 'custodian_id')
+                ->constrained('stakeholders')
+                ->cascadeOnDelete()
+                ->after('source_organization_id');
+
+            $table->foreignIdFor(Vendor::class)
+                ->nullable()
+                ->constrained('vendors')
+                ->nullOnDelete()
+                ->after('custodian_id');
         });
     }
 
@@ -27,13 +49,18 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ai_models', function (Blueprint $table) {
-            $table->string('source_organization')->after('description');
+            // Drop new foreign keys and columns
             $table->dropForeign(['source_organization_id']);
             $table->dropColumn('source_organization_id');
+
             $table->dropForeign(['custodian_id']);
             $table->dropColumn('custodian_id');
+
             $table->dropForeign(['vendor_id']);
             $table->dropColumn('vendor_id');
+
+            // Restore the original column
+            $table->string('source_organization')->after('description');
         });
     }
 };
