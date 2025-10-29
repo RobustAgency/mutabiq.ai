@@ -35,6 +35,7 @@ use App\Http\Controllers\IncidentAlertController;
 use App\Http\Controllers\IncidentActionController;
 use App\Http\Controllers\IncidentRootCauseAnalysisController;
 use App\Http\Controllers\IncidentNotificationController;
+use App\Http\Controllers\CorrectivePreventiveActionController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -259,5 +260,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{incidentNotification}', 'show');
         Route::post('{incidentNotification}', 'update');
         Route::delete('{incidentNotification}', 'destroy');
+    });
+
+    Route::prefix('corrective-preventive-actions')->controller(CorrectivePreventiveActionController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{correctivePreventiveAction}', 'show');
+        Route::post('{correctivePreventiveAction}', 'update');
+        Route::delete('{correctivePreventiveAction}', 'destroy');
     });
 });
