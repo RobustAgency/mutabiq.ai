@@ -29,6 +29,7 @@ return new class extends Migration
 
             if (!Schema::hasColumn('ai_models', 'custodian_id')) {
                 $table->foreignIdFor(Stakeholder::class, 'custodian_id')
+                    ->nullable()
                     ->constrained('stakeholders')
                     ->cascadeOnDelete()
                     ->after('source_organization_id');
