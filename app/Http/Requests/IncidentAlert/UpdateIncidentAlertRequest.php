@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\IncidentAlert;
 
-use App\Enums\AlertSourceType;
+use App\Enums\IncidentAlert\AlertSourceType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Enums\ImpactedDataType;
-use App\Enums\IncidentCategory;
-use App\Enums\IncidentSeverity;
-use App\Enums\IncidentStage;
-use App\Enums\IncidentStatus;
+use App\Enums\AiIncident\ImpactedDataType;
+use App\Enums\AiIncident\IncidentCategory;
+use App\Enums\AiIncident\IncidentSeverity;
+use App\Enums\AiIncident\IncidentStage;
+use App\Enums\AiIncident\IncidentStatus;
 use App\Models\AiIncident;
 use App\Models\AiModel;
 use App\Models\AiModelVersion;

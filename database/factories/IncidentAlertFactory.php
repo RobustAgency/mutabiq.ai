@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\AiIncident;
-use App\Enums\AlertSourceType;
+use App\Enums\IncidentAlert\AlertSourceType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

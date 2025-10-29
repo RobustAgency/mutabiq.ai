@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\AiIncident;
 
-use App\Enums\IncidentCategory;
-use App\Enums\IncidentSeverity;
-use App\Enums\IncidentStage;
-use App\Enums\IncidentStatus;
+use App\Enums\AiIncident\IncidentCategory;
+use App\Enums\AiIncident\IncidentSeverity;
+use App\Enums\AiIncident\IncidentStage;
+use App\Enums\AiIncident\IncidentStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

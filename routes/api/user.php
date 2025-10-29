@@ -32,6 +32,7 @@ use App\Http\Controllers\User\AgreementController;
 use App\Http\Controllers\User\AiAssetController;
 use App\Http\Controllers\User\AiIncidentController;
 use App\Http\Controllers\IncidentAlertController;
+use App\Http\Controllers\IncidentActionController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -232,5 +233,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{incidentAlert}', 'show');
         Route::post('{incidentAlert}', 'update');
         Route::delete('{incidentAlert}', 'destroy');
+    });
+
+    Route::prefix('incident-actions')->controller(IncidentActionController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{incidentAction}', 'show');
+        Route::post('{incidentAction}', 'update');
+        Route::delete('{incidentAction}', 'destroy');
     });
 });
