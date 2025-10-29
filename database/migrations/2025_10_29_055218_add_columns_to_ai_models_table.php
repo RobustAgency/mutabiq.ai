@@ -13,17 +13,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Step 1: Make the old column nullable (in case it’s NOT NULL)
         Schema::table('ai_models', function (Blueprint $table) {
-            $table->string('source_organization')->nullable()->change();
+            if (Schema::hasColumn('ai_models', 'source_organization')) {
+                $table->string('source_organization')->nullable()->change();
+                $table->dropColumn('source_organization');
+            }
         });
 
-        // Step 2: Drop the old column
-        Schema::table('ai_models', function (Blueprint $table) {
-            $table->dropColumn('source_organization');
-        });
-
-        // Step 3: Add the new foreign key columns
         Schema::table('ai_models', function (Blueprint $table) {
             $table->foreignIdFor(Stakeholder::class, 'source_organization_id')
                 ->constrained('stakeholders')
