@@ -30,6 +30,7 @@ use App\Http\Controllers\User\PdpProcessingRegisterController;
 use App\Http\Controllers\User\VendorController;
 use App\Http\Controllers\User\AgreementController;
 use App\Http\Controllers\User\AiAssetController;
+use App\Http\Controllers\User\AiIncidentController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -214,5 +215,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{aiAsset}', 'show');
         Route::post('{aiAsset}', 'update');
         Route::delete('{aiAsset}', 'destroy');
+    });
+
+    Route::prefix('ai-incidents')->controller(AiIncidentController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiIncident}', 'show');
+        Route::post('{aiIncident}', 'update');
+        Route::delete('{aiIncident}', 'destroy');
     });
 });
