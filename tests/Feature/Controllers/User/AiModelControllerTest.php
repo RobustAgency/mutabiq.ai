@@ -14,6 +14,8 @@ use App\Enums\DevelopmentSource;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\AiModel;
+use App\Models\Stakeholder;
+use App\Models\Vendor;
 use Tests\TestCase;
 
 class AiModelControllerTest extends TestCase
@@ -29,9 +31,16 @@ class AiModelControllerTest extends TestCase
 
     protected function validPayload(array $overrides = []): array
     {
+        $sourceOrg = Stakeholder::factory()->create(['type' => 'vendor_org']);
+        $custodian = Stakeholder::factory()->create(['type' => 'person']);
+        $vendor = Vendor::factory()->create();
+
         return array_merge([
             'name' => 'Fraud Detector',
             'description' => 'Detects fraudulent patterns',
+            'source_organization_id' => $sourceOrg->id,
+            'custodian_id' => $custodian->id,
+            'vendor_id' => $vendor->id,
             'primary_category' => $this->enumValue(PrimaryCategory::class),
             'type' => 'classification',
             'domain_specialization' => 'fraud_detection',
@@ -42,7 +51,6 @@ class AiModelControllerTest extends TestCase
             'organizational_role' => $this->enumValue(OrganizationalRole::class),
             'ownership_type' => $this->enumValue(OwnershipType::class),
             'development_source' => $this->enumValue(DevelopmentSource::class),
-            'source_organization' => 'Data Science',
             'current_owner' => 'ml.owner',
         ], $overrides);
     }
@@ -79,7 +87,7 @@ class AiModelControllerTest extends TestCase
 
         $data = $response->json('data');
         $this->assertCount(3, $data);
-        $this->assertTrue(collect($data)->every(fn ($m) => $m['id'] !== null));
+        $this->assertTrue(collect($data)->every(fn($m) => $m['id'] !== null));
     }
 
     public function test_store_fails_without_organization(): void
@@ -155,4 +163,18 @@ class AiModelControllerTest extends TestCase
             ]);
     }
 
+    public function test_user_cannot_create_ai_model_with_person_as_an_organization(): void
+    {
+        $org = Organization::factory()->create();
+        $user = User::factory()->create(['organization_id' => $org->id]);
+
+        $payload = $this->validPayload([
+            'source_organization_id' => Stakeholder::factory()->create(['type' => 'person'])->id,
+        ]);
+
+        $response = $this->actingAs($user)->postJson($this->baseEndpoint, $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['source_organization_id']);
+    }
 }
