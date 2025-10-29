@@ -31,6 +31,10 @@ use App\Http\Controllers\User\VendorController;
 use App\Http\Controllers\User\AgreementController;
 use App\Http\Controllers\User\AiAssetController;
 use App\Http\Controllers\User\AiIncidentController;
+use App\Http\Controllers\IncidentAlertController;
+use App\Http\Controllers\IncidentActionController;
+use App\Http\Controllers\IncidentRootCauseAnalysisController;
+use App\Http\Controllers\IncidentNotificationController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -223,5 +227,37 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{aiIncident}', 'show');
         Route::post('{aiIncident}', 'update');
         Route::delete('{aiIncident}', 'destroy');
+    });
+
+    Route::prefix('incident-alerts')->controller(IncidentAlertController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{incidentAlert}', 'show');
+        Route::post('{incidentAlert}', 'update');
+        Route::delete('{incidentAlert}', 'destroy');
+    });
+
+    Route::prefix('incident-actions')->controller(IncidentActionController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{incidentAction}', 'show');
+        Route::post('{incidentAction}', 'update');
+        Route::delete('{incidentAction}', 'destroy');
+    });
+
+    Route::prefix('incident-root-cause-analyses')->controller(IncidentRootCauseAnalysisController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{incidentRootCauseAnalysis}', 'show');
+        Route::post('{incidentRootCauseAnalysis}', 'update');
+        Route::delete('{incidentRootCauseAnalysis}', 'destroy');
+    });
+
+    Route::prefix('incident-notifications')->controller(IncidentNotificationController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{incidentNotification}', 'show');
+        Route::post('{incidentNotification}', 'update');
+        Route::delete('{incidentNotification}', 'destroy');
     });
 });
