@@ -16,6 +16,9 @@ class AiModel extends Model
         'name',
         'description',
         'organization_id',
+        'source_organization_id',
+        'custodian_id',
+        'vendor_id',
         'primary_category',
         'type',
         'domain_specialization',
@@ -26,7 +29,6 @@ class AiModel extends Model
         'regulatory_risk_classification',
         'organizational_role',
         'ownership_type',
-        'source_organization',
         'current_owner',
         'development_source',
         'created_by',
@@ -51,5 +53,35 @@ class AiModel extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Get the vendor associated with the AI model.
+     * 
+     * @return BelongsTo<Vendor, $this>
+     */
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    /**
+     * Get the custodian stakeholder associated with the AI model.
+     * 
+     * @return BelongsTo<Stakeholder, $this>
+     */
+    public function custodian(): BelongsTo
+    {
+        return $this->belongsTo(Stakeholder::class, 'custodian_id');
+    }
+
+    /**
+     * Get the source organization stakeholder associated with the AI model.
+     * 
+     * @return BelongsTo<Stakeholder, $this>
+     */
+    public function source_organization(): BelongsTo
+    {
+        return $this->belongsTo(Stakeholder::class, 'source_organization_id');
     }
 }

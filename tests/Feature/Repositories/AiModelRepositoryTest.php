@@ -21,6 +21,8 @@ use App\Enums\StrategicImportance;
 use App\Enums\OrganizationalRole;
 use App\Enums\OwnershipType;
 use App\Enums\PrimaryCategory;
+use App\Models\Stakeholder;
+use App\Models\Vendor;
 
 use Illuminate\Foundation\Testing\WithFaker;
 
@@ -46,11 +48,17 @@ class AiModelRepositoryTest extends TestCase
     {
         $org = Organization::factory()->create();
         $user = User::factory()->create();
+        $sourceOrg = Stakeholder::factory()->create(['type' => 'vendor_org']);
+        $custodian = Stakeholder::factory()->create(['type' => 'person']);
+        $vendor = Vendor::factory()->create();
 
         return array_merge([
             'name' => 'Fraud Detector',
             'description' => 'Detects fraud in transactions.',
             'organization_id' => $org->id,
+            'source_organization_id' => $sourceOrg->id,
+            'custodian_id' => $custodian->id,
+            'vendor_id' => $vendor->id,
             'primary_category' => $this->enumFirstValue(PrimaryCategory::class),
             'type' => 'classification',
             'domain_specialization' => 'fraud_detection',
@@ -61,7 +69,6 @@ class AiModelRepositoryTest extends TestCase
             'regulatory_risk_classification' => 'low',
             'organizational_role' => $this->enumFirstValue(OrganizationalRole::class),
             'ownership_type' => $this->enumFirstValue(OwnershipType::class),
-            'source_organization' => 'Data Science',
             'current_owner' => 'owner.user',
             'development_source' => $this->enumFirstValue(DevelopmentSource::class),
             'created_by' => $user->id,
