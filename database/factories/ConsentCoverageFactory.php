@@ -29,10 +29,13 @@ class ConsentCoverageFactory extends Factory
 
         $asOf = fake()->dateTimeBetween('-30 days', 'now');
 
+        $selectedPurposes = fake()->randomElements(ConsentPurpose::cases(), fake()->numberBetween(1, 4));
+        $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
+
         return [
             'dataset_id' => Dataset::factory(),
             'snapshot_id' => fake()->boolean(70) ? DatasetSnapshot::factory() : null,
-            'purpose' => fake()->randomElement(ConsentPurpose::cases()),
+            'purpose' => $purposeValues,
             'jurisdiction' => fake()->randomElement(Jurisdiction::cases()),
             'as_of' => $asOf,
             'subjects_total' => $subjectsTotal,

@@ -19,7 +19,8 @@ class UpdateConsentCoverageRequest extends FormRequest
         return [
             'dataset_id' => ['sometimes', 'integer', 'exists:datasets,id'],
             'snapshot_id' => ['nullable', 'integer', 'exists:dataset_snapshots,id'],
-            'purpose' => ['sometimes', 'string', 'max:255'],
+            'purpose' => ['sometimes', 'array'],
+            'purpose.*' => ['string', Rule::in(array_map(fn($c) => $c->value, ConsentPurpose::cases()))],
             'jurisdiction' => ['sometimes', Rule::enum(Jurisdiction::class)],
             'as_of' => ['sometimes', 'date'],
             'subjects_total' => ['sometimes', 'integer', 'min:0'],

@@ -23,9 +23,12 @@ class ConsentScopeFactory extends Factory
         $effectiveFrom = fake()->dateTimeBetween('-1 year', 'now');
         $hasEndDate = fake()->boolean(60);
 
+        $selectedPurposes = fake()->randomElements(ConsentPurpose::cases(), fake()->numberBetween(1, 4));
+        $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
+
         return [
             'dataset_id' => Dataset::factory(),
-            'purpose' => fake()->randomElement(ConsentPurpose::cases()),
+            'purpose' => $purposeValues,
             'subject_realm' => fake()->randomElement(SubjectRealm::cases()),
             'jurisdiction' => fake()->randomElement(Jurisdiction::cases()),
             'effective_from' => $effectiveFrom,

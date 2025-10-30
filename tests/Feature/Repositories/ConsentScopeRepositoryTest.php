@@ -103,7 +103,7 @@ class ConsentScopeRepositoryTest extends TestCase
 
         $data = [
             'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::MARKETING,
+            'purpose' => [ConsentPurpose::MARKETING->value, ConsentPurpose::ANALYTICS->value],
             'subject_realm' => SubjectRealm::CUSTOMER,
             'jurisdiction' => Jurisdiction::EU,
             'effective_from' => now(),
@@ -119,7 +119,7 @@ class ConsentScopeRepositoryTest extends TestCase
         $this->assertEquals($data['jurisdiction'], $result->jurisdiction);
         $this->assertDatabaseHas('consent_scopes', [
             'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::MARKETING->value,
+            'purpose' => json_encode([ConsentPurpose::MARKETING->value, ConsentPurpose::ANALYTICS->value]),
         ]);
     }
 
@@ -132,7 +132,7 @@ class ConsentScopeRepositoryTest extends TestCase
 
         $data = [
             'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::ANALYTICS,
+            'purpose' => [ConsentPurpose::ANALYTICS->value],
             'subject_realm' => SubjectRealm::PROSPECT,
             'jurisdiction' => Jurisdiction::US,
             'effective_from' => now(),
@@ -150,12 +150,12 @@ class ConsentScopeRepositoryTest extends TestCase
     public function test_update_consent_scope_updates_existing_consent_scope(): void
     {
         $consentScope = ConsentScope::factory()->create([
-            'purpose' => ConsentPurpose::MARKETING,
+            'purpose' => [ConsentPurpose::MARKETING->value],
             'jurisdiction' => Jurisdiction::EU,
         ]);
 
         $updateData = [
-            'purpose' => ConsentPurpose::TRAINING_AI,
+            'purpose' => [ConsentPurpose::TRAINING_AI->value],
             'jurisdiction' => Jurisdiction::US,
         ];
 
@@ -163,8 +163,8 @@ class ConsentScopeRepositoryTest extends TestCase
 
         $this->assertTrue($result);
         $consentScope->refresh();
-        $this->assertEquals(ConsentPurpose::TRAINING_AI, $consentScope->purpose);
-        $this->assertEquals(Jurisdiction::US, $consentScope->jurisdiction);
+        $this->assertEquals($updateData['purpose'], $consentScope->purpose);
+        $this->assertEquals('US', $consentScope->jurisdiction);
     }
 
     /**
@@ -230,8 +230,8 @@ class ConsentScopeRepositoryTest extends TestCase
         ];
 
         foreach ($purposes as $purpose) {
-            $consentScope = ConsentScope::factory()->create(['purpose' => $purpose]);
-            $this->assertEquals($purpose, $consentScope->purpose);
+            $consentScope = ConsentScope::factory()->create(['purpose' => [$purpose->value]]);
+            $this->assertEquals([$purpose->value], $consentScope->purpose);
         }
     }
 

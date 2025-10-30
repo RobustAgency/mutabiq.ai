@@ -26,9 +26,7 @@ class ConsentScope extends Model
     protected function casts(): array
     {
         return [
-            'purpose' => ConsentPurpose::class,
-            'subject_realm' => SubjectRealm::class,
-            'jurisdiction' => Jurisdiction::class,
+            'purpose' => 'array',
             'effective_from' => 'date',
             'effective_to' => 'date',
         ];

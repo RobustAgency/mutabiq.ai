@@ -26,6 +26,7 @@ class ConsentCoverage extends Model
     protected function casts(): array
     {
         return [
+            'purpose' => 'array',
             'as_of' => 'datetime',
             'subjects_total' => 'integer',
             'subjects_with_valid_consent' => 'integer',
