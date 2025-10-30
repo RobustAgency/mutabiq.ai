@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AiModelCard extends Model
 {
@@ -39,4 +40,22 @@ class AiModelCard extends Model
         'last_review_date',
         'next_review_date',
     ];
+
+    /**
+     * Get the AI Model that owns the model card.
+     * @return BelongsTo<AiModel, $this>
+     */
+    public function aiModel(): BelongsTo
+    {
+        return $this->belongsTo(AiModel::class);
+    }
+
+    /**
+     * Get the AI Model Version that owns the model card.
+     * @return BelongsTo<AiModelVersion, $this>
+     */
+    public function aiModelVersion(): BelongsTo
+    {
+        return $this->belongsTo(AiModelVersion::class);
+    }
 }

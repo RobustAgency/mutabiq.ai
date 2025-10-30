@@ -92,7 +92,9 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('ai-model-cards')->controller(AiModelCardController::class)->group(function () {
+        Route::get('', 'index');
         Route::post('', 'store');
+        Route::get('{aiModelCard}', 'show');
         Route::post('{aiModelCard}', 'update');
     });
 
