@@ -30,17 +30,4 @@ class AiModelRepository
         $data = AiModel::with(['createdBy', 'updatedBy'])->where('id', $id)->first();
         return $data;
     }
-
-    /**
-     * Assign a dataset link to an AI model.
-     * Gate: Rejects links for train/validation/test/eval_benchmark roles without snapshot_id.
-     *
-     * @param array $data
-     * @return \App\Models\AiModelDataset
-     * @throws \InvalidArgumentException
-     */
-    public function assignDataset(array $data): AiModelDataset
-    {
-        return AiModelDataset::create($data);
-    }
 }

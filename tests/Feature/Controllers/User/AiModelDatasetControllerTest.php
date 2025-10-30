@@ -505,4 +505,250 @@ class AiModelDatasetControllerTest extends TestCase
             ->assertJsonPath('data.eligibility_status', EligibilityStatus::NOT_ELIGIBLE->value)
             ->assertJsonPath('data.notes', 'License restrictions prevent usage.');
     }
+
+    /**
+     * Test user can retrieve paginated AI model datasets.
+     */
+    public function test_user_can_retrieve_paginated_ai_model_datasets(): void
+    {
+        $aiModel = AiModel::factory()->create();
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $snapshot = DatasetSnapshot::factory()->create();
+
+        // Create multiple dataset links
+        for ($i = 0; $i < 25; $i++) {
+            $payload = [
+                'ai_model_id' => $aiModel->id,
+                'ai_model_version_id' => $aiModelVersion->id,
+                'dataset_snapshot_id' => $snapshot->id,
+                'role' => Role::TRAIN->value,
+            ];
+            $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        }
+
+        $response = $this->actingAs($this->user)->getJson('/api/ai-model-datasets?per_page=10');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'error' => false,
+                'message' => 'AI model datasets retrieved successfully',
+            ])
+            ->assertJsonStructure([
+                'error',
+                'message',
+                'data' => [
+                    'current_page',
+                    'data',
+                    'first_page_url',
+                    'from',
+                    'last_page',
+                    'last_page_url',
+                    'links',
+                    'next_page_url',
+                    'path',
+                    'per_page',
+                    'prev_page_url',
+                    'to',
+                    'total',
+                ]
+            ]);
+
+        $this->assertEquals(10, count($response->json('data.data')));
+    }
+
+    /**
+     * Test user can retrieve a single AI model dataset.
+     */
+    public function test_user_can_retrieve_single_ai_model_dataset(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        $response = $this->actingAs($this->user)->getJson("/api/ai-model-datasets/{$datasetId}");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'error' => false,
+                'message' => 'AI model dataset retrieved successfully',
+            ])
+            ->assertJsonStructure([
+                'error',
+                'message',
+                'data' => [
+                    'id',
+                    'ai_model_id',
+                    'ai_model_version_id',
+                    'dataset_id',
+                    'dataset_snapshot_id',
+                    'role',
+                    'access_path',
+                    'transform_pack_link',
+                    'license_check_ref',
+                    'privacy_check_ref',
+                    'eligibility_status',
+                    'notes',
+                    'created_at',
+                    'updated_at',
+                ]
+            ])
+            ->assertJsonPath('data.id', $datasetId)
+            ->assertJsonPath('data.role', $payload['role']);
+    }
+
+    /**
+     * Test unauthenticated user cannot retrieve AI model datasets.
+     */
+    public function test_unauthenticated_user_cannot_retrieve_datasets(): void
+    {
+        $response = $this->getJson('/api/ai-model-datasets');
+
+        $response->assertStatus(401);
+    }
+
+    /**
+     * Test user can update AI model dataset link.
+     */
+    public function test_user_can_update_ai_model_dataset_link(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        $updatePayload = [
+            'access_path' => '/data/updated/path',
+            'eligibility_status' => EligibilityStatus::ELIGIBLE_WITH_CONDITIONS->value,
+            'notes' => 'Updated notes',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'error' => false,
+                'message' => 'AI model dataset link updated successfully',
+            ])
+            ->assertJsonPath('data.access_path', '/data/updated/path')
+            ->assertJsonPath('data.eligibility_status', EligibilityStatus::ELIGIBLE_WITH_CONDITIONS->value)
+            ->assertJsonPath('data.notes', 'Updated notes');
+
+        $this->assertDatabaseHas('ai_model_dataset', [
+            'id' => $datasetId,
+            'access_path' => '/data/updated/path',
+            'notes' => 'Updated notes',
+        ]);
+    }
+
+    /**
+     * Test user can partially update AI model dataset link.
+     */
+    public function test_user_can_partially_update_ai_model_dataset_link(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        // Only update notes
+        $updatePayload = [
+            'notes' => 'Only notes updated',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.notes', 'Only notes updated')
+            ->assertJsonPath('data.access_path', $payload['access_path']); // Original value unchanged
+    }
+
+    /**
+     * Test updating dataset_snapshot_id requires it for specific roles.
+     */
+    public function test_updating_to_train_role_requires_snapshot_id(): void
+    {
+        $aiModel = AiModel::factory()->create();
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        // Create with pretrain role (no snapshot required)
+        $payload = [
+            'ai_model_id' => $aiModel->id,
+            'ai_model_version_id' => $aiModelVersion->id,
+            'role' => Role::PRETRAIN->value,
+        ];
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        // Try to update to train role without snapshot
+        $updatePayload = [
+            'role' => Role::TRAIN->value,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['dataset_snapshot_id']);
+    }
+
+    /**
+     * Test update validates role enum.
+     */
+    public function test_update_validates_role_enum(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        $updatePayload = [
+            'role' => 'invalid_role',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['role']);
+    }
+
+    /**
+     * Test update validates eligibility_status enum.
+     */
+    public function test_update_validates_eligibility_status_enum(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        $updatePayload = [
+            'eligibility_status' => 'invalid_status',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['eligibility_status']);
+    }
+
+    /**
+     * Test update validates max length constraints.
+     */
+    public function test_update_validates_max_length_constraints(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        $updatePayload = [
+            'access_path' => str_repeat('a', 501),
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['access_path']);
+    }
 }

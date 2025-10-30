@@ -157,7 +157,10 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('ai-model-datasets')->controller(AiModelDatasetController::class)->group(function () {
+        Route::get('', 'index');
         Route::post('', 'store');
+        Route::get('{aiModelDataset}', 'show');
+        Route::post('{aiModelDataset}', 'update');
     });
 
     Route::prefix('user-consents')->controller(UserConsentController::class)->group(function () {
