@@ -23,6 +23,7 @@ class ListStakeholderRequest extends FormRequest
     {
         return [
             'type' => ['nullable', 'string'],
+            'search' => ['nullable', 'string', 'max:255'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

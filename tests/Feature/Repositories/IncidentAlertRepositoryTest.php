@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Feature\Repositories;
 
 use App\Models\AiIncident;
 use App\Models\IncidentAlert;
