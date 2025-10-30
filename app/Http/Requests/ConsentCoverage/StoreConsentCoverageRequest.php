@@ -20,7 +20,7 @@ class StoreConsentCoverageRequest extends FormRequest
             'dataset_id' => ['required', 'integer', 'exists:datasets,id'],
             'snapshot_id' => ['nullable', 'integer', 'exists:dataset_snapshots,id'],
             'purpose' => ['required', 'string', 'max:255'],
-            'jurisdiction' => ['required', 'string', 'max:255'],
+            'jurisdiction' => ['required', Rule::enum(Jurisdiction::class)],
             'as_of' => ['required', 'date'],
             'subjects_total' => ['required', 'integer', 'min:0'],
             'subjects_with_valid_consent' => ['required', 'integer', 'min:0', 'lte:subjects_total'],
