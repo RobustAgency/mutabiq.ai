@@ -31,7 +31,7 @@ class AiModelCardRepositoryTest extends TestCase
         $this->aiModelCardRepository = app(AiModelCardRepository::class);
     }
 
-    public function test_it_can_get_paginated_ai_model_cards(): void
+    public function test_it_can_get_paginated_ai_model_version_cards(): void
     {
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
@@ -41,7 +41,7 @@ class AiModelCardRepositoryTest extends TestCase
             'ai_model_version_id' => $aiModelVersion->id,
         ]);
 
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCards($aiModel->id, 10);
+        $result = $this->aiModelCardRepository->getPaginatedAiModelCards(10);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(15, $result->total());
@@ -58,36 +58,11 @@ class AiModelCardRepositoryTest extends TestCase
             'ai_model_version_id' => $aiModelVersion->id,
         ]);
 
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCards($aiModel->id, 5);
+        $result = $this->aiModelCardRepository->getPaginatedAiModelCards(5);
 
         $this->assertCount(5, $result->items());
         $this->assertEquals(20, $result->total());
         $this->assertEquals(4, $result->lastPage());
-    }
-
-    public function test_it_filters_by_ai_model_id(): void
-    {
-        $aiModel1 = AiModel::factory()->create();
-        $aiModel2 = AiModel::factory()->create();
-        $aiModelVersion1 = AiModelVersion::factory()->create(['ai_model_id' => $aiModel1->id]);
-        $aiModelVersion2 = AiModelVersion::factory()->create(['ai_model_id' => $aiModel2->id]);
-
-        AiModelCard::factory()->count(5)->create([
-            'ai_model_id' => $aiModel1->id,
-            'ai_model_version_id' => $aiModelVersion1->id,
-        ]);
-
-        AiModelCard::factory()->count(3)->create([
-            'ai_model_id' => $aiModel2->id,
-            'ai_model_version_id' => $aiModelVersion2->id,
-        ]);
-
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCards($aiModel1->id, 10);
-
-        $this->assertCount(5, $result->items());
-        foreach ($result->items() as $card) {
-            $this->assertEquals($aiModel1->id, $card->ai_model_id);
-        }
     }
 
     public function test_it_can_get_ai_model_card_by_id_with_relationships(): void
@@ -238,13 +213,5 @@ class AiModelCardRepositoryTest extends TestCase
 
         $aiModelCard->refresh();
         $this->assertEquals(100, $aiModelCard->completeness_score);
-    }
-
-    public function test_it_returns_empty_paginated_result_for_non_existent_model(): void
-    {
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCards(99999, 10);
-
-        $this->assertCount(0, $result->items());
-        $this->assertEquals(0, $result->total());
     }
 }
