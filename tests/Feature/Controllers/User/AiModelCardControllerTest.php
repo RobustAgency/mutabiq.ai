@@ -36,7 +36,7 @@ class AiModelCardControllerTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->getJson("/api/ai-model-cards?ai_model_id={$aiModel->id}");
+        $response = $this->getJson("/api/ai-model-cards");
 
         $response->assertStatus(200)
             ->assertJson([
@@ -70,7 +70,7 @@ class AiModelCardControllerTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->getJson("/api/ai-model-cards?ai_model_id={$aiModel->id}&per_page=5");
+        $response = $this->getJson("/api/ai-model-cards?per_page=5");
 
         $response->assertStatus(200);
         $this->assertCount(5, $response->json('data.data'));

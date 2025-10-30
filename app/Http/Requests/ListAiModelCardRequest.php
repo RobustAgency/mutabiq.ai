@@ -22,7 +22,6 @@ class ListAiModelCardRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_model_id' => ['nullable', 'integer', 'exists:ai_models,id'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

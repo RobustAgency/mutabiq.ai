@@ -17,12 +17,8 @@ class AiModelCardController extends Controller
 
     public function index(ListAiModelCardRequest $request): JsonResponse
     {
-        $aiModelID = $request->input('ai_model_id');
         $perPage = $request->input('per_page') ?? 15;
-        $aiModelCards = $this->aiModelCardRepository->getPaginatedAiModelCards(
-            $aiModelID,
-            $perPage
-        );
+        $aiModelCards = $this->aiModelCardRepository->getPaginatedAiModelCards($perPage);
         return response()->json([
             'error' => false,
             'data' => $aiModelCards,
