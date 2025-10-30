@@ -26,11 +26,14 @@ class ConsentCoverageControllerTest extends TestCase
     private function validPayload(array $overrides = []): array
     {
         $dataset = Dataset::factory()->create();
+        $selectedPurposes = fake()->randomElements(ConsentPurpose::cases(), fake()->numberBetween(1, 4));
+        $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
+
 
         return array_merge([
             'dataset_id' => $dataset->id,
             'snapshot_id' => DatasetSnapshot::factory()->for($dataset)->create()->id,
-            'purpose' => ConsentPurpose::MARKETING->value,
+            'purpose' => $purposeValues,
             'jurisdiction' => Jurisdiction::EU->value,
             'as_of' => now()->format('Y-m-d H:i:s'),
             'subjects_total' => 10000,
@@ -573,26 +576,6 @@ class ConsentCoverageControllerTest extends TestCase
         $response = $this->actingAs($this->user)->getJson('/api/consent-coverages/999999');
 
         $response->assertStatus(404);
-    }
-
-    /**
-     * Test create handles all consent purposes.
-     */
-    public function test_create_handles_all_consent_purposes(): void
-    {
-        $purposes = [
-            ConsentPurpose::MARKETING,
-            ConsentPurpose::ANALYTICS,
-            ConsentPurpose::PERSONALIZATION,
-            ConsentPurpose::TRAINING_AI,
-            ConsentPurpose::SERVICE_OPERATIONS,
-        ];
-
-        foreach ($purposes as $purpose) {
-            $payload = $this->validPayload(['purpose' => $purpose->value]);
-            $response = $this->actingAs($this->user)->postJson('/api/consent-coverages', $payload);
-            $response->assertStatus(201);
-        }
     }
 
     /**

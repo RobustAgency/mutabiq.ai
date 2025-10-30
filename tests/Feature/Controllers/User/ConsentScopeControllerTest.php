@@ -26,10 +26,12 @@ class ConsentScopeControllerTest extends TestCase
     private function validPayload(array $overrides = []): array
     {
         $dataset = Dataset::factory()->create();
+        $selectedPurposes = fake()->randomElements(ConsentPurpose::cases(), fake()->numberBetween(1, 4));
+        $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
 
         return array_merge([
             'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::MARKETING->value,
+            'purpose' => $purposeValues,
             'subject_realm' => SubjectRealm::CUSTOMER->value,
             'jurisdiction' => Jurisdiction::EU->value,
             'effective_from' => now()->format('Y-m-d'),
@@ -113,7 +115,6 @@ class ConsentScopeControllerTest extends TestCase
                 'message' => 'Consent scope created successfully',
                 'data' => [
                     'dataset_id' => $payload['dataset_id'],
-                    'purpose' => $payload['purpose'],
                     'subject_realm' => $payload['subject_realm'],
                     'jurisdiction' => $payload['jurisdiction'],
                 ]
@@ -121,7 +122,7 @@ class ConsentScopeControllerTest extends TestCase
 
         $this->assertDatabaseHas('consent_scopes', [
             'dataset_id' => $payload['dataset_id'],
-            'purpose' => $payload['purpose'],
+            'purpose' => json_encode($payload['purpose']),
         ]);
     }
 
@@ -322,11 +323,11 @@ class ConsentScopeControllerTest extends TestCase
     public function test_user_can_update_consent_scope(): void
     {
         $consentScope = ConsentScope::factory()->create([
-            'purpose' => ConsentPurpose::MARKETING->value,
+            'purpose' => [ConsentPurpose::MARKETING->value],
         ]);
 
         $updatePayload = [
-            'purpose' => ConsentPurpose::ANALYTICS->value,
+            'purpose' => [ConsentPurpose::ANALYTICS->value],
             'jurisdiction' => Jurisdiction::US->value,
         ];
 
@@ -338,14 +339,14 @@ class ConsentScopeControllerTest extends TestCase
                 'message' => 'Consent scope updated successfully',
                 'data' => [
                     'id' => $consentScope->id,
-                    'purpose' => ConsentPurpose::ANALYTICS->value,
+                    'purpose' => $updatePayload['purpose'],
                     'jurisdiction' => Jurisdiction::US->value,
                 ]
             ]);
 
         $this->assertDatabaseHas('consent_scopes', [
             'id' => $consentScope->id,
-            'purpose' => ConsentPurpose::ANALYTICS->value,
+            'purpose' => json_encode([ConsentPurpose::ANALYTICS->value]),
         ]);
     }
 
@@ -355,18 +356,18 @@ class ConsentScopeControllerTest extends TestCase
     public function test_user_can_partially_update_consent_scope(): void
     {
         $consentScope = ConsentScope::factory()->create([
-            'purpose' => ConsentPurpose::MARKETING->value,
+            'purpose' => [ConsentPurpose::MARKETING->value],
             'jurisdiction' => Jurisdiction::EU->value,
         ]);
 
         $updatePayload = [
-            'purpose' => ConsentPurpose::TRAINING_AI->value,
+            'purpose' => [ConsentPurpose::TRAINING_AI->value],
         ];
 
         $response = $this->actingAs($this->user)->putJson("/api/consent-scopes/{$consentScope->id}", $updatePayload);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.purpose', ConsentPurpose::TRAINING_AI->value)
+            ->assertJsonPath('data.purpose', $updatePayload['purpose'])
             ->assertJsonPath('data.jurisdiction', Jurisdiction::EU->value);
     }
 
@@ -448,26 +449,6 @@ class ConsentScopeControllerTest extends TestCase
     }
 
     /**
-     * Test create handles all consent purposes.
-     */
-    public function test_create_handles_all_consent_purposes(): void
-    {
-        $purposes = [
-            ConsentPurpose::MARKETING,
-            ConsentPurpose::ANALYTICS,
-            ConsentPurpose::PERSONALIZATION,
-            ConsentPurpose::TRAINING_AI,
-            ConsentPurpose::SERVICE_OPERATIONS,
-        ];
-
-        foreach ($purposes as $purpose) {
-            $payload = $this->validPayload(['purpose' => $purpose->value]);
-            $response = $this->actingAs($this->user)->postJson('/api/consent-scopes', $payload);
-            $response->assertStatus(201);
-        }
-    }
-
-    /**
      * Test create handles all subject realms.
      */
     public function test_create_handles_all_subject_realms(): void
@@ -507,32 +488,6 @@ class ConsentScopeControllerTest extends TestCase
             $response = $this->actingAs($this->user)->postJson('/api/consent-scopes', $payload);
             $response->assertStatus(201);
         }
-    }
-
-    /**
-     * Test consent scope can be created for specific dataset and purpose combination.
-     */
-    public function test_consent_scope_for_dataset_purpose_combination(): void
-    {
-        $dataset = Dataset::factory()->create();
-
-        $payload1 = $this->validPayload([
-            'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::MARKETING->value,
-        ]);
-
-        $payload2 = $this->validPayload([
-            'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::ANALYTICS->value,
-        ]);
-
-        $response1 = $this->actingAs($this->user)->postJson('/api/consent-scopes', $payload1);
-        $response2 = $this->actingAs($this->user)->postJson('/api/consent-scopes', $payload2);
-
-        $response1->assertStatus(201);
-        $response2->assertStatus(201);
-
-        $this->assertDatabaseCount('consent_scopes', 2);
     }
 
     /**

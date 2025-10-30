@@ -19,7 +19,8 @@ class StoreConsentScopeRequest extends FormRequest
     {
         return [
             'dataset_id' => ['required', 'integer', 'exists:datasets,id'],
-            'purpose' => ['required', Rule::enum(ConsentPurpose::class)],
+            'purpose' => ['required', 'array'],
+            'purpose.*' => ['string', Rule::in(array_map(fn($c) => $c->value, ConsentPurpose::cases()))],
             'subject_realm' => ['required', Rule::enum(SubjectRealm::class)],
             'jurisdiction' => ['required', Rule::enum(Jurisdiction::class)],
             'effective_from' => ['required', 'date'],

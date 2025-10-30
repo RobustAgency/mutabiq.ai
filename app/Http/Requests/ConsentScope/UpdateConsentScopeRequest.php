@@ -19,7 +19,8 @@ class UpdateConsentScopeRequest extends FormRequest
     {
         return [
             'dataset_id' => ['sometimes', 'integer', 'exists:datasets,id'],
-            'purpose' => ['sometimes', Rule::enum(ConsentPurpose::class)],
+            'purpose' => ['sometimes', 'array'],
+            'purpose.*' => ['string', Rule::in(array_map(fn($c) => $c->value, ConsentPurpose::cases()))],
             'subject_realm' => ['sometimes', Rule::enum(SubjectRealm::class)],
             'jurisdiction' => ['sometimes', Rule::enum(Jurisdiction::class)],
             'effective_from' => ['sometimes', 'date'],
