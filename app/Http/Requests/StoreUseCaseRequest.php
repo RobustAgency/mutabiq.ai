@@ -2,12 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\UseCase\BusinessDomain;
+use App\Enums\UseCase\DataAvailabilityStatus;
+use App\Enums\UseCase\DataReadiness;
 use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\Priority;
 use App\Enums\UseCase\RiskLevel;
+use App\Enums\UseCase\ROIClassification;
 use App\Enums\UseCase\Status;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Enums\UseCase\RegulatoryScope;
 
 class StoreUseCaseRequest extends FormRequest
 {
@@ -27,34 +31,32 @@ class StoreUseCaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'business_objective' => ['nullable', 'string'],
-            'status' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, Status::cases()))],
-            'business_domain' => ['required', 'string', 'max:255'],
-            'business_owner_email' => ['required', 'email', 'max:255'],
-            'technical_owner_email' => ['required', 'email', 'max:255'],
-            'regulatory_scope' => ['required', 'array'],
-            'regulatory_scope.*' => ['distinct', Rule::in(array_map(fn($c) => $c->value, RegulatoryScope::cases()))],
-            'data_sensitivity' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, DataSensitivity::cases()))],
-            'go_live_date' => ['nullable', 'date'],
-            'expected_roi' => ['nullable', 'numeric'],
-            'implementation_cost' => ['nullable', 'numeric'],
-            'reduction_in_time' => ['nullable', 'numeric'],
-            'reduction_in_cost' => ['nullable', 'numeric'],
-            'increase_in_revenue' => ['nullable', 'numeric'],
-            'risk_avoidance' => ['nullable', 'numeric'],
-            'fte_capacity_saved' => ['nullable', 'numeric'],
-            'use_case_type' => ['required', 'string', 'max:255'],
-            'value_driver' => ['required', 'string', 'max:255'],
-            'risk_level' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, RiskLevel::cases()))],
-            'overall_risk_score' => ['nullable', 'numeric'],
-            'human_oversight_mode' => ['required', 'string', 'max:255'],
-            'dpia' => ['nullable', 'boolean'],
-            'aia' => ['nullable', 'boolean'],
-            'data_availability_status' => ['required', 'string', 'max:255'],
-            'data_readiness_level' => ['required', 'string', 'max:255'],
-            'data_freshness' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'min:5', 'max:255'],
+            'description' => ['required', 'string', 'min:100', 'max:5000'],
+            'business_objective' => ['required', 'string', 'min:50', 'max:2000'],
+            'business_owner_id' => ['nullable', 'integer', 'exists:stakeholders,id'],
+            'technical_owner_id' => ['nullable', 'integer', 'exists:stakeholders,id'],
+            'business_domain' => ['required', Rule::enum(BusinessDomain::class)],
+            'roi_classification' => ['nullable', Rule::enum(ROIClassification::class)],
+            'priority' => ['nullable', Rule::enum(Priority::class)],
+            'risk_level' => ['required', Rule::enum(RiskLevel::class)],
+            'data_sensitivity' => ['required', Rule::enum(DataSensitivity::class)],
+            'expected_roi_percentage' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'budget_allocated' => ['nullable', 'numeric', 'min:0'],
+            'target_go_live_date' => ['nullable', 'date'],
+            'status' => ['required', Rule::enum(Status::class)],
+            'created_by' => ['required', 'email'],
+            'updated_by' => ['nullable', 'email'],
+            'roi_assessment' => ['nullable', 'boolean'],
+            'risk_assessment' => ['nullable', 'boolean'],
+            'data_assessment' => ['nullable', 'boolean'],
+            'estimated_implementation_cost' => ['nullable', 'numeric', 'min:0'],
+            'estimated_reduction_in_time' => ['nullable', 'numeric', 'min:0'],
+            'estimated_reduction_in_cost' => ['nullable', 'numeric', 'min:0'],
+            'estimated_revenue_increase' => ['nullable', 'numeric', 'min:0'],
+            'estimated_fte_capacity_saving' => ['nullable', 'integer', 'min:0'],
+            'data_availability_status' => ['nullable', Rule::enum(DataAvailabilityStatus::class)],
+            'data_readiness' => ['nullable', Rule::enum(DataReadiness::class)],
         ];
     }
 }
