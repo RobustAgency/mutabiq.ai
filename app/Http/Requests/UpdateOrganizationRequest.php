@@ -24,7 +24,7 @@ class UpdateOrganizationRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'website' => ['sometimes', 'string', 'max:255', 'url'],
+            'website' => ['sometimes', 'string', 'max:255', 'url', 'unique:organizations,website'],
             'phone' => [
                 'nullable',
                 'string',
