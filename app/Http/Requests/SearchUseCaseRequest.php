@@ -24,7 +24,7 @@ class SearchUseCaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['sometimes', 'string', 'max:255'],
+            'name' => ['sometimes', 'string', 'max:255'],
             'status' => ['sometimes', 'string', Rule::in(array_map(fn($c) => $c->value, Status::cases()))],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ];

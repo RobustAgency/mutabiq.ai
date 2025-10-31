@@ -18,8 +18,8 @@ class UseCaseRepository
     {
         $query = UseCase::query();
 
-        $query->when(! empty($filters['title']), function ($query) use ($filters) {
-            $query->where('title', 'like', '%' . $filters['title'] . '%');
+        $query->when(! empty($filters['name']), function ($query) use ($filters) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
         });
 
         $query->when(! empty($filters['status']), function ($query) use ($filters) {
