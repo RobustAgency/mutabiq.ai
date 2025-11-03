@@ -30,7 +30,9 @@ class AiModelCardController extends Controller
     public function store(StoreAiModelCardRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $data['organization_id'] = $request->user()->organization_id;
+        $data['organization_id'] = Auth::user()->organization_id;
+        $data['created_by'] = Auth::user()->id;
+        $data['updated_by'] = Auth::user()->id;
         $this->aiModelCardRepository->createAiModelCard($data);
 
         return response()->json([
@@ -53,6 +55,7 @@ class AiModelCardController extends Controller
     public function update(UpdateAiModelCardRequest $request, AiModelCard $aiModelCard): JsonResponse
     {
         $data = $request->validated();
+        $data['updated_by'] = Auth::user()->email;
         $this->aiModelCardRepository->updateAiModelCard($aiModelCard, $data);
 
         return response()->json([

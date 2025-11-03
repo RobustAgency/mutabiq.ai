@@ -25,7 +25,7 @@ class AiModelCardRepository
 
     public function getAiModelCardById(AiModelCard $aiModelCard): ?AiModelCard
     {
-        return $aiModelCard->load(['aiModel', 'aiModelVersion']);
+        return $aiModelCard->load('aiModelVersion');
     }
 
     /**

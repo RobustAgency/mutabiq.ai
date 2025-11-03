@@ -13,43 +13,35 @@ class AiModelCard extends Model
 
     protected $fillable = [
         'organization_id',
-        'ai_model_id',
-        'ai_model_version_id',
+        'version_id',
         'title',
-        'version',
         'creator_role',
-        'access_level',
-        'owner_email',
+        'owner_stakeholder_id',
         'format',
-        'status',
-        'workflow_stage',
-        'technical_review_status',
-        'ethics_review_status',
-        'compliance_review_status',
-        'publication_status',
-        'completeness_score',
-        'organizational_context',
+        'model_overview',
         'intended_use',
         'training_data_overview',
         'bias_evaluation_methods',
         'model_limitations',
         'ethical_considerations',
-        'risk_summary',
+        'organizational_context',
         'performance_summary',
-        'latest_performance_date',
+        'risk_summary',
+        'status',
+        'publication_status',
         'publication_date',
         'last_review_date',
         'next_review_date',
+        'created_by',
+        'updated_by',
     ];
 
-    /**
-     * Get the AI Model that owns the model card.
-     * @return BelongsTo<AiModel, $this>
-     */
-    public function aiModel(): BelongsTo
-    {
-        return $this->belongsTo(AiModel::class);
-    }
+    protected $casts = [
+        'organizational_context' => 'array',
+        'publication_date' => 'date',
+        'last_review_date' => 'date',
+        'next_review_date' => 'date',
+    ];
 
     /**
      * Get the AI Model Version that owns the model card.
@@ -57,6 +49,15 @@ class AiModelCard extends Model
      */
     public function aiModelVersion(): BelongsTo
     {
-        return $this->belongsTo(AiModelVersion::class);
+        return $this->belongsTo(AiModelVersion::class, 'version_id');
+    }
+
+    /**
+     * Get the Stakeholder that owns the model card.
+     * @return BelongsTo<Stakeholder, $this>
+     */
+    public function ownerStakeholder(): BelongsTo
+    {
+        return $this->belongsTo(Stakeholder::class, 'owner_stakeholder_id');
     }
 }

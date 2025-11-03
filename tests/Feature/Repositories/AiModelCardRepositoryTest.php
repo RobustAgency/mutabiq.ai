@@ -18,6 +18,8 @@ use App\Models\AiModel;
 use App\Models\AiModelVersion;
 use App\Models\AiModelCard;
 use App\Models\Organization;
+use App\Models\User;
+use App\Models\Stakeholder;
 use Tests\TestCase;
 
 class AiModelCardRepositoryTest extends TestCase
@@ -39,8 +41,7 @@ class AiModelCardRepositoryTest extends TestCase
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
 
         AiModelCard::factory()->count(15)->create([
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
+            'version_id' => $aiModelVersion->id,
             'organization_id' => $organization->id,
         ]);
 
@@ -58,8 +59,7 @@ class AiModelCardRepositoryTest extends TestCase
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
 
         AiModelCard::factory()->count(20)->create([
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
+            'version_id' => $aiModelVersion->id,
             'organization_id' => $organization->id,
         ]);
 
@@ -70,36 +70,18 @@ class AiModelCardRepositoryTest extends TestCase
         $this->assertEquals(4, $result->lastPage());
     }
 
-    public function test_it_can_get_ai_model_card_by_id_with_relationships(): void
-    {
-        $aiModel = AiModel::factory()->create(['name' => 'Test Model']);
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'ai_model_id' => $aiModel->id,
-            'version_number' => '1.0.0',
-        ]);
-        $aiModelCard = AiModelCard::factory()->create([
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
-        ]);
-
-        $result = $this->aiModelCardRepository->getAiModelCardById($aiModelCard);
-
-        $this->assertInstanceOf(AiModelCard::class, $result);
-        $this->assertTrue($result->relationLoaded('aiModel'));
-        $this->assertTrue($result->relationLoaded('aiModelVersion'));
-        $this->assertEquals('Test Model', $result->aiModel->name);
-        $this->assertEquals('1.0.0', $result->aiModelVersion->version_number);
-    }
-
     public function test_it_create_an_ai_model_card(): void
     {
         $organization = Organization::factory()->create();
+        $user = User::factory()->create(['organization_id' => $organization->id]);
+        $stakeholder = Stakeholder::factory()->create(['organization_id' => $organization->id]);
         $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
         $data = [
             'organization_id' => $organization->id,
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
+            'owner_stakeholder_id' => $stakeholder->id,
+            'version_id' => $aiModelVersion->id,
+            'model_overview' => $this->faker->paragraph,
             'title' => $this->faker->sentence,
             'version' => '1.0.0',
             'creator_role' => CreatorRole::INTERNAL_TEAM,
@@ -125,6 +107,8 @@ class AiModelCardRepositoryTest extends TestCase
             'publication_date' => now(),
             'last_review_date' => now(),
             'next_review_date' => now()->addYear(),
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
         ];
 
         $aiModelCard = $this->aiModelCardRepository->createAiModelCard($data);
@@ -140,26 +124,14 @@ class AiModelCardRepositoryTest extends TestCase
 
     public function test_it_update_an_ai_model_card(): void
     {
+        $organization = Organization::factory()->create();
         $aiModelCard = AiModelCard::factory()->create([
             'title' => 'Original Title',
-            'version' => '1.0.0',
-            'creator_role' => 'developer',
-            'owner_email' => $this->faker->email,
-            'access_level' => AccessLevel::INTERNAL,
-            'format' => CardFormat::STANDARD,
-            'status' => Status::DRAFT,
-            'workflow_stage' => WorkflowStage::CREATION,
-            'technical_review_status' => TechnicalReviewStatus::PENDING,
-            'ethics_review_status' => EthicsReviewStatus::PENDING,
-            'compliance_review_status' => ComplianceReviewStatus::PENDING,
-            'publication_status' => PublicationStatus::NOT_PUBLISHED,
+            'organization_id' => $organization->id,
         ]);
 
         $data = [
             'title' => 'Updated Title',
-            'version' => '1.1.0',
-            'status' => Status::DRAFT,
-            'completeness_score' => 90,
         ];
 
         $updatedAiModelCard = $this->aiModelCardRepository->updateAiModelCard($aiModelCard, $data);
@@ -169,58 +141,6 @@ class AiModelCardRepositoryTest extends TestCase
         $this->assertDatabaseHas('ai_model_cards', [
             'id' => $aiModelCard->id,
             'title' => 'Updated Title',
-            'version' => '1.1.0',
-            'status' => Status::DRAFT,
-            'completeness_score' => 90,
         ]);
-    }
-
-    public function test_it_can_create_model_card_with_all_enums(): void
-    {
-        $organization = Organization::factory()->create();
-        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
-
-        $data = [
-            'organization_id' => $organization->id,
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
-            'title' => 'Complete Model Card',
-            'version' => '1.0.0',
-            'creator_role' => CreatorRole::INTERNAL_TEAM,
-            'access_level' => AccessLevel::PUBLIC,
-            'format' => CardFormat::REGULATORY,
-            'status' => Status::PUBLISHED,
-            'workflow_stage' => WorkflowStage::TECHNICAL_REVIEW,
-            'technical_review_status' => TechnicalReviewStatus::PASSED,
-            'ethics_review_status' => EthicsReviewStatus::APPROVED,
-            'compliance_review_status' => ComplianceReviewStatus::COMPLIANT,
-            'publication_status' => PublicationStatus::PUBLISHED_INTERNAL,
-            'owner_email' => $this->faker->email,
-        ];
-
-        $aiModelCard = $this->aiModelCardRepository->createAiModelCard($data);
-
-        $this->assertEquals(CreatorRole::INTERNAL_TEAM, $aiModelCard->creator_role);
-        $this->assertEquals(AccessLevel::PUBLIC, $aiModelCard->access_level);
-        $this->assertEquals(CardFormat::REGULATORY, $aiModelCard->format);
-        $this->assertEquals(Status::PUBLISHED, $aiModelCard->status);
-        $this->assertEquals(WorkflowStage::TECHNICAL_REVIEW, $aiModelCard->workflow_stage);
-        $this->assertEquals(TechnicalReviewStatus::PASSED, $aiModelCard->technical_review_status);
-        $this->assertEquals(EthicsReviewStatus::APPROVED, $aiModelCard->ethics_review_status);
-        $this->assertEquals(ComplianceReviewStatus::COMPLIANT, $aiModelCard->compliance_review_status);
-        $this->assertEquals(PublicationStatus::PUBLISHED_INTERNAL, $aiModelCard->publication_status);
-    }
-
-    public function test_it_can_update_completeness_score(): void
-    {
-        $aiModelCard = AiModelCard::factory()->create(['completeness_score' => 50]);
-
-        $this->aiModelCardRepository->updateAiModelCard($aiModelCard, [
-            'completeness_score' => 100,
-        ]);
-
-        $aiModelCard->refresh();
-        $this->assertEquals(100, $aiModelCard->completeness_score);
     }
 }

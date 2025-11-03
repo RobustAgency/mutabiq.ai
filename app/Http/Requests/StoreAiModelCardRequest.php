@@ -4,14 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Enums\AccessLevel;
 use App\Enums\CreatorRole;
 use App\Enums\CardFormat;
 use App\Enums\Status;
-use App\Enums\WorkflowStage;
-use App\Enums\TechnicalReviewStatus;
-use App\Enums\EthicsReviewStatus;
-use App\Enums\ComplianceReviewStatus;
 use App\Enums\PublicationStatus;
 
 class StoreAiModelCardRequest extends FormRequest
@@ -32,30 +27,22 @@ class StoreAiModelCardRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_model_id' => ['required', 'exists:ai_models,id'],
-            'ai_model_version_id' => ['required', 'exists:ai_model_versions,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'version' => ['required', 'string', 'max:255'],
+            'version_id' => ['required', 'exists:ai_model_versions,id'],
+            'title' => ['required', 'string', 'min:10', 'max:255'],
             'creator_role' => ['required', Rule::in(array_map(fn($c) => $c->value, CreatorRole::cases()))],
-            'owner_email' => ['required', 'email'],
-            'access_level' => ['required', Rule::in(array_map(fn($c) => $c->value, AccessLevel::cases()))],
+            'owner_stakeholder_id' => ['required', 'exists:stakeholders,id'],
             'format' => ['required', Rule::in(array_map(fn($c) => $c->value, CardFormat::cases()))],
+            'model_overview' => ['required', 'string'],
+            'intended_use' => ['required', 'string'],
+            'training_data_overview' => ['required', 'string'],
+            'bias_evaluation_methods' => ['required', 'string'],
+            'model_limitations' => ['required', 'string'],
+            'ethical_considerations' => ['required', 'string'],
+            'organizational_context' => ['nullable', 'array'],
+            'performance_summary' => ['required', 'string'],
+            'risk_summary' => ['required', 'string'],
             'status' => ['required', Rule::in(array_map(fn($c) => $c->value, Status::cases()))],
-            'workflow_stage' => ['required', Rule::in(array_map(fn($c) => $c->value, WorkflowStage::cases()))],
-            'technical_review_status' => ['required', Rule::in(array_map(fn($c) => $c->value, TechnicalReviewStatus::cases()))],
-            'ethics_review_status' => ['required', Rule::in(array_map(fn($c) => $c->value, EthicsReviewStatus::cases()))],
-            'compliance_review_status' => ['required', Rule::in(array_map(fn($c) => $c->value, ComplianceReviewStatus::cases()))],
             'publication_status' => ['required', Rule::in(array_map(fn($c) => $c->value, PublicationStatus::cases()))],
-            'completeness_score' => ['required', 'numeric', 'min:0', 'max:100'],
-            'organizational_context' => ['nullable', 'string'],
-            'intended_use' => ['nullable', 'string'],
-            'training_data_overview' => ['nullable', 'string'],
-            'bias_evaluation_methods' => ['nullable', 'string'],
-            'model_limitations' => ['nullable', 'string'],
-            'ethical_considerations' => ['nullable', 'string'],
-            'risk_summary' => ['nullable', 'string'],
-            'performance_summary' => ['nullable', 'string'],
-            'latest_performance_date' => ['nullable', 'date'],
             'publication_date' => ['nullable', 'date'],
             'last_review_date' => ['nullable', 'date'],
             'next_review_date' => ['nullable', 'date'],
