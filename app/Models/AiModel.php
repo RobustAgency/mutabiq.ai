@@ -16,20 +16,17 @@ class AiModel extends Model
         'name',
         'description',
         'organization_id',
-        'source_organization_id',
-        'custodian_id',
+        'source_org_stakeholder_id',
+        'owner_stakeholder_id',
         'vendor_id',
+        'current_version_id',
         'primary_category',
         'type',
         'domain_specialization',
         'operational_status',
         'business_status',
-        'total_versions',
-        'strategic_importance',
         'regulatory_risk_classification',
-        'organizational_role',
         'ownership_type',
-        'current_owner',
         'development_source',
         'created_by',
         'updated_by',
@@ -66,22 +63,32 @@ class AiModel extends Model
     }
 
     /**
-     * Get the custodian stakeholder associated with the AI model.
+     * Get the source organization stakeholder.
      * 
      * @return BelongsTo<Stakeholder, $this>
      */
-    public function custodian(): BelongsTo
+    public function sourceOrgStakeholder(): BelongsTo
     {
-        return $this->belongsTo(Stakeholder::class, 'custodian_id');
+        return $this->belongsTo(Stakeholder::class, 'source_org_stakeholder_id');
     }
 
     /**
-     * Get the source organization stakeholder associated with the AI model.
+     * Get the owner stakeholder.
      * 
      * @return BelongsTo<Stakeholder, $this>
      */
-    public function source_organization(): BelongsTo
+    public function ownerStakeholder(): BelongsTo
     {
-        return $this->belongsTo(Stakeholder::class, 'source_organization_id');
+        return $this->belongsTo(Stakeholder::class, 'owner_stakeholder_id');
+    }
+
+    /**
+     * Get the organization that owns this AI model.
+     * 
+     * @return BelongsTo<Organization, $this>
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 }

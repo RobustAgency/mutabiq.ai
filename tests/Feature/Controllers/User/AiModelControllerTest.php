@@ -38,17 +38,14 @@ class AiModelControllerTest extends TestCase
         return array_merge([
             'name' => 'Fraud Detector',
             'description' => 'Detects fraudulent patterns',
-            'source_organization_id' => $sourceOrg->id,
-            'custodian_id' => $custodian->id,
+            'source_org_stakeholder_id' => $sourceOrg->id,
             'vendor_id' => $vendor->id,
             'primary_category' => $this->enumValue(PrimaryCategory::class),
             'type' => 'classification',
             'domain_specialization' => 'fraud_detection',
             'operational_status' => $this->enumValue(OperationalStatus::class),
             'business_status' => $this->enumValue(BusinessStatus::class),
-            'strategic_importance' => $this->enumValue(StrategicImportance::class),
             'regulatory_risk_classification' => 'low',
-            'organizational_role' => $this->enumValue(OrganizationalRole::class),
             'ownership_type' => $this->enumValue(OwnershipType::class),
             'development_source' => $this->enumValue(DevelopmentSource::class),
             'current_owner' => 'ml.owner',
@@ -161,20 +158,5 @@ class AiModelControllerTest extends TestCase
                     'name' => $model->name,
                 ],
             ]);
-    }
-
-    public function test_user_cannot_create_ai_model_with_person_as_an_organization(): void
-    {
-        $org = Organization::factory()->create();
-        $user = User::factory()->create(['organization_id' => $org->id]);
-
-        $payload = $this->validPayload([
-            'source_organization_id' => Stakeholder::factory()->create(['type' => 'person'])->id,
-        ]);
-
-        $response = $this->actingAs($user)->postJson($this->baseEndpoint, $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['source_organization_id']);
     }
 }

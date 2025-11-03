@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('table_ai_model_dataset');
+        Schema::dropIfExists('ai_model_dataset');
     }
 };
