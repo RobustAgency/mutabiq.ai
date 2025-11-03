@@ -32,6 +32,9 @@ class UpdateAiModelVersionRequest extends FormRequest
             'version_number' => ['sometimes', 'string', 'max:255'],
             'version_type' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, VersionType::cases()))],
             'description' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'version_role' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'version_source' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'our_involvement' => ['sometimes', 'nullable', 'string', 'max:255'],
             'release_date' => ['sometimes', 'nullable', 'date'],
             'release_notes' => ['sometimes', 'nullable', 'string'],
 
@@ -49,14 +52,9 @@ class UpdateAiModelVersionRequest extends FormRequest
 
             'deployment_status' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, DeploymentStatus::cases()))],
             'lifecycle_stage' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, LifecycleStage::cases()))],
-            'compliance_check_status' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, ComplianceStatus::cases()))],
-            'validation_status' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, ValidationStatus::cases()))],
             'deployment_environments' => ['sometimes', 'nullable', 'array'],
             'deployment_environments.*' => ['string', 'max:100'],
-
-            'rollback_available' => ['sometimes', 'boolean'],
             'has_performance_data' => ['sometimes', 'boolean'],
-            'performance_baseline_established' => ['sometimes', 'boolean'],
         ];
     }
 }
