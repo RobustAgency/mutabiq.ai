@@ -280,7 +280,6 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{aiModelArtifact}', 'show');
-        Route::post('{aiModelArtifact}', 'update');
         Route::delete('{aiModelArtifact}', 'destroy');
     });
 });
