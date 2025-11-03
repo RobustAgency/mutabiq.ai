@@ -7,6 +7,7 @@ use App\Enums\UserConsent\ConsentStatus;
 use App\Enums\UserConsent\Jurisdiction;
 use App\Enums\UserConsent\LegalBasis;
 use App\Enums\UserConsent\SubjectRealm;
+use App\Models\Organization;
 use App\Models\User;
 use App\Models\UserConsent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,11 +18,13 @@ class UserConsentControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
@@ -46,7 +49,7 @@ class UserConsentControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_user_consents(): void
     {
-        UserConsent::factory()->count(20)->create();
+        UserConsent::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/user-consents');
 
@@ -86,7 +89,7 @@ class UserConsentControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_user_consents_with_custom_per_page(): void
     {
-        UserConsent::factory()->count(20)->create();
+        UserConsent::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/user-consents?per_page=10');
 
@@ -424,7 +427,7 @@ class UserConsentControllerTest extends TestCase
      */
     public function test_user_can_show_specific_user_consent(): void
     {
-        $consent = UserConsent::factory()->create();
+        $consent = UserConsent::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson("/api/user-consents/{$consent->id}");
 
@@ -445,6 +448,7 @@ class UserConsentControllerTest extends TestCase
     public function test_user_can_update_user_consent(): void
     {
         $consent = UserConsent::factory()->create([
+            'organization_id' => $this->organization->id,
             'consent_status' => ConsentStatus::GRANTED->value,
         ]);
 
@@ -478,6 +482,7 @@ class UserConsentControllerTest extends TestCase
     public function test_user_can_partially_update_user_consent(): void
     {
         $consent = UserConsent::factory()->create([
+            'organization_id' => $this->organization->id,
             'subject_key' => 'ORIGINAL-KEY',
             'consent_status' => ConsentStatus::GRANTED->value,
         ]);
@@ -498,7 +503,7 @@ class UserConsentControllerTest extends TestCase
      */
     public function test_user_can_delete_user_consent(): void
     {
-        $consent = UserConsent::factory()->create();
+        $consent = UserConsent::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson("/api/user-consents/{$consent->id}");
 
@@ -539,7 +544,7 @@ class UserConsentControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_update_consent(): void
     {
-        $consent = UserConsent::factory()->create();
+        $consent = UserConsent::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->putJson("/api/user-consents/{$consent->id}", [
             'scope' => 'Updated',
@@ -553,7 +558,7 @@ class UserConsentControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_delete_consent(): void
     {
-        $consent = UserConsent::factory()->create();
+        $consent = UserConsent::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->deleteJson("/api/user-consents/{$consent->id}");
 

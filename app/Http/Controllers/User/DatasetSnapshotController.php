@@ -10,6 +10,7 @@ use App\Http\Resources\DatasetSnapshotResource;
 use App\Models\DatasetSnapshot;
 use App\Repositories\DatasetSnapshotRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class DatasetSnapshotController extends Controller
 {
@@ -20,8 +21,9 @@ class DatasetSnapshotController extends Controller
      */
     public function index(ListDatasetSnapshotRequest $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $snapshots = $this->datasetSnapshotRepository->getPaginatedSnapshots($perPage);
+        $snapshots = $this->datasetSnapshotRepository->getPaginatedSnapshots($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -36,6 +38,7 @@ class DatasetSnapshotController extends Controller
     public function store(StoreDatasetSnapshotRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $snapshot = $this->datasetSnapshotRepository->createSnapshot($validated);
 

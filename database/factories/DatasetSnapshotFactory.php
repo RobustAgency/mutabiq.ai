@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\DatasetSnapshot\ResidencyZone;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class DatasetSnapshotFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'dataset_id' => Dataset::factory(),
             'version_tag' => fake()->randomElement(['v1.0', 'v1.1', 'v2.0', 'v2.1', 'v3.0']),
             'time_range_start' => fake()->optional()->dateTimeBetween('-1 year', '-1 month'),

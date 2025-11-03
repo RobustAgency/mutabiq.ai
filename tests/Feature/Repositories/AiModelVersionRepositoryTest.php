@@ -3,6 +3,7 @@
 namespace Tests\Feature\Repositories;
 
 use App\Models\AiModel;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Models\AiModelVersion;
@@ -14,18 +15,27 @@ class AiModelVersionRepositoryTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     private $aiModelVersionRepository;
+    private Organization $organization;
+
     public function setUp(): void
     {
         parent::setUp();
         $this->aiModelVersionRepository = app(AiModelVersionRepository::class);
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_it_gets_all_ai_model_versions(): void
     {
-        $aiModel = AiModel::factory()->create();
-        AiModelVersion::factory()->count(10)->create(['ai_model_id' => $aiModel->id]);
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+        AiModelVersion::factory()->count(10)->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+        ]);
 
-        $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions(['ai_model_id' => $aiModel->id]);
+        $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions([
+            'organization_id' => $this->organization->id,
+            'ai_model_id' => $aiModel->id,
+        ]);
 
         $this->assertCount(10, $aiModelVersions);
         $this->assertInstanceOf(AiModelVersion::class, $aiModelVersions->first());
@@ -33,10 +43,12 @@ class AiModelVersionRepositoryTest extends TestCase
 
     public function test_it_gets_all_ai_model_versions_without_filter(): void
     {
-        AiModelVersion::factory()->count(5)->create();
-        AiModelVersion::factory()->count(3)->create();
+        AiModelVersion::factory()->count(5)->create(['organization_id' => $this->organization->id]);
+        AiModelVersion::factory()->count(3)->create(['organization_id' => $this->organization->id]);
 
-        $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions();
+        $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions([
+            'organization_id' => $this->organization->id,
+        ]);
 
         $this->assertCount(8, $aiModelVersions);
         $this->assertInstanceOf(AiModelVersion::class, $aiModelVersions->first());
@@ -44,8 +56,9 @@ class AiModelVersionRepositoryTest extends TestCase
 
     public function test_it_can_create_ai_model_version(): void
     {
-        $aiModel = AiModel::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'version_number' => '1.0.0',
             'version_type' => 'major',

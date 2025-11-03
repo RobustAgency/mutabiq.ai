@@ -10,6 +10,7 @@ use App\Enums\DataSource\HostingModel;
 use App\Enums\DataSource\ServiceModel;
 use App\Enums\DataSource\SystemType;
 use App\Models\DataSource;
+use App\Models\Organization;
 use App\Repositories\DataSourceRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -34,7 +35,9 @@ class DataSourceRepositoryTest extends TestCase
 
     protected function validPayload(array $overrides = []): array
     {
+        $organization = Organization::factory()->create();
         return array_merge([
+            'organization_id' => $organization->id,
             'name' => 'Customer Database',
             'system_type' => $this->enumFirstValue(SystemType::class),
             'owner_team' => 'Engineering',
@@ -55,9 +58,10 @@ class DataSourceRepositoryTest extends TestCase
 
     public function test_it_can_get_paginated_data_sources(): void
     {
-        DataSource::factory()->count(25)->create();
+        $organization = Organization::factory()->create();
+        DataSource::factory()->count(25)->create(['organization_id' => $organization->id]);
 
-        $results = $this->dataSourceRepository->getPaginatedDataSources(10);
+        $results = $this->dataSourceRepository->getPaginatedDataSources($organization->id, 10);
 
         $this->assertCount(10, $results->items());
         $this->assertEquals(25, $results->total());

@@ -7,6 +7,7 @@ use App\Enums\UserConsent\SubjectRealm;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
 use App\Models\DatasetSubjectPopulation;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,20 +17,22 @@ class DatasetSubjectPopulationControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         return array_merge([
             'dataset_id' => $dataset->id,
-            'snapshot_id' => DatasetSnapshot::factory()->for($dataset)->create()->id,
+            'snapshot_id' => DatasetSnapshot::factory()->for($dataset)->create(['organization_id' => $this->organization->id])->id,
             'subject_realm' => SubjectRealm::CUSTOMER->value,
             'jurisdiction' => Jurisdiction::EU->value,
             'subjects_total' => 10000,
@@ -42,7 +45,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_populations(): void
     {
-        DatasetSubjectPopulation::factory()->count(20)->create();
+        DatasetSubjectPopulation::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/dataset-subject-populations');
 
@@ -76,7 +79,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_populations_with_custom_per_page(): void
     {
-        DatasetSubjectPopulation::factory()->count(20)->create();
+        DatasetSubjectPopulation::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/dataset-subject-populations?per_page=10');
 
@@ -306,7 +309,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_user_can_show_specific_population(): void
     {
-        $population = DatasetSubjectPopulation::factory()->create();
+        $population = DatasetSubjectPopulation::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson("/api/dataset-subject-populations/{$population->id}");
 
@@ -327,6 +330,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
     public function test_user_can_update_population(): void
     {
         $population = DatasetSubjectPopulation::factory()->create([
+            'organization_id' => $this->organization->id,
             'subjects_total' => 1000,
             'subject_realm' => SubjectRealm::CUSTOMER->value,
         ]);
@@ -361,6 +365,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
     public function test_user_can_partially_update_population(): void
     {
         $population = DatasetSubjectPopulation::factory()->create([
+            'organization_id' => $this->organization->id,
             'subjects_total' => 1000,
             'jurisdiction' => Jurisdiction::EU->value,
         ]);
@@ -381,7 +386,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_user_can_delete_population(): void
     {
-        $population = DatasetSubjectPopulation::factory()->create();
+        $population = DatasetSubjectPopulation::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson("/api/dataset-subject-populations/{$population->id}");
 
@@ -422,7 +427,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_update_population(): void
     {
-        $population = DatasetSubjectPopulation::factory()->create();
+        $population = DatasetSubjectPopulation::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->postJson("/api/dataset-subject-populations/{$population->id}", [
             'subjects_total' => 5000,
@@ -436,7 +441,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_delete_population(): void
     {
-        $population = DatasetSubjectPopulation::factory()->create();
+        $population = DatasetSubjectPopulation::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->deleteJson("/api/dataset-subject-populations/{$population->id}");
 
@@ -544,7 +549,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_update_validates_subjects_total_min_zero(): void
     {
-        $population = DatasetSubjectPopulation::factory()->create();
+        $population = DatasetSubjectPopulation::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->postJson("/api/dataset-subject-populations/{$population->id}", [
             'subjects_total' => -50,
@@ -559,7 +564,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_update_validates_invalid_subject_realm(): void
     {
-        $population = DatasetSubjectPopulation::factory()->create();
+        $population = DatasetSubjectPopulation::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->postJson("/api/dataset-subject-populations/{$population->id}", [
             'subject_realm' => 'invalid_realm',
@@ -574,7 +579,7 @@ class DatasetSubjectPopulationControllerTest extends TestCase
      */
     public function test_update_validates_invalid_jurisdiction(): void
     {
-        $population = DatasetSubjectPopulation::factory()->create();
+        $population = DatasetSubjectPopulation::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->postJson("/api/dataset-subject-populations/{$population->id}", [
             'jurisdiction' => 'INVALID',

@@ -10,6 +10,7 @@ use App\Models\DatasetSubjectPopulation;
 use App\Repositories\DatasetSubjectPopulationRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DatasetSubjectPopulationController extends Controller
 {
@@ -22,8 +23,9 @@ class DatasetSubjectPopulationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $populations = $this->repository->getPaginatedPopulations($perPage);
+        $populations = $this->repository->getPaginatedPopulations($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -37,7 +39,9 @@ class DatasetSubjectPopulationController extends Controller
      */
     public function store(StoreDatasetSubjectPopulationRequest $request): JsonResponse
     {
-        $population = $this->repository->createPopulation($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $population = $this->repository->createPopulation($validated);
 
         return response()->json([
             'error' => false,

@@ -10,6 +10,7 @@ use App\Models\DataSource;
 use App\Repositories\DataSourceRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DataSourceController extends Controller
 {
@@ -20,8 +21,9 @@ class DataSourceController extends Controller
      */
     public function index(ListDataSourceRequest $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $dataSources = $this->dataSourceRepository->getPaginatedDataSources($perPage);
+        $dataSources = $this->dataSourceRepository->getPaginatedDataSources($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -36,6 +38,7 @@ class DataSourceController extends Controller
     public function store(StoreDataSourceRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $dataSource = $this->dataSourceRepository->createDataSource($validated);
 

@@ -11,6 +11,7 @@ class DataSource extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'name',
         'system_type',
         'owner_team',

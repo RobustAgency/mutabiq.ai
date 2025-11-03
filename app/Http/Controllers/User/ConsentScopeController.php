@@ -10,6 +10,7 @@ use App\Http\Resources\ConsentScopeResource;
 use App\Models\ConsentScope;
 use App\Repositories\ConsentScopeRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class ConsentScopeController extends Controller
 {
@@ -20,8 +21,9 @@ class ConsentScopeController extends Controller
      */
     public function index(ListConsentScopeRequest $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $consentScopes = $this->consentScopeRepository->getPaginatedConsentScopes($perPage);
+        $consentScopes = $this->consentScopeRepository->getPaginatedConsentScopes($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -36,6 +38,7 @@ class ConsentScopeController extends Controller
     public function store(StoreConsentScopeRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $consentScope = $this->consentScopeRepository->createConsentScope($validated);
 

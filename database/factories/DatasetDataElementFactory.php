@@ -11,6 +11,7 @@ use App\Enums\DatasetElementMap\SensitivityOverride;
 use App\Models\DataElement;
 use App\Models\Dataset;
 use App\Models\DatasetDataElement;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,6 +29,7 @@ class DatasetDataElementFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'dataset_id' => Dataset::factory(),
             'data_element_id' => DataElement::factory(),
             'column_name' => fake()->word(),

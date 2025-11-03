@@ -12,6 +12,7 @@ class DatasetSnapshot extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'dataset_id',
         'version_tag',
         'time_range_start',

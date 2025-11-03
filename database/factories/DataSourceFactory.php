@@ -9,6 +9,7 @@ use App\Enums\DataSource\DataResidency;
 use App\Enums\DataSource\HostingModel;
 use App\Enums\DataSource\ServiceModel;
 use App\Enums\DataSource\SystemType;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,6 +25,7 @@ class DataSourceFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'name' => fake()->company() . ' ' . fake()->randomElement(['Database', 'Data Lake', 'API', 'Storage']),
             'system_type' => fake()->randomElement(SystemType::cases()),
             'owner_team' => fake()->randomElement(['Engineering', 'Data Science', 'Analytics', 'Operations', 'Product']),

@@ -10,6 +10,7 @@ use App\Models\AiModelDataset;
 use App\Repositories\AiModelDatasetRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AiModelDatasetController extends Controller
 {
@@ -18,8 +19,9 @@ class AiModelDatasetController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page') ?? 15;
-        $aiModelDatasets = $this->aiModelDatasetRepository->getPaginatedAiModelDatasets($perPage);
+        $aiModelDatasets = $this->aiModelDatasetRepository->getPaginatedAiModelDatasets($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -30,6 +32,7 @@ class AiModelDatasetController extends Controller
     public function store(StoreAiModelDatasetRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $aiModelDataset = $this->aiModelDatasetRepository->create($validated);
 

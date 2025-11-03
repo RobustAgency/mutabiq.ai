@@ -14,6 +14,7 @@ class DatasetDataElement extends Model
     protected $table = 'dataset_element';
 
     protected $fillable = [
+        'organization_id',
         'dataset_id',
         'data_element_id',
         'column_name',

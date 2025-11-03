@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Controllers\User;
 
+use App\Models\Organization;
 use App\Models\PdpProcessingRegister;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,11 +13,13 @@ class PdpProcessingRegisterControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
@@ -45,7 +48,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_registers(): void
     {
-        PdpProcessingRegister::factory()->count(20)->create();
+        PdpProcessingRegister::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/pdp-processing-registers');
 
@@ -79,7 +82,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_registers_with_custom_per_page(): void
     {
-        PdpProcessingRegister::factory()->count(20)->create();
+        PdpProcessingRegister::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/pdp-processing-registers?per_page=10');
 
@@ -315,7 +318,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
      */
     public function test_user_can_show_specific_register(): void
     {
-        $register = PdpProcessingRegister::factory()->create();
+        $register = PdpProcessingRegister::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson("/api/pdp-processing-registers/{$register->id}");
 
@@ -335,6 +338,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
     public function test_user_can_update_register(): void
     {
         $register = PdpProcessingRegister::factory()->create([
+            'organization_id' => $this->organization->id,
             'purpose' => 'Original purpose',
             'status' => 'draft',
         ]);
@@ -369,6 +373,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
     public function test_user_can_partially_update_register(): void
     {
         $register = PdpProcessingRegister::factory()->create([
+            'organization_id' => $this->organization->id,
             'purpose' => 'Original',
             'controller_role' => 'Controller',
         ]);
@@ -389,7 +394,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
      */
     public function test_user_can_delete_register(): void
     {
-        $register = PdpProcessingRegister::factory()->create();
+        $register = PdpProcessingRegister::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson("/api/pdp-processing-registers/{$register->id}");
 
@@ -430,7 +435,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_update_register(): void
     {
-        $register = PdpProcessingRegister::factory()->create();
+        $register = PdpProcessingRegister::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->postJson("/api/pdp-processing-registers/{$register->id}", [
             'purpose' => 'Updated',
@@ -444,7 +449,7 @@ class PdpProcessingRegisterControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_delete_register(): void
     {
-        $register = PdpProcessingRegister::factory()->create();
+        $register = PdpProcessingRegister::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->deleteJson("/api/pdp-processing-registers/{$register->id}");
 

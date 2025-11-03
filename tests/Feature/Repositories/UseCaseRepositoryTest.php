@@ -12,6 +12,7 @@ use App\Enums\UseCase\ROIClassification;
 use App\Enums\UseCase\Status;
 use App\Models\Stakeholder;
 use App\Models\UseCase;
+use App\Models\Organization;
 use App\Repositories\UseCaseRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -31,9 +32,10 @@ class UseCaseRepositoryTest extends TestCase
 
     public function test_it_gets_filtered_use_cases(): void
     {
-        UseCase::factory()->create(['name' => 'Test Use Case 1', 'status' => Status::ACTIVE->value]);
-        UseCase::factory()->create(['name' => 'Another Use Case', 'status' => Status::SUSPENDED->value]);
-        UseCase::factory()->create(['name' => 'Test Use Case 2', 'status' => Status::ACTIVE->value]);
+        $organization = Organization::factory()->create();
+        UseCase::factory()->create(['name' => 'Test Use Case 1', 'status' => Status::ACTIVE->value, 'organization_id' => $organization->id]);
+        UseCase::factory()->create(['name' => 'Another Use Case', 'status' => Status::SUSPENDED->value, 'organization_id' => $organization->id]);
+        UseCase::factory()->create(['name' => 'Test Use Case 2', 'status' => Status::ACTIVE->value, 'organization_id' => $organization->id]);
 
         $filters = ['name' => 'Test', 'status' => Status::ACTIVE->value, 'per_page' => 2];
         $result = $this->useCaseRepository->getFilteredUseCases($filters);
@@ -47,10 +49,12 @@ class UseCaseRepositoryTest extends TestCase
 
     public function test_it_creates_use_case(): void
     {
+        $organization = Organization::factory()->create();
         $businessOwner = Stakeholder::factory()->create();
         $technicalOwner = Stakeholder::factory()->create();
 
         $data = [
+            'organization_id' => $organization->id,
             'name' => 'New AI Use Case',
             'description' => 'This is a detailed description of the new AI use case. It provides comprehensive information about what the use case aims to achieve and how it will be implemented in the organization.',
             'business_objective' => 'To improve operational efficiency and reduce costs by automating repetitive tasks.',
@@ -102,6 +106,7 @@ class UseCaseRepositoryTest extends TestCase
     public function test_it_creates_use_case_with_minimal_required_fields(): void
     {
         $data = [
+            'organization_id' => Organization::factory()->create()->id,
             'name' => 'Minimal Use Case',
             'description' => 'This is a minimal but valid description that meets the minimum length requirement of 100 characters for testing purposes.',
             'business_objective' => 'To test minimal field creation with valid objective length.',

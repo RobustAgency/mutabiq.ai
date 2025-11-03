@@ -6,6 +6,7 @@ use App\Models\AiModel;
 use App\Models\AiModelUseCase;
 use App\Models\UseCase;
 use App\Models\AiModelVersion;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Repositories\AiModelUseCaseRepository;
@@ -17,20 +18,24 @@ class AiModelUseCaseRepositoryTest extends TestCase
     use RefreshDatabase;
 
     private AiModelUseCaseRepository $aiModelUseCaseRepository;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->aiModelUseCaseRepository = new AiModelUseCaseRepository();
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_it_get_filtered_ai_model_use_cases(): void
     {
         AiModelUseCase::factory()->count(15)->create([
             'ai_model_id' => 1,
+            'organization_id' => $this->organization->id,
         ]);
 
         $filters = [
+            'organization_id' => $this->organization->id,
             'ai_model_id' => 1,
             'per_page' => 5,
         ];
@@ -45,9 +50,9 @@ class AiModelUseCaseRepositoryTest extends TestCase
 
     public function test_it_handles_no_filters_gracefully(): void
     {
-        AiModelUseCase::factory()->count(10)->create();
+        AiModelUseCase::factory()->count(10)->create(['organization_id' => $this->organization->id]);
 
-        $filters = [];
+        $filters = ['organization_id' => $this->organization->id];
 
         $paginator = $this->aiModelUseCaseRepository->getFilteredAiModelUseCases($filters);
 
@@ -85,6 +90,7 @@ class AiModelUseCaseRepositoryTest extends TestCase
         $useCase = UseCase::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'use_case_id' => $useCase->id,
             'ai_model_version_id' => $aiModelVersion->id,

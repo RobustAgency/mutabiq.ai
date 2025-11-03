@@ -10,14 +10,17 @@ use Illuminate\Support\Collection;
 class UserConsentRepository
 {
     /**
-     * Get paginated user consents.
+     * Get paginated user consents for a specific organization.
      *
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int, UserConsent>
      */
-    public function getPaginatedConsents(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedConsents(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        return UserConsent::orderBy('created_at', 'desc')->paginate($perPage);
+        return UserConsent::where('organization_id', $organizationId)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
     /**

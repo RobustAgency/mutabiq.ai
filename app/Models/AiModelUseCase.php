@@ -11,6 +11,7 @@ class AiModelUseCase extends Model
     /** @use HasFactory<\Database\Factories\AiModelUseCaseFactory> */
     use HasFactory;
     protected $fillable = [
+        'organization_id',
         'ai_model_id',
         'use_case_id',
         'ai_model_version_id',

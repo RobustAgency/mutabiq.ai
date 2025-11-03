@@ -9,6 +9,7 @@ use App\Models\AiModelDataset;
 use App\Models\AiModelVersion;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -36,6 +37,7 @@ class AiModelDatasetFactory extends Factory
         ]);
 
         return [
+            'organization_id' => Organization::factory(),
             'ai_model_id' => AiModel::factory(),
             'ai_model_version_id' => AiModelVersion::factory(),
             'dataset_id' => fake()->optional(0.7)->passthrough(Dataset::factory()),

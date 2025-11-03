@@ -4,6 +4,7 @@ namespace Tests\Feature\Repositories;
 
 use App\Models\Stakeholder;
 use App\Repositories\StakeholderRepository;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -37,6 +38,16 @@ class StakeholderRepositoryTest extends TestCase
 
         $this->assertCount(5, $result->items());
         $this->assertEquals(10, $result->perPage());
+    }
+
+    public function test_get_filtered_stakeholders_with_organization_id(): void
+    {
+        $organization = Organization::factory()->create();
+        Stakeholder::factory()->count(8)->create(['organization_id' => $organization->id]);
+
+        $result = $this->repository->getFilteredStakeholders(['organization_id' => $organization->id]);
+
+        $this->assertCount(8, $result->items());
     }
 
     public function test_search_by_display_name(): void
@@ -229,6 +240,7 @@ class StakeholderRepositoryTest extends TestCase
     public function test_create_stores_stakeholder(): void
     {
         $data = [
+            'organization_id' => Organization::factory()->create()->id,
             'type' => 'internal',
             'display_name' => 'John Smith',
             'legal_name' => 'Tech Company',

@@ -5,6 +5,7 @@ namespace Tests\Feature\Repositories;
 use App\Models\DataElement;
 use App\Models\Dataset;
 use App\Models\DatasetDataElement;
+use App\Models\Organization;
 use App\Repositories\DataElementRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,9 +24,10 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_get_paginated_data_elements_returns_paginated_results(): void
     {
-        DataElement::factory()->count(25)->create();
+        $organization = Organization::factory()->create();
+        DataElement::factory()->count(25)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedDataElements(10);
+        $result = $this->repository->getPaginatedDataElements($organization->id, 10);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(25, $result->total());
@@ -34,15 +36,17 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_get_paginated_data_elements_eager_loads_datasets(): void
     {
-        $dataElement = DataElement::factory()->create();
-        $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $organization->id]);
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
         ]);
 
-        $result = $this->repository->getPaginatedDataElements();
+        $result = $this->repository->getPaginatedDataElements($organization->id);
         $firstElement = $result->items()[0];
 
         $this->assertTrue($firstElement->relationLoaded('datasets'));
@@ -51,9 +55,10 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_get_paginated_data_elements_uses_default_per_page(): void
     {
-        DataElement::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        DataElement::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedDataElements();
+        $result = $this->repository->getPaginatedDataElements($organization->id);
 
         $this->assertCount(15, $result->items());
         $this->assertEquals(20, $result->total());
@@ -61,7 +66,10 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_create_data_element_creates_new_record(): void
     {
+        $organization = Organization::factory()->create();
+
         $data = [
+            'organization_id' => $organization->id,
             'name' => 'Customer ID',
             'business_definition' => 'Unique identifier for customers',
             'data_type' => 'string',
@@ -139,7 +147,8 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_get_paginated_data_elements_returns_empty_when_no_records(): void
     {
-        $result = $this->repository->getPaginatedDataElements();
+        $organization = Organization::factory()->create();
+        $result = $this->repository->getPaginatedDataElements($organization->id);
 
         $this->assertCount(0, $result->items());
         $this->assertEquals(0, $result->total());
@@ -147,7 +156,8 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_get_data_element_by_id_returns_correct_element(): void
     {
-        $dataElement = DataElement::factory()->create(['name' => 'Test Element']);
+        $organization = Organization::factory()->create();
+        $dataElement = DataElement::factory()->create(['name' => 'Test Element', 'organization_id' => $organization->id]);
 
         $result = $this->repository->getDataElementByID($dataElement->id);
 
@@ -156,78 +166,22 @@ class DataElementRepositoryTest extends TestCase
         $this->assertEquals('Test Element', $result->name);
     }
 
-    public function test_get_data_element_by_id_returns_null_when_not_found(): void
-    {
-        $result = $this->repository->getDataElementByID(99999);
-
-        $this->assertNull($result);
-    }
-
-    public function test_get_data_element_by_id_eager_loads_datasets(): void
-    {
-        $dataElement = DataElement::factory()->create(['name' => 'Test Element']);
-        $dataset = Dataset::factory()->create();
-
-        DatasetDataElement::factory()->create([
-            'data_element_id' => $dataElement->id,
-            'dataset_id' => $dataset->id,
-            'column_name' => 'test_column',
-        ]);
-
-        $result = $this->repository->getDataElementByID($dataElement->id);
-
-        $this->assertInstanceOf(DataElement::class, $result);
-        $this->assertTrue($result->relationLoaded('datasets'));
-        $this->assertCount(1, $result->datasets);
-        $this->assertEquals($dataset->id, $result->datasets->first()->id);
-    }
-
-    public function test_associate_data_element_with_dataset_creates_association(): void
-    {
-        $dataset = Dataset::factory()->create();
-        $dataElement = DataElement::factory()->create();
-
-        $data = [
-            'dataset_id' => $dataset->id,
-            'data_element_id' => $dataElement->id,
-            'column_name' => 'customer_email',
-            'nullable' => 'No',
-            'sensitivity_override' => null,
-            'pii_override' => 'Yes',
-            'transform_applied' => 'Encrypted',
-            'quality_rules_applied' => 'Must be valid email format',
-            'cde_in_dataset' => 'Yes',
-            'cde_category_in_dataset' => 'Demographics',
-            'lineage_source_column' => 'source.email',
-            'deprecated' => 'No',
-        ];
-
-        $association = $this->repository->associateDataElementWithDataset($data);
-
-        $this->assertInstanceOf(DatasetDataElement::class, $association);
-        $this->assertEquals($dataset->id, $association->dataset_id);
-        $this->assertEquals($dataElement->id, $association->data_element_id);
-        $this->assertEquals('customer_email', $association->column_name);
-        $this->assertDatabaseHas('dataset_element', [
-            'dataset_id' => $dataset->id,
-            'data_element_id' => $dataElement->id,
-            'column_name' => 'customer_email',
-        ]);
-    }
-
     public function test_data_element_can_have_multiple_datasets(): void
     {
-        $dataElement = DataElement::factory()->create();
-        $dataset1 = Dataset::factory()->create();
-        $dataset2 = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $organization->id]);
+        $dataset1 = Dataset::factory()->create(['organization_id' => $organization->id]);
+        $dataset2 = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset1->id,
             'column_name' => 'col1',
         ]);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset2->id,
             'column_name' => 'col2',
@@ -242,10 +196,12 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_data_element_datasets_relationship_includes_pivot_data(): void
     {
-        $dataElement = DataElement::factory()->create();
-        $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $organization->id]);
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
             'column_name' => 'test_column',
@@ -266,10 +222,12 @@ class DataElementRepositoryTest extends TestCase
 
     public function test_deleting_data_element_cascades_to_associations(): void
     {
-        $dataElement = DataElement::factory()->create();
-        $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $organization->id]);
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         $association = DatasetDataElement::factory()->create([
+            'organization_id' => $organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
         ]);

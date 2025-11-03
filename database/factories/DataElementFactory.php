@@ -10,6 +10,7 @@ use App\Enums\DataElement\PiiFlag;
 use App\Enums\DataElement\Sensitivity;
 use App\Enums\DataElement\SpecialCategoryFlag;
 use App\Models\DataElement;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,6 +28,7 @@ class DataElementFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'name' => fake()->words(3, true),
             'business_definition' => fake()->sentence(),
             'data_type' => fake()->randomElement(DataType::cases()),

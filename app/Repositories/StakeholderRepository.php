@@ -18,6 +18,10 @@ class StakeholderRepository
     {
         $query = Stakeholder::query();
 
+        if (!empty($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
         if (!empty($filters['type'])) {
             $query->where('type', $filters['type']);
         }

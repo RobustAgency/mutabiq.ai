@@ -13,6 +13,7 @@ use App\Enums\TechnicalReviewStatus;
 use App\Enums\EthicsReviewStatus;
 use App\Enums\ComplianceReviewStatus;
 use App\Enums\PublicationStatus;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,6 +29,7 @@ class AiModelCardFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'ai_model_id' => AiModel::factory(),
             'ai_model_version_id' => AiModelVersion::factory(),
             'title' => $this->faker->sentence,
