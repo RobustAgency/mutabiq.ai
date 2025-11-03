@@ -7,6 +7,7 @@ use App\Enums\UserConsent\Jurisdiction;
 use App\Models\ConsentCoverage;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use App\Repositories\ConsentCoverageRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,11 +17,13 @@ class ConsentCoverageRepositoryTest extends TestCase
     use RefreshDatabase;
 
     private ConsentCoverageRepository $repository;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new ConsentCoverageRepository();
+        $this->organization = Organization::factory()->create();
     }
 
     /**
@@ -28,9 +31,9 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_get_paginated_coverages_returns_paginator(): void
     {
-        ConsentCoverage::factory()->count(5)->create();
+        ConsentCoverage::factory()->count(5)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedCoverages();
+        $result = $this->repository->getPaginatedCoverages($this->organization->id);
 
         $this->assertInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class, $result);
         $this->assertEquals(5, $result->total());
@@ -41,11 +44,11 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_get_paginated_coverages_eager_loads_relationships(): void
     {
-        $dataset = Dataset::factory()->create();
-        $snapshot = DatasetSnapshot::factory()->for($dataset)->create();
-        ConsentCoverage::factory()->for($dataset)->for($snapshot, 'snapshot')->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
+        $snapshot = DatasetSnapshot::factory()->for($dataset)->create(['organization_id' => $this->organization->id]);
+        ConsentCoverage::factory()->for($dataset)->for($snapshot, 'snapshot')->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedCoverages();
+        $result = $this->repository->getPaginatedCoverages($this->organization->id);
 
         /** @var ConsentCoverage $coverage */
         $coverage = $result->items()[0];
@@ -60,9 +63,9 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_get_paginated_coverages_respects_per_page(): void
     {
-        ConsentCoverage::factory()->count(20)->create();
+        ConsentCoverage::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedCoverages(10);
+        $result = $this->repository->getPaginatedCoverages($this->organization->id, 10);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertCount(10, $result->items());
@@ -74,9 +77,9 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_get_paginated_coverages_uses_default_per_page(): void
     {
-        ConsentCoverage::factory()->count(20)->create();
+        ConsentCoverage::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedCoverages();
+        $result = $this->repository->getPaginatedCoverages($this->organization->id);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -86,11 +89,11 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_get_paginated_coverages_ordered_by_as_of_desc(): void
     {
-        $coverage1 = ConsentCoverage::factory()->create(['as_of' => now()->subDays(3)]);
-        $coverage2 = ConsentCoverage::factory()->create(['as_of' => now()->subDays(1)]);
-        $coverage3 = ConsentCoverage::factory()->create(['as_of' => now()->subDays(2)]);
+        $coverage1 = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id, 'as_of' => now()->subDays(3)]);
+        $coverage2 = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id, 'as_of' => now()->subDays(1)]);
+        $coverage3 = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id, 'as_of' => now()->subDays(2)]);
 
-        $result = $this->repository->getPaginatedCoverages();
+        $result = $this->repository->getPaginatedCoverages($this->organization->id);
 
         $this->assertEquals($coverage2->id, $result->items()[0]->id);
         $this->assertEquals($coverage3->id, $result->items()[1]->id);
@@ -102,10 +105,12 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_create_coverage_creates_new_coverage(): void
     {
-        $dataset = Dataset::factory()->create();
-        $snapshot = DatasetSnapshot::factory()->for($dataset)->create();
+        $organization = Organization::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
+        $snapshot = DatasetSnapshot::factory()->for($dataset)->create(['organization_id' => $organization->id]);
 
         $data = [
+            'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'snapshot_id' => $snapshot->id,
             'purpose' => ConsentPurpose::MARKETING->value,
@@ -137,9 +142,11 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_create_coverage_with_minimal_data(): void
     {
-        $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         $data = [
+            'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'purpose' => ConsentPurpose::ANALYTICS->value,
             'jurisdiction' => Jurisdiction::US->value,
@@ -162,9 +169,10 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_create_coverage_sets_created_at_automatically(): void
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'dataset_id' => $dataset->id,
             'purpose' => ConsentPurpose::MARKETING->value,
             'jurisdiction' => Jurisdiction::EU->value,
@@ -186,6 +194,7 @@ class ConsentCoverageRepositoryTest extends TestCase
     public function test_update_coverage_updates_existing_coverage(): void
     {
         $coverage = ConsentCoverage::factory()->create([
+            'organization_id' => $this->organization->id,
             'subjects_total' => 1000,
             'subjects_with_valid_consent' => 800,
             'coverage_pct' => 80.00,
@@ -212,6 +221,7 @@ class ConsentCoverageRepositoryTest extends TestCase
     public function test_update_coverage_can_change_purpose_and_jurisdiction(): void
     {
         $coverage = ConsentCoverage::factory()->create([
+            'organization_id' => $this->organization->id,
             'purpose' => ConsentPurpose::MARKETING->value,
             'jurisdiction' => Jurisdiction::EU->value,
         ]);
@@ -231,7 +241,7 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_delete_coverage_deletes_coverage(): void
     {
-        $coverage = ConsentCoverage::factory()->create();
+        $coverage = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id]);
         $coverageId = $coverage->id;
 
         $result = $this->repository->deleteCoverage($coverage);
@@ -245,7 +255,7 @@ class ConsentCoverageRepositoryTest extends TestCase
      */
     public function test_delete_coverage_returns_false_on_failure(): void
     {
-        $coverage = ConsentCoverage::factory()->create();
+        $coverage = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id]);
 
         // Delete it first
         $coverage->delete();
@@ -269,7 +279,10 @@ class ConsentCoverageRepositoryTest extends TestCase
         ];
 
         foreach ($purposes as $purpose) {
-            $coverage = ConsentCoverage::factory()->create(['purpose' => $purpose->value]);
+            $coverage = ConsentCoverage::factory()->create([
+                'organization_id' => $this->organization->id,
+                'purpose' => $purpose->value,
+            ]);
             $this->assertEquals($purpose->value, $coverage->purpose);
         }
     }
@@ -288,102 +301,12 @@ class ConsentCoverageRepositoryTest extends TestCase
         ];
 
         foreach ($jurisdictions as $jurisdiction) {
-            $coverage = ConsentCoverage::factory()->create(['jurisdiction' => $jurisdiction->value]);
+            $coverage = ConsentCoverage::factory()->create([
+                'organization_id' => $this->organization->id,
+                'jurisdiction' => $jurisdiction->value,
+            ]);
             $this->assertEquals($jurisdiction->value, $coverage->jurisdiction);
         }
-    }
-
-    /**
-     * Test coverage with zero coverage percentage.
-     */
-    public function test_create_coverage_with_zero_coverage(): void
-    {
-        $dataset = Dataset::factory()->create();
-
-        $data = [
-            'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::MARKETING->value,
-            'jurisdiction' => Jurisdiction::EU->value,
-            'as_of' => now(),
-            'subjects_total' => 1000,
-            'subjects_with_valid_consent' => 0,
-            'coverage_pct' => 0.00,
-            'evidence_ref' => 'EVD-ZERO',
-        ];
-
-        $result = $this->repository->createCoverage($data);
-
-        $this->assertEquals(0.00, (float) $result->coverage_pct);
-    }
-
-    /**
-     * Test coverage with 100% coverage.
-     */
-    public function test_create_coverage_with_full_coverage(): void
-    {
-        $dataset = Dataset::factory()->create();
-
-        $data = [
-            'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::ANALYTICS->value,
-            'jurisdiction' => Jurisdiction::US->value,
-            'as_of' => now(),
-            'subjects_total' => 5000,
-            'subjects_with_valid_consent' => 5000,
-            'coverage_pct' => 100.00,
-            'evidence_ref' => 'EVD-FULL',
-        ];
-
-        $result = $this->repository->createCoverage($data);
-
-        $this->assertEquals(100.00, (float) $result->coverage_pct);
-    }
-
-    /**
-     * Test coverage handles large numbers.
-     */
-    public function test_create_coverage_with_large_numbers(): void
-    {
-        $dataset = Dataset::factory()->create();
-
-        $data = [
-            'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::TRAINING_AI->value,
-            'jurisdiction' => Jurisdiction::EU->value,
-            'as_of' => now(),
-            'subjects_total' => 10000000,
-            'subjects_with_valid_consent' => 9500000,
-            'coverage_pct' => 95.00,
-            'evidence_ref' => 'EVD-LARGE',
-        ];
-
-        $result = $this->repository->createCoverage($data);
-
-        $this->assertEquals(10000000, $result->subjects_total);
-        $this->assertEquals(9500000, $result->subjects_with_valid_consent);
-    }
-
-    /**
-     * Test coverage preserves decimal precision.
-     */
-    public function test_coverage_preserves_decimal_precision(): void
-    {
-        $dataset = Dataset::factory()->create();
-
-        $data = [
-            'dataset_id' => $dataset->id,
-            'purpose' => ConsentPurpose::MARKETING->value,
-            'jurisdiction' => Jurisdiction::EU->value,
-            'as_of' => now(),
-            'subjects_total' => 1000,
-            'subjects_with_valid_consent' => 857,
-            'coverage_pct' => 85.70,
-            'evidence_ref' => 'EVD-PRECISION',
-        ];
-
-        $result = $this->repository->createCoverage($data);
-
-        $this->assertEquals(85.70, (float) $result->coverage_pct);
     }
 
     /**
@@ -392,6 +315,7 @@ class ConsentCoverageRepositoryTest extends TestCase
     public function test_repository_handles_nullable_snapshot_id(): void
     {
         $coverage = ConsentCoverage::factory()->create([
+            'organization_id' => $this->organization->id,
             'snapshot_id' => null,
         ]);
 

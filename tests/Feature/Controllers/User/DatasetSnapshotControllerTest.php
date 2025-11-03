@@ -5,6 +5,7 @@ namespace Tests\Feature\Controllers\User;
 use App\Enums\DatasetSnapshot\ResidencyZone;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,16 +15,18 @@ class DatasetSnapshotControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         return array_merge([
             'dataset_id' => $dataset->id,
@@ -46,7 +49,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_dataset_snapshots(): void
     {
-        DatasetSnapshot::factory()->count(20)->create();
+        DatasetSnapshot::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/dataset-snapshots');
 
@@ -87,7 +90,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_dataset_snapshots_with_custom_per_page(): void
     {
-        DatasetSnapshot::factory()->count(20)->create();
+        DatasetSnapshot::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/dataset-snapshots?per_page=10');
 
@@ -133,7 +136,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_user_can_create_dataset_snapshot_with_minimal_fields(): void
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         $payload = [
             'dataset_id' => $dataset->id,
@@ -334,7 +337,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_user_can_view_specific_dataset_snapshot(): void
     {
-        $snapshot = DatasetSnapshot::factory()->create();
+        $snapshot = DatasetSnapshot::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson("/api/dataset-snapshots/{$snapshot->id}");
 
@@ -363,8 +366,8 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_show_method_includes_dataset_relationship(): void
     {
-        $dataset = Dataset::factory()->create();
-        $snapshot = DatasetSnapshot::factory()->for($dataset)->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
+        $snapshot = DatasetSnapshot::factory()->for($dataset)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson("/api/dataset-snapshots/{$snapshot->id}");
 
@@ -385,6 +388,7 @@ class DatasetSnapshotControllerTest extends TestCase
     public function test_user_can_update_dataset_snapshot(): void
     {
         $snapshot = DatasetSnapshot::factory()->create([
+            'organization_id' => $this->organization->id,
             'version_tag' => 'v1.0',
             'row_count' => 1000,
         ]);
@@ -420,6 +424,7 @@ class DatasetSnapshotControllerTest extends TestCase
     public function test_user_can_partially_update_dataset_snapshot(): void
     {
         $snapshot = DatasetSnapshot::factory()->create([
+            'organization_id' => $this->organization->id,
             'version_tag' => 'v1.0',
             'row_count' => 1000,
             'residency_zone' => ResidencyZone::EU,
@@ -446,7 +451,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_update_validates_time_range_end_after_start(): void
     {
-        $snapshot = DatasetSnapshot::factory()->create();
+        $snapshot = DatasetSnapshot::factory()->create(['organization_id' => $this->organization->id]);
 
         $updateData = [
             'time_range_start' => '2024-12-31',
@@ -464,7 +469,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_user_can_delete_dataset_snapshot(): void
     {
-        $snapshot = DatasetSnapshot::factory()->create();
+        $snapshot = DatasetSnapshot::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson("/api/dataset-snapshots/{$snapshot->id}");
 
@@ -505,7 +510,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_view_dataset_snapshot(): void
     {
-        $snapshot = DatasetSnapshot::factory()->create();
+        $snapshot = DatasetSnapshot::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->getJson("/api/dataset-snapshots/{$snapshot->id}");
 
@@ -517,7 +522,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_update_dataset_snapshot(): void
     {
-        $snapshot = DatasetSnapshot::factory()->create();
+        $snapshot = DatasetSnapshot::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->postJson("/api/dataset-snapshots/{$snapshot->id}", ['version_tag' => 'v2.0']);
 
@@ -529,7 +534,7 @@ class DatasetSnapshotControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_delete_dataset_snapshot(): void
     {
-        $snapshot = DatasetSnapshot::factory()->create();
+        $snapshot = DatasetSnapshot::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->deleteJson("/api/dataset-snapshots/{$snapshot->id}");
 

@@ -11,6 +11,7 @@ class Stakeholder extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'type',
         'display_name',
         'legal_name',

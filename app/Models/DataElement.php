@@ -12,6 +12,7 @@ class DataElement extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'name',
         'business_definition',
         'data_type',

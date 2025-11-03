@@ -11,6 +11,7 @@ use App\Enums\UseCase\RiskLevel;
 use App\Enums\UseCase\ROIClassification;
 use App\Enums\UseCase\Status;
 use App\Models\Stakeholder;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,6 +27,7 @@ class UseCaseFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'name' => $this->faker->sentence(3),
             'description' => $this->faker->paragraphs(3, true),
             'business_objective' => $this->faker->paragraphs(2, true),

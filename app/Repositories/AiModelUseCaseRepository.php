@@ -17,6 +17,10 @@ class AiModelUseCaseRepository
     {
         $query = AiModelUseCase::with(['aiModel', 'useCase', 'aiModelVersion']);
 
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
         if (isset($filters['ai_model_id'])) {
             $query->where('ai_model_id', $filters['ai_model_id']);
         }

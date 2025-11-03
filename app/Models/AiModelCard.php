@@ -12,6 +12,7 @@ class AiModelCard extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'ai_model_id',
         'ai_model_version_id',
         'title',

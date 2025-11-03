@@ -8,6 +8,7 @@ use App\Enums\UserConsent\Jurisdiction;
 use App\Enums\UserConsent\LegalBasis;
 use App\Enums\UserConsent\SubjectRealm;
 use App\Models\UserConsent;
+use App\Models\Organization;
 use App\Repositories\UserConsentRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -29,9 +30,10 @@ class UserConsentRepositoryTest extends TestCase
      */
     public function test_get_paginated_consents_returns_paginator(): void
     {
-        UserConsent::factory()->count(5)->create();
+        $organization = Organization::factory()->create();
+        UserConsent::factory()->count(5)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents();
+        $result = $this->repository->getPaginatedConsents($organization->id);
 
         $this->assertInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class, $result);
         $this->assertEquals(5, $result->total());
@@ -42,9 +44,10 @@ class UserConsentRepositoryTest extends TestCase
      */
     public function test_get_paginated_consents_respects_per_page(): void
     {
-        UserConsent::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        UserConsent::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents(10);
+        $result = $this->repository->getPaginatedConsents($organization->id, 10);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertCount(10, $result->items());
@@ -56,9 +59,10 @@ class UserConsentRepositoryTest extends TestCase
      */
     public function test_get_paginated_consents_uses_default_per_page(): void
     {
-        UserConsent::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        UserConsent::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents();
+        $result = $this->repository->getPaginatedConsents($organization->id);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -68,11 +72,12 @@ class UserConsentRepositoryTest extends TestCase
      */
     public function test_get_paginated_consents_ordered_by_created_at_desc(): void
     {
-        $consent1 = UserConsent::factory()->create(['created_at' => now()->subDays(3)]);
-        $consent2 = UserConsent::factory()->create(['created_at' => now()->subDays(1)]);
-        $consent3 = UserConsent::factory()->create(['created_at' => now()->subDays(2)]);
+        $organization = Organization::factory()->create();
+        $consent1 = UserConsent::factory()->create(['created_at' => now()->subDays(3), 'organization_id' => $organization->id]);
+        $consent2 = UserConsent::factory()->create(['created_at' => now()->subDays(1), 'organization_id' => $organization->id]);
+        $consent3 = UserConsent::factory()->create(['created_at' => now()->subDays(2), 'organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents();
+        $result = $this->repository->getPaginatedConsents($organization->id);
 
         $this->assertEquals($consent2->id, $result->items()[0]->id);
         $this->assertEquals($consent3->id, $result->items()[1]->id);
@@ -108,7 +113,9 @@ class UserConsentRepositoryTest extends TestCase
      */
     public function test_create_consent_creates_new_consent(): void
     {
+        $organization = Organization::factory()->create();
         $data = [
+            'organization_id' => $organization->id,
             'subject_key' => 'SUBJ-123456',
             'subject_realm' => SubjectRealm::CUSTOMER,
             'jurisdiction' => Jurisdiction::EU,
@@ -141,7 +148,9 @@ class UserConsentRepositoryTest extends TestCase
      */
     public function test_create_consent_with_minimal_data(): void
     {
+        $organization = Organization::factory()->create();
         $data = [
+            'organization_id' => $organization->id,
             'subject_key' => 'SUBJ-789',
             'subject_realm' => SubjectRealm::PROSPECT,
             'jurisdiction' => Jurisdiction::US,
@@ -165,6 +174,7 @@ class UserConsentRepositoryTest extends TestCase
      */
     public function test_create_consent_with_multiple_purposes(): void
     {
+        $organization = Organization::factory()->create();
         $purposes = [
             ConsentPurpose::MARKETING->value,
             ConsentPurpose::ANALYTICS->value,
@@ -173,6 +183,7 @@ class UserConsentRepositoryTest extends TestCase
         ];
 
         $data = [
+            'organization_id' => $organization->id,
             'subject_key' => 'SUBJ-MULTI',
             'subject_realm' => SubjectRealm::CUSTOMER,
             'jurisdiction' => Jurisdiction::EU,

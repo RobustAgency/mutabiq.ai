@@ -8,11 +8,16 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class DatasetSubjectPopulationRepository
 {
     /**
+     * Get paginated dataset subject populations for a specific organization.
+     * 
+     * @param int $organizationId
+     * @param int $perPage
      * @return LengthAwarePaginator<int, DatasetSubjectPopulation>
      */
-    public function getPaginatedPopulations(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedPopulations(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        return DatasetSubjectPopulation::with(['dataset', 'snapshot'])
+        return DatasetSubjectPopulation::where('organization_id', $organizationId)
+            ->with(['dataset', 'snapshot'])
             ->orderBy('as_of', 'desc')
             ->paginate($perPage);
     }

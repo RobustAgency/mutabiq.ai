@@ -11,6 +11,7 @@ class AiModelVersion extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'ai_model_id',
         'version_number',
         'version_type',

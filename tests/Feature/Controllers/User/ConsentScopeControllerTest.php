@@ -7,6 +7,7 @@ use App\Enums\UserConsent\Jurisdiction;
 use App\Enums\UserConsent\SubjectRealm;
 use App\Models\ConsentScope;
 use App\Models\Dataset;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,16 +17,18 @@ class ConsentScopeControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
         $selectedPurposes = fake()->randomElements(ConsentPurpose::cases(), fake()->numberBetween(1, 4));
         $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
 
@@ -44,7 +47,7 @@ class ConsentScopeControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_consent_scopes(): void
     {
-        ConsentScope::factory()->count(20)->create();
+        ConsentScope::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/consent-scopes');
 
@@ -79,7 +82,7 @@ class ConsentScopeControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_consent_scopes_with_custom_per_page(): void
     {
-        ConsentScope::factory()->count(20)->create();
+        ConsentScope::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/consent-scopes?per_page=10');
 
@@ -302,7 +305,7 @@ class ConsentScopeControllerTest extends TestCase
      */
     public function test_user_can_show_specific_consent_scope(): void
     {
-        $consentScope = ConsentScope::factory()->create();
+        $consentScope = ConsentScope::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson("/api/consent-scopes/{$consentScope->id}");
 
@@ -323,6 +326,7 @@ class ConsentScopeControllerTest extends TestCase
     public function test_user_can_update_consent_scope(): void
     {
         $consentScope = ConsentScope::factory()->create([
+            'organization_id' => $this->organization->id,
             'purpose' => [ConsentPurpose::MARKETING->value],
         ]);
 
@@ -356,6 +360,7 @@ class ConsentScopeControllerTest extends TestCase
     public function test_user_can_partially_update_consent_scope(): void
     {
         $consentScope = ConsentScope::factory()->create([
+            'organization_id' => $this->organization->id,
             'purpose' => [ConsentPurpose::MARKETING->value],
             'jurisdiction' => Jurisdiction::EU->value,
         ]);
@@ -376,7 +381,7 @@ class ConsentScopeControllerTest extends TestCase
      */
     public function test_user_can_delete_consent_scope(): void
     {
-        $consentScope = ConsentScope::factory()->create();
+        $consentScope = ConsentScope::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson("/api/consent-scopes/{$consentScope->id}");
 
@@ -417,7 +422,7 @@ class ConsentScopeControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_update_consent_scope(): void
     {
-        $consentScope = ConsentScope::factory()->create();
+        $consentScope = ConsentScope::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->putJson("/api/consent-scopes/{$consentScope->id}", [
             'purpose' => ConsentPurpose::ANALYTICS->value,
@@ -431,7 +436,7 @@ class ConsentScopeControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_delete_consent_scope(): void
     {
-        $consentScope = ConsentScope::factory()->create();
+        $consentScope = ConsentScope::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->deleteJson("/api/consent-scopes/{$consentScope->id}");
 

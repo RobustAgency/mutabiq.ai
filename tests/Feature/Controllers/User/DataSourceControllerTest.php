@@ -10,6 +10,7 @@ use App\Enums\DataSource\HostingModel;
 use App\Enums\DataSource\ServiceModel;
 use App\Enums\DataSource\SystemType;
 use App\Models\DataSource;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,11 +20,13 @@ class DataSourceControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function enumFirstValue(string $enumClass): string
@@ -54,7 +57,7 @@ class DataSourceControllerTest extends TestCase
 
     public function test_user_can_get_paginated_data_sources(): void
     {
-        DataSource::factory()->count(20)->create();
+        DataSource::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/data-sources');
 
@@ -79,7 +82,7 @@ class DataSourceControllerTest extends TestCase
 
     public function test_user_can_set_custom_per_page(): void
     {
-        DataSource::factory()->count(30)->create();
+        DataSource::factory()->count(30)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/data-sources?per_page=5');
 
@@ -145,6 +148,7 @@ class DataSourceControllerTest extends TestCase
     public function test_user_can_view_single_data_source(): void
     {
         $dataSource = DataSource::factory()->create([
+            'organization_id' => $this->organization->id,
             'name' => 'Test Database',
         ]);
 
@@ -164,6 +168,7 @@ class DataSourceControllerTest extends TestCase
     public function test_user_can_update_data_source(): void
     {
         $dataSource = DataSource::factory()->create([
+            'organization_id' => $this->organization->id,
             'name' => 'Old Name',
             'owner_team' => 'Old Team',
         ]);
@@ -194,7 +199,7 @@ class DataSourceControllerTest extends TestCase
 
     public function test_user_cannot_update_data_source_with_invalid_enum_values(): void
     {
-        $dataSource = DataSource::factory()->create();
+        $dataSource = DataSource::factory()->create(['organization_id' => $this->organization->id]);
 
         $updateData = [
             'system_type' => 'invalid_type',
@@ -208,7 +213,7 @@ class DataSourceControllerTest extends TestCase
 
     public function test_user_can_delete_data_source(): void
     {
-        $dataSource = DataSource::factory()->create();
+        $dataSource = DataSource::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson('/api/data-sources/' . $dataSource->id);
 

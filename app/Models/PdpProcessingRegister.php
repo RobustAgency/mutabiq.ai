@@ -11,6 +11,7 @@ class PdpProcessingRegister extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'purpose',
         'controller_role',
         'data_subject_categories',

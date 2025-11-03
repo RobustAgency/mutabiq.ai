@@ -6,6 +6,7 @@ use App\Enums\UserConsent\ConsentPurpose;
 use App\Enums\UserConsent\Jurisdiction;
 use App\Enums\UserConsent\SubjectRealm;
 use App\Models\Dataset;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,6 +28,7 @@ class ConsentScopeFactory extends Factory
         $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
 
         return [
+            'organization_id' => Organization::factory(),
             'dataset_id' => Dataset::factory(),
             'purpose' => $purposeValues,
             'subject_realm' => fake()->randomElement(SubjectRealm::cases()),

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreStakeholderRequest;
 use App\Models\Stakeholder;
 use App\Repositories\StakeholderRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class StakeholderController extends Controller
 {
@@ -16,6 +17,7 @@ class StakeholderController extends Controller
     public function index(ListStakeholderRequest $request): JsonResponse
     {
         $filters = $request->validated();
+        $filters['organization_id'] = Auth::user()->organization_id;
         $stakeholders = $this->stakeholderRepository->getFilteredStakeholders($filters);
 
         return response()->json([
@@ -28,6 +30,7 @@ class StakeholderController extends Controller
     public function store(StoreStakeholderRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
         $stakeholder = $this->stakeholderRepository->create($validated);
 
         return response()->json([

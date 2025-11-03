@@ -10,6 +10,7 @@ use App\Models\AiModelVersion;
 use App\Repositories\AiModelVersionRepository;
 use App\Http\Requests\ListAiModelVersionRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class AiModelVersionController extends Controller
 {
@@ -18,6 +19,7 @@ class AiModelVersionController extends Controller
     public function index(ListAiModelVersionRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
         $aiModelVersions = $this->aiModelVersionRepository->getFilteredAiModelVersions($validated);
 
         return response()->json([
@@ -30,6 +32,7 @@ class AiModelVersionController extends Controller
     public function store(StoreAiModelVersionRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $this->aiModelVersionRepository->create($validated);
 

@@ -7,6 +7,7 @@ use App\Enums\UserConsent\Jurisdiction;
 use App\Enums\UserConsent\SubjectRealm;
 use App\Models\ConsentScope;
 use App\Models\Dataset;
+use App\Models\Organization;
 use App\Repositories\ConsentScopeRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,11 +17,13 @@ class ConsentScopeRepositoryTest extends TestCase
     use RefreshDatabase;
 
     private ConsentScopeRepository $repository;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new ConsentScopeRepository();
+        $this->organization = Organization::factory()->create();
     }
 
     /**
@@ -28,9 +31,9 @@ class ConsentScopeRepositoryTest extends TestCase
      */
     public function test_get_paginated_consent_scopes_returns_paginator(): void
     {
-        ConsentScope::factory()->count(5)->create();
+        ConsentScope::factory()->count(5)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes();
+        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
 
         $this->assertInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class, $result);
         $this->assertEquals(5, $result->total());
@@ -41,10 +44,10 @@ class ConsentScopeRepositoryTest extends TestCase
      */
     public function test_get_paginated_consent_scopes_eager_loads_dataset(): void
     {
-        $dataset = Dataset::factory()->create();
-        ConsentScope::factory()->for($dataset)->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
+        ConsentScope::factory()->for($dataset)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes();
+        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
 
         /** @var ConsentScope $consentScope */
         $consentScope = $result->items()[0];
@@ -57,9 +60,9 @@ class ConsentScopeRepositoryTest extends TestCase
      */
     public function test_get_paginated_consent_scopes_respects_per_page(): void
     {
-        ConsentScope::factory()->count(20)->create();
+        ConsentScope::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes(10);
+        $result = $this->repository->getPaginatedConsentScopes($this->organization->id, 10);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertCount(10, $result->items());
@@ -71,9 +74,9 @@ class ConsentScopeRepositoryTest extends TestCase
      */
     public function test_get_paginated_consent_scopes_uses_default_per_page(): void
     {
-        ConsentScope::factory()->count(20)->create();
+        ConsentScope::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes();
+        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -83,11 +86,20 @@ class ConsentScopeRepositoryTest extends TestCase
      */
     public function test_get_paginated_consent_scopes_ordered_by_created_at_desc(): void
     {
-        $scope1 = ConsentScope::factory()->create(['created_at' => now()->subDays(3)]);
-        $scope2 = ConsentScope::factory()->create(['created_at' => now()->subDays(1)]);
-        $scope3 = ConsentScope::factory()->create(['created_at' => now()->subDays(2)]);
+        $scope1 = ConsentScope::factory()->create([
+            'created_at' => now()->subDays(3),
+            'organization_id' => $this->organization->id,
+        ]);
+        $scope2 = ConsentScope::factory()->create([
+            'created_at' => now()->subDays(1),
+            'organization_id' => $this->organization->id,
+        ]);
+        $scope3 = ConsentScope::factory()->create([
+            'created_at' => now()->subDays(2),
+            'organization_id' => $this->organization->id,
+        ]);
 
-        $result = $this->repository->getPaginatedConsentScopes();
+        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
 
         $this->assertEquals($scope2->id, $result->items()[0]->id);
         $this->assertEquals($scope3->id, $result->items()[1]->id);
@@ -99,9 +111,11 @@ class ConsentScopeRepositoryTest extends TestCase
      */
     public function test_create_consent_scope_creates_new_consent_scope(): void
     {
-        $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         $data = [
+            'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'purpose' => [ConsentPurpose::MARKETING->value, ConsentPurpose::ANALYTICS->value],
             'subject_realm' => SubjectRealm::CUSTOMER,
@@ -128,9 +142,11 @@ class ConsentScopeRepositoryTest extends TestCase
      */
     public function test_create_consent_scope_with_minimal_data(): void
     {
-        $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         $data = [
+            'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'purpose' => [ConsentPurpose::ANALYTICS->value],
             'subject_realm' => SubjectRealm::PROSPECT,

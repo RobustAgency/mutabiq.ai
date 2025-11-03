@@ -13,6 +13,7 @@ class DatasetSubjectPopulation extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'dataset_id',
         'snapshot_id',
         'subject_realm',

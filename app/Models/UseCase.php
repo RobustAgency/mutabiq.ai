@@ -11,6 +11,7 @@ class UseCase extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'name',
         'description',
         'business_objective',

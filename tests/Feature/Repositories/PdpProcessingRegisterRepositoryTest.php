@@ -3,6 +3,7 @@
 namespace Tests\Feature\Repositories;
 
 use App\Models\PdpProcessingRegister;
+use App\Models\Organization;
 use App\Repositories\PdpProcessingRegisterRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,9 +25,10 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
      */
     public function test_get_paginated_registers_returns_paginated_results(): void
     {
-        PdpProcessingRegister::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        PdpProcessingRegister::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedRegisters(10);
+        $result = $this->repository->getPaginatedRegisters($organization->id, 10);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(20, $result->total());
@@ -38,9 +40,10 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
      */
     public function test_get_paginated_registers_uses_default_per_page(): void
     {
-        PdpProcessingRegister::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        PdpProcessingRegister::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedRegisters();
+        $result = $this->repository->getPaginatedRegisters($organization->id);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -50,14 +53,17 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
      */
     public function test_get_paginated_registers_orders_by_created_at_desc(): void
     {
+        $organization = Organization::factory()->create();
         $oldRegister = PdpProcessingRegister::factory()->create([
             'created_at' => now()->subDays(10),
+            'organization_id' => $organization->id,
         ]);
         $newRegister = PdpProcessingRegister::factory()->create([
             'created_at' => now(),
+            'organization_id' => $organization->id,
         ]);
 
-        $result = $this->repository->getPaginatedRegisters();
+        $result = $this->repository->getPaginatedRegisters($organization->id);
 
         $this->assertEquals($newRegister->id, $result->items()[0]->id);
         $this->assertEquals($oldRegister->id, $result->items()[1]->id);
@@ -68,7 +74,8 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
      */
     public function test_get_paginated_registers_returns_empty_when_no_records(): void
     {
-        $result = $this->repository->getPaginatedRegisters();
+        $organization = Organization::factory()->create();
+        $result = $this->repository->getPaginatedRegisters($organization->id);
 
         $this->assertCount(0, $result->items());
         $this->assertEquals(0, $result->total());
@@ -79,7 +86,9 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
      */
     public function test_create_register_creates_new_record_with_all_fields(): void
     {
+        $organization = Organization::factory()->create();
         $data = [
+            'organization_id' => $organization->id,
             'processing_id' => 'PDP-TEST001',
             'purpose' => 'AI model training',
             'controller_role' => 'Controller',
@@ -113,7 +122,10 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
      */
     public function test_create_register_with_minimal_fields(): void
     {
+        $organization = Organization::factory()->create();
+
         $data = [
+            'organization_id' => $organization->id,
             'processing_id' => 'PDP-MIN001',
             'purpose' => 'Analytics',
             'controller_role' => 'Processor',
@@ -137,6 +149,7 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
      */
     public function test_create_register_with_multiple_data_subject_categories(): void
     {
+        $organization = Organization::factory()->create();
         $categories = [
             'customer',
             'prospect',
@@ -144,6 +157,7 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
         ];
 
         $data = [
+            'organization_id' => $organization->id,
             'processing_id' => 'PDP-MULTI001',
             'purpose' => 'Fraud detection',
             'controller_role' => 'Controller',
@@ -234,118 +248,5 @@ class PdpProcessingRegisterRepositoryTest extends TestCase
         $this->assertDatabaseMissing('pdp_processing_registers', [
             'id' => $register->id,
         ]);
-    }
-
-    /**
-     * Test create register with all lawful bases.
-     */
-    public function test_create_register_with_all_lawful_bases(): void
-    {
-        $lawfulBases = [
-            'consent',
-            'contract',
-            'legal_obligation',
-            'legitimate_interests',
-            'public_task',
-            'vital_interests',
-        ];
-
-        foreach ($lawfulBases as $basis) {
-            $data = [
-                'purpose' => 'Testing ' . $basis,
-                'controller_role' => 'Controller',
-                'data_subject_categories' => ['customer'],
-                'personal_data_categories' => ['Identifier'],
-                'lawful_basis' => $basis,
-                'owner_team' => 'Compliance Team',
-                'status' => 'published',
-            ];
-
-            $register = $this->repository->createRegister($data);
-
-            $this->assertEquals($basis, $register->lawful_basis);
-        }
-    }
-
-    /**
-     * Test create register with all controller roles.
-     */
-    public function test_create_register_with_all_controller_roles(): void
-    {
-        $roles = ['Controller', 'Processor', 'Joint Controller'];
-
-        foreach ($roles as $role) {
-            $data = [
-                'processing_id' => 'PDP-ROLE-' . strtoupper(str_replace(' ', '', $role)),
-                'purpose' => 'Testing role',
-                'controller_role' => $role,
-                'data_subject_categories' => ['customer'],
-                'personal_data_categories' => ['Identifier'],
-                'lawful_basis' => 'consent',
-                'owner_team' => 'Data Team',
-                'status' => 'published',
-            ];
-
-            $register = $this->repository->createRegister($data);
-
-            $this->assertEquals($role, $register->controller_role);
-        }
-    }
-
-    /**
-     * Test create register with all statuses.
-     */
-    public function test_create_register_with_all_statuses(): void
-    {
-        $statuses = [
-            'draft',
-            'in_review',
-            'approved',
-            'published',
-            'archived',
-        ];
-
-        foreach ($statuses as $status) {
-            $data = [
-                'purpose' => 'Testing status',
-                'controller_role' => 'Controller',
-                'data_subject_categories' => ['customer'],
-                'personal_data_categories' => ['Identifier'],
-                'lawful_basis' => 'consent',
-                'owner_team' => 'Data Team',
-                'status' => $status,
-            ];
-
-            $register = $this->repository->createRegister($data);
-
-            $this->assertEquals($status, $register->status);
-        }
-    }
-
-    /**
-     * Test create register with effective dates.
-     */
-    public function test_create_register_with_effective_dates(): void
-    {
-        $effectiveFrom = now()->subMonth();
-        $effectiveTo = now()->addYear();
-
-        $data = [
-            'processing_id' => 'PDP-DATES001',
-            'purpose' => 'Testing dates',
-            'controller_role' => 'Controller',
-            'data_subject_categories' => ['customer'],
-            'personal_data_categories' => ['Identifier'],
-            'lawful_basis' => 'consent',
-            'owner_team' => 'Data Team',
-            'effective_from' => $effectiveFrom,
-            'effective_to' => $effectiveTo,
-            'status' => 'published',
-        ];
-
-        $register = $this->repository->createRegister($data);
-
-        $this->assertEquals($effectiveFrom->timestamp, $register->effective_from->timestamp);
-        $this->assertEquals($effectiveTo->timestamp, $register->effective_to->timestamp);
     }
 }

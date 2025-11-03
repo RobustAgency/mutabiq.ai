@@ -10,6 +10,7 @@ use App\Http\Resources\DatasetResource;
 use App\Models\Dataset;
 use App\Repositories\DatasetRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class DatasetController extends Controller
 {
@@ -20,8 +21,9 @@ class DatasetController extends Controller
      */
     public function index(ListDatasetRequest $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $datasets = $this->datasetRepository->getPaginatedDatasets($perPage);
+        $datasets = $this->datasetRepository->getPaginatedDatasets($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -36,6 +38,7 @@ class DatasetController extends Controller
     public function store(StoreDatasetRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $dataset = $this->datasetRepository->createDataset($validated);
 

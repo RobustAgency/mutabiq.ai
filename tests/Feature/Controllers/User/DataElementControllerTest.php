@@ -7,6 +7,7 @@ use App\Enums\DataElement\PersonalDataCategory;
 use App\Models\DataElement;
 use App\Models\Dataset;
 use App\Models\DatasetDataElement;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,11 +17,13 @@ class DataElementControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
@@ -44,7 +47,7 @@ class DataElementControllerTest extends TestCase
 
     public function test_user_can_get_paginated_data_elements(): void
     {
-        DataElement::factory()->count(20)->create();
+        DataElement::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/data-elements');
 
@@ -100,7 +103,7 @@ class DataElementControllerTest extends TestCase
 
     public function test_user_can_set_custom_per_page(): void
     {
-        DataElement::factory()->count(30)->create();
+        DataElement::factory()->count(30)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/data-elements?per_page=5');
 
@@ -111,10 +114,11 @@ class DataElementControllerTest extends TestCase
 
     public function test_paginated_data_elements_include_datasets_relationship(): void
     {
-        $dataElement = DataElement::factory()->create();
-        $dataset = Dataset::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $this->organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
         ]);
@@ -177,6 +181,7 @@ class DataElementControllerTest extends TestCase
     public function test_user_can_view_single_data_element(): void
     {
         $dataElement = DataElement::factory()->create([
+            'organization_id' => $this->organization->id,
             'name' => 'Test Element',
             'data_type' => 'string',
         ]);
@@ -197,10 +202,11 @@ class DataElementControllerTest extends TestCase
 
     public function test_show_method_includes_datasets_relationship(): void
     {
-        $dataElement = DataElement::factory()->create(['name' => 'Test Element']);
-        $dataset = Dataset::factory()->create(['name' => 'Test Dataset']);
+        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Test Element']);
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Test Dataset']);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $this->organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
             'column_name' => 'customer_email',
@@ -247,6 +253,7 @@ class DataElementControllerTest extends TestCase
     public function test_user_can_update_data_element(): void
     {
         $dataElement = DataElement::factory()->create([
+            'organization_id' => $this->organization->id,
             'name' => 'Old Name',
             'sensitivity' => 'Internal',
         ]);
@@ -277,7 +284,7 @@ class DataElementControllerTest extends TestCase
 
     public function test_user_can_delete_data_element(): void
     {
-        $dataElement = DataElement::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson('/api/data-elements/' . $dataElement->id);
 
@@ -294,10 +301,11 @@ class DataElementControllerTest extends TestCase
 
     public function test_deleting_data_element_removes_dataset_associations(): void
     {
-        $dataElement = DataElement::factory()->create();
-        $dataset = Dataset::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         $association = DatasetDataElement::factory()->create([
+            'organization_id' => $this->organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
         ]);
@@ -356,10 +364,11 @@ class DataElementControllerTest extends TestCase
 
     public function test_single_data_element_includes_datasets_with_pivot_data(): void
     {
-        $dataElement = DataElement::factory()->create();
-        $dataset = Dataset::factory()->create(['name' => 'Test Dataset']);
+        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Test Dataset']);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $this->organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
             'column_name' => 'customer_email',
@@ -391,10 +400,11 @@ class DataElementControllerTest extends TestCase
 
     public function test_updating_data_element_preserves_dataset_associations(): void
     {
-        $dataElement = DataElement::factory()->create(['name' => 'Original']);
-        $dataset = Dataset::factory()->create();
+        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Original']);
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         DatasetDataElement::factory()->create([
+            'organization_id' => $this->organization->id,
             'data_element_id' => $dataElement->id,
             'dataset_id' => $dataset->id,
         ]);

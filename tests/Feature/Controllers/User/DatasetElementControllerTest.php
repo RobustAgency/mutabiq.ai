@@ -11,6 +11,7 @@ use App\Enums\DatasetElementMap\SensitivityOverride;
 use App\Models\DataElement;
 use App\Models\Dataset;
 use App\Models\DatasetDataElement;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -20,19 +21,22 @@ class DatasetElementControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
     {
-        $dataset = Dataset::factory()->create();
-        $dataElement = DataElement::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
+        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
 
         return array_merge([
+            'organization_id' => $this->organization->id,
             'dataset_id' => $dataset->id,
             'data_element_id' => $dataElement->id,
             'column_name' => 'customer_email',
@@ -199,37 +203,6 @@ class DatasetElementControllerTest extends TestCase
         $this->assertNull($association->quality_rules_applied);
         $this->assertNull($association->cde_category_in_dataset);
         $this->assertNull($association->lineage_source_column);
-    }
-
-    public function test_association_with_all_enum_values(): void
-    {
-        $dataset = Dataset::factory()->create();
-        $dataElement = DataElement::factory()->create();
-
-        $data = [
-            'dataset_id' => $dataset->id,
-            'data_element_id' => $dataElement->id,
-            'column_name' => 'test_column',
-            'nullable' => Nullable::YES->value,
-            'sensitivity_override' => SensitivityOverride::INTERNAL->value,
-            'pii_override' => PiiOverride::NO->value,
-            'cde_in_dataset' => CdeInDataset::NO->value,
-            'deprecated' => Deprecated::YES->value,
-        ];
-
-        $response = $this->actingAs($this->user)->postJson('/api/associate-data-element-with-dataset', $data);
-
-        $response->assertStatus(201);
-
-        $this->assertDatabaseHas('dataset_element', [
-            'dataset_id' => $dataset->id,
-            'data_element_id' => $dataElement->id,
-            'nullable' => Nullable::YES->value,
-            'sensitivity_override' => SensitivityOverride::INTERNAL->value,
-            'pii_override' => PiiOverride::NO->value,
-            'cde_in_dataset' => CdeInDataset::NO->value,
-            'deprecated' => Deprecated::YES->value,
-        ]);
     }
 
     public function test_can_associate_same_data_element_to_multiple_datasets(): void

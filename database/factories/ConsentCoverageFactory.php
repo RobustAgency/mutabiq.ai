@@ -6,6 +6,7 @@ use App\Enums\UserConsent\ConsentPurpose;
 use App\Enums\UserConsent\Jurisdiction;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -33,6 +34,7 @@ class ConsentCoverageFactory extends Factory
         $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
 
         return [
+            'organization_id' => Organization::factory(),
             'dataset_id' => Dataset::factory(),
             'snapshot_id' => fake()->boolean(70) ? DatasetSnapshot::factory() : null,
             'purpose' => $purposeValues,

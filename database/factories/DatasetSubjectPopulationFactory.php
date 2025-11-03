@@ -7,6 +7,7 @@ use App\Enums\UserConsent\SubjectRealm;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
 use App\Models\DatasetSubjectPopulation;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,6 +25,7 @@ class DatasetSubjectPopulationFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'dataset_id' => Dataset::factory(),
             'snapshot_id' => $this->faker->boolean(70) ? DatasetSnapshot::factory() : null,
             'subject_realm' => $this->faker->randomElement(SubjectRealm::cases())->value,

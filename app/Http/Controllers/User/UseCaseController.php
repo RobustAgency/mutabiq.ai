@@ -9,6 +9,7 @@ use App\Models\UseCase;
 use App\Repositories\UseCaseRepository;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\UseCaseResource;
+use Illuminate\Support\Facades\Auth;
 
 class UseCaseController extends Controller
 {
@@ -16,7 +17,9 @@ class UseCaseController extends Controller
 
     public function index(SearchUseCaseRequest $request): JsonResponse
     {
-        $useCases = $this->repository->getFilteredUseCases($request->validated());
+        $filters = $request->validated();
+        $filters['organization_id'] = Auth::user()->organization_id;
+        $useCases = $this->repository->getFilteredUseCases($filters);
         return response()->json([
             'data' => $useCases,
             'error' => false,
@@ -27,6 +30,7 @@ class UseCaseController extends Controller
     public function store(StoreUseCaseRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $data['organization_id'] = $request->user()->organization_id;
         $this->repository->createUseCase($data);
 
         return response()->json([

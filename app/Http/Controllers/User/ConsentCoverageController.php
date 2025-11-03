@@ -10,6 +10,7 @@ use App\Http\Resources\ConsentCoverageResource;
 use App\Models\ConsentCoverage;
 use App\Repositories\ConsentCoverageRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class ConsentCoverageController extends Controller
 {
@@ -20,8 +21,9 @@ class ConsentCoverageController extends Controller
      */
     public function index(ListConsentCoverageRequest $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $coverages = $this->consentCoverageRepository->getPaginatedCoverages($perPage);
+        $coverages = $this->consentCoverageRepository->getPaginatedCoverages($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -36,6 +38,7 @@ class ConsentCoverageController extends Controller
     public function store(StoreConsentCoverageRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $coverage = $this->consentCoverageRepository->createCoverage($validated);
 

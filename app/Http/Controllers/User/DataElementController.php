@@ -10,6 +10,7 @@ use App\Models\DataElement;
 use App\Repositories\DataElementRepository;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\DataElementResource;
+use Illuminate\Support\Facades\Auth;
 
 class DataElementController extends Controller
 {
@@ -19,8 +20,9 @@ class DataElementController extends Controller
 
     public function index(ListDataElementRequest $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->validated('per_page', 15);
-        $dataElements = $this->repository->getPaginatedDataElements($perPage);
+        $dataElements = $this->repository->getPaginatedDataElements($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -31,7 +33,9 @@ class DataElementController extends Controller
 
     public function store(StoreDataElementRequest $request): JsonResponse
     {
-        $dataElement = $this->repository->createDataElement($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $dataElement = $this->repository->createDataElement($validated);
 
         return response()->json([
             'error' => false,

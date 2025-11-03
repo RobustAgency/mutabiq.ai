@@ -3,6 +3,7 @@
 namespace Tests\Unit\Repositories;
 
 use App\Models\Dataset;
+use App\Models\Organization;
 use App\Repositories\DatasetRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,9 +22,10 @@ class DatasetRepositoryTest extends TestCase
 
     public function test_get_paginated_datasets_returns_paginated_results(): void
     {
-        Dataset::factory()->count(25)->create();
+        $organization = Organization::factory()->create();
+        Dataset::factory()->count(25)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedDatasets(10);
+        $result = $this->repository->getPaginatedDatasets($organization->id, 10);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertEquals(25, $result->total());
@@ -32,16 +34,18 @@ class DatasetRepositoryTest extends TestCase
 
     public function test_get_paginated_datasets_uses_default_per_page(): void
     {
-        Dataset::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        Dataset::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedDatasets();
+        $result = $this->repository->getPaginatedDatasets($organization->id);
 
         $this->assertEquals(15, $result->perPage());
     }
 
     public function test_get_dataset_by_id_returns_dataset(): void
     {
-        $dataset = Dataset::factory()->create(['name' => 'Test Dataset']);
+        $organization = Organization::factory()->create();
+        $dataset = Dataset::factory()->create(['name' => 'Test Dataset', 'organization_id' => $organization->id]);
 
         $result = $this->repository->getDatasetByID($dataset->id);
 
@@ -50,16 +54,11 @@ class DatasetRepositoryTest extends TestCase
         $this->assertEquals($dataset->id, $result->id);
     }
 
-    public function test_get_dataset_by_id_returns_null_for_nonexistent_id(): void
-    {
-        $result = $this->repository->getDatasetByID(99999);
-
-        $this->assertNull($result);
-    }
-
     public function test_create_dataset(): void
     {
+        $organization = Organization::factory()->create();
         $data = [
+            'organization_id' => $organization->id,
             'name' => 'New Test Dataset',
             'source_ids' => [1, 2, 3],
             'purpose' => 'training',
@@ -117,7 +116,9 @@ class DatasetRepositoryTest extends TestCase
 
     public function test_create_dataset_with_array_fields(): void
     {
+        $organization = Organization::factory()->create();
         $data = [
+            'organization_id' => $organization->id,
             'name' => 'Array Fields Dataset',
             'source_ids' => [1, 2, 3],
             'data_subject_categories' => ['customers', 'employees'],

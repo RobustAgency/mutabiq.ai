@@ -14,6 +14,7 @@ use App\Enums\Dataset\Sensitivity;
 use App\Enums\Dataset\StorageFormat;
 use App\Models\Dataset;
 use App\Models\DataSource;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,11 +24,13 @@ class DatasetControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function enumFirstValue(string $enumClass): string
@@ -37,7 +40,7 @@ class DatasetControllerTest extends TestCase
 
     private function validPayload(array $overrides = []): array
     {
-        $dataSources = DataSource::factory()->count(2)->create();
+        $dataSources = DataSource::factory()->count(2)->create(['organization_id' => $this->organization->id]);
 
         return array_merge([
             'dataset_id' => 'DS-' . fake()->unique()->numerify('######'),
@@ -74,7 +77,7 @@ class DatasetControllerTest extends TestCase
 
     public function test_user_can_get_paginated_datasets(): void
     {
-        Dataset::factory()->count(20)->create();
+        Dataset::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/datasets');
 
@@ -99,7 +102,7 @@ class DatasetControllerTest extends TestCase
 
     public function test_user_can_set_custom_per_page(): void
     {
-        Dataset::factory()->count(30)->create();
+        Dataset::factory()->count(30)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/datasets?per_page=5');
 
@@ -161,6 +164,7 @@ class DatasetControllerTest extends TestCase
     public function test_user_can_view_single_dataset(): void
     {
         $dataset = Dataset::factory()->create([
+            'organization_id' => $this->organization->id,
             'name' => 'Test Dataset',
         ]);
 
@@ -217,6 +221,7 @@ class DatasetControllerTest extends TestCase
     public function test_user_can_update_dataset(): void
     {
         $dataset = Dataset::factory()->create([
+            'organization_id' => $this->organization->id,
             'name' => 'Old Dataset Name',
             'owner_team' => 'Old Team',
             'consent_coverage_pct' => 75,
@@ -250,7 +255,7 @@ class DatasetControllerTest extends TestCase
 
     public function test_user_cannot_update_dataset_with_invalid_enum_values(): void
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         $updateData = [
             'sensitivity' => 'invalid_sensitivity',
@@ -264,7 +269,7 @@ class DatasetControllerTest extends TestCase
 
     public function test_user_can_delete_dataset(): void
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson('/api/datasets/' . $dataset->id);
 

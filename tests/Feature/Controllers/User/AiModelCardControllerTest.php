@@ -16,6 +16,7 @@ use App\Enums\EthicsReviewStatus;
 use App\Enums\ComplianceReviewStatus;
 use App\Enums\CreatorRole;
 use App\Enums\PublicationStatus;
+use App\Models\Organization;
 use App\Models\User;
 use Tests\TestCase;
 
@@ -23,13 +24,22 @@ class AiModelCardControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    private Organization $organization;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->organization = Organization::factory()->create();
+    }
+
     public function test_user_can_list_ai_model_cards(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
 
         AiModelCard::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
         ]);
@@ -59,11 +69,12 @@ class AiModelCardControllerTest extends TestCase
 
     public function test_user_can_list_ai_model_cards_with_custom_per_page(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
 
         AiModelCard::factory()->count(10)->create([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
         ]);
@@ -79,10 +90,11 @@ class AiModelCardControllerTest extends TestCase
 
     public function test_user_can_view_single_ai_model_card(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
         $aiModelCard = AiModelCard::factory()->create([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
         ]);
@@ -122,13 +134,15 @@ class AiModelCardControllerTest extends TestCase
 
     public function test_show_returns_ai_model_card_with_relationships(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $aiModel = AiModel::factory()->create(['name' => 'Test AI Model']);
         $aiModelVersion = AiModelVersion::factory()->create([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'version_number' => '1.0.0',
         ]);
         $aiModelCard = AiModelCard::factory()->create([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
         ]);
@@ -152,7 +166,7 @@ class AiModelCardControllerTest extends TestCase
 
     public function test_show_requires_authentication(): void
     {
-        $aiModelCard = AiModelCard::factory()->create();
+        $aiModelCard = AiModelCard::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->getJson("/api/ai-model-cards/{$aiModelCard->id}");
 
@@ -161,9 +175,9 @@ class AiModelCardControllerTest extends TestCase
 
     public function test_user_can_create_an_ai_model_card(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
 
         $data = [
             'ai_model_id' => $aiModel->id,
@@ -210,10 +224,11 @@ class AiModelCardControllerTest extends TestCase
 
     public function test_user_can_update_an_ai_model_card(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
         $aiModelCard = AiModelCard::factory()->create([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
         ]);

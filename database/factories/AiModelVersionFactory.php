@@ -10,6 +10,7 @@ use App\Enums\ValidationStatus;
 use App\Enums\VersionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\AiModel;
+use App\Models\Organization;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AiModelVersion>
@@ -24,6 +25,7 @@ class AiModelVersionFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'ai_model_id' => AiModel::factory(),
             'version_number' => $this->faker->unique()->numerify('v#.##'),
             'version_type' => VersionType::MAJOR,

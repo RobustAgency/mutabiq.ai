@@ -9,13 +9,14 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 class DataElementRepository
 {
     /**
-     * Get paginated data elements.
+     * Get paginated data elements for a specific organization.
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int, DataElement>
      */
-    public function getPaginatedDataElements(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedDataElements(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        $query = DataElement::query()->with('datasets');
+        $query = DataElement::where('organization_id', $organizationId)->with('datasets');
         return $query->paginate($perPage);
     }
 

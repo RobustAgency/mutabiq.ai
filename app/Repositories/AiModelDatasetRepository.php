@@ -10,14 +10,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class AiModelDatasetRepository
 {
     /**
-     * Get paginated AI model datasets.
+     * Get paginated AI model datasets for a specific organization.
      *
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int, AiModelDataset>
      */
-    public function getPaginatedAiModelDatasets(int $perPage): LengthAwarePaginator
+    public function getPaginatedAiModelDatasets(int $organizationId, int $perPage): LengthAwarePaginator
     {
-        return AiModelDataset::paginate($perPage);
+        return AiModelDataset::where('organization_id', $organizationId)->paginate($perPage);
     }
 
     /**
