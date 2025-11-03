@@ -32,7 +32,9 @@ class AiModelVersionController extends Controller
     public function store(StoreAiModelVersionRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $validated['created_by'] = Auth::user()->id;
+        $validated['updated_by'] = Auth::user()->id;
 
         $this->aiModelVersionRepository->create($validated);
 
