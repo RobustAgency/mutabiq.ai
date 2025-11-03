@@ -34,6 +34,9 @@ class StoreAiModelVersionRequest extends FormRequest
             'version_type' => ['required', Rule::in(array_map(fn($c) => $c->value, VersionType::cases()))],
             'ai_model_id' => ['required', 'exists:ai_models,id'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'version_role' => ['nullable', 'string', 'max:255'],
+            'version_source' => ['nullable', 'string', 'max:255'],
+            'our_involvement' => ['nullable', 'string', 'max:255'],
             'release_date' => ['nullable', 'date'],
             'release_notes' => ['nullable', 'string'],
 
@@ -53,15 +56,11 @@ class StoreAiModelVersionRequest extends FormRequest
             // Deployment / lifecycle / compliance
             'deployment_status' => ['required', Rule::in(array_map(fn($c) => $c->value, DeploymentStatus::cases()))],
             'lifecycle_stage' => ['required', Rule::in(array_map(fn($c) => $c->value, LifecycleStage::cases()))],
-            'compliance_check_status' => ['required', Rule::in(array_map(fn($c) => $c->value, ComplianceStatus::cases()))],
-            'validation_status' => ['required', Rule::in(array_map(fn($c) => $c->value, ValidationStatus::cases()))],
             'deployment_environments' => ['nullable', 'array'],
             'deployment_environments.*' => ['string', 'max:100'],
 
             // Flags
-            'rollback_available' => ['sometimes', 'boolean'],
             'has_performance_data' => ['sometimes', 'boolean'],
-            'performance_baseline_established' => ['sometimes', 'boolean'],
         ];
     }
 }
