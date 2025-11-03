@@ -10,14 +10,15 @@ use Illuminate\Support\Collection;
 class DatasetSnapshotRepository
 {
     /**
-     * Get paginated dataset snapshots.
+     * Get paginated dataset snapshots for a specific organization.
      *
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int, DatasetSnapshot>
      */
-    public function getPaginatedSnapshots(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedSnapshots(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        return DatasetSnapshot::with('dataset')->paginate($perPage);
+        return DatasetSnapshot::where('organization_id', $organizationId)->with('dataset')->paginate($perPage);
     }
 
     /**

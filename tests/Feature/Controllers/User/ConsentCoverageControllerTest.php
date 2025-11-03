@@ -7,6 +7,7 @@ use App\Enums\UserConsent\Jurisdiction;
 use App\Models\ConsentCoverage;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,23 +17,25 @@ class ConsentCoverageControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
     {
-        $dataset = Dataset::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
         $selectedPurposes = fake()->randomElements(ConsentPurpose::cases(), fake()->numberBetween(1, 4));
         $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
 
 
         return array_merge([
             'dataset_id' => $dataset->id,
-            'snapshot_id' => DatasetSnapshot::factory()->for($dataset)->create()->id,
+            'snapshot_id' => DatasetSnapshot::factory()->for($dataset)->create(['organization_id' => $this->organization->id])->id,
             'purpose' => $purposeValues,
             'jurisdiction' => Jurisdiction::EU->value,
             'as_of' => now()->format('Y-m-d H:i:s'),
@@ -48,7 +51,7 @@ class ConsentCoverageControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_consent_coverages(): void
     {
-        ConsentCoverage::factory()->count(20)->create();
+        ConsentCoverage::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/consent-coverages');
 
@@ -85,7 +88,7 @@ class ConsentCoverageControllerTest extends TestCase
      */
     public function test_user_can_get_paginated_consent_coverages_with_custom_per_page(): void
     {
-        ConsentCoverage::factory()->count(20)->create();
+        ConsentCoverage::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson('/api/consent-coverages?per_page=10');
 
@@ -428,7 +431,7 @@ class ConsentCoverageControllerTest extends TestCase
      */
     public function test_user_can_show_specific_consent_coverage(): void
     {
-        $coverage = ConsentCoverage::factory()->create();
+        $coverage = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->getJson("/api/consent-coverages/{$coverage->id}");
 
@@ -449,6 +452,7 @@ class ConsentCoverageControllerTest extends TestCase
     public function test_user_can_update_consent_coverage(): void
     {
         $coverage = ConsentCoverage::factory()->create([
+            'organization_id' => $this->organization->id,
             'subjects_total' => 1000,
             'subjects_with_valid_consent' => 800,
             'coverage_pct' => 80.00,
@@ -486,6 +490,7 @@ class ConsentCoverageControllerTest extends TestCase
     public function test_user_can_partially_update_consent_coverage(): void
     {
         $coverage = ConsentCoverage::factory()->create([
+            'organization_id' => $this->organization->id,
             'purpose' => ConsentPurpose::MARKETING->value,
             'coverage_pct' => 75.00,
         ]);
@@ -506,7 +511,7 @@ class ConsentCoverageControllerTest extends TestCase
      */
     public function test_user_can_delete_consent_coverage(): void
     {
-        $coverage = ConsentCoverage::factory()->create();
+        $coverage = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user)->deleteJson("/api/consent-coverages/{$coverage->id}");
 
@@ -547,7 +552,7 @@ class ConsentCoverageControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_update_coverage(): void
     {
-        $coverage = ConsentCoverage::factory()->create();
+        $coverage = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->postJson("/api/consent-coverages/{$coverage->id}", [
             'coverage_pct' => 95.00,
@@ -561,7 +566,7 @@ class ConsentCoverageControllerTest extends TestCase
      */
     public function test_unauthenticated_user_cannot_delete_coverage(): void
     {
-        $coverage = ConsentCoverage::factory()->create();
+        $coverage = ConsentCoverage::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->deleteJson("/api/consent-coverages/{$coverage->id}");
 

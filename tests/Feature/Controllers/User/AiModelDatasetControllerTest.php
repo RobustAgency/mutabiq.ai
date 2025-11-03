@@ -8,6 +8,7 @@ use App\Models\AiModel;
 use App\Models\AiModelVersion;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,19 +18,27 @@ class AiModelDatasetControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
     }
 
     private function validPayload(array $overrides = []): array
     {
-        $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
-        $dataset = Dataset::factory()->create();
-        $snapshot = DatasetSnapshot::factory()->create(['dataset_id' => $dataset->id]);
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+        ]);
+        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
+        $snapshot = DatasetSnapshot::factory()->create([
+            'dataset_id' => $dataset->id,
+            'organization_id' => $this->organization->id,
+        ]);
 
         return array_merge([
             'ai_model_id' => $aiModel->id,

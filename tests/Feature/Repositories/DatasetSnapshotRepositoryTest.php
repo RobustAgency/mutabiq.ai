@@ -5,6 +5,7 @@ namespace Tests\Feature\Repositories;
 use App\Enums\DatasetSnapshot\ResidencyZone;
 use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use App\Repositories\DatasetSnapshotRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,9 +27,10 @@ class DatasetSnapshotRepositoryTest extends TestCase
      */
     public function test_get_paginated_snapshots_returns_paginator(): void
     {
-        DatasetSnapshot::factory()->count(5)->create();
+        $organization = Organization::factory()->create();
+        DatasetSnapshot::factory()->count(5)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots();
+        $result = $this->repository->getPaginatedSnapshots($organization->id);
 
         $this->assertInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class, $result);
         $this->assertEquals(5, $result->total());
@@ -39,10 +41,11 @@ class DatasetSnapshotRepositoryTest extends TestCase
      */
     public function test_get_paginated_snapshots_eager_loads_dataset(): void
     {
+        $organization = Organization::factory()->create();
         $dataset = Dataset::factory()->create();
-        DatasetSnapshot::factory()->for($dataset)->create();
+        DatasetSnapshot::factory()->for($dataset)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots();
+        $result = $this->repository->getPaginatedSnapshots($organization->id);
 
         /** @var DatasetSnapshot $snapshot */
         $snapshot = $result->items()[0];
@@ -55,9 +58,10 @@ class DatasetSnapshotRepositoryTest extends TestCase
      */
     public function test_get_paginated_snapshots_respects_per_page(): void
     {
-        DatasetSnapshot::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        DatasetSnapshot::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots(10);
+        $result = $this->repository->getPaginatedSnapshots($organization->id, 10);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertCount(10, $result->items());
@@ -69,9 +73,10 @@ class DatasetSnapshotRepositoryTest extends TestCase
      */
     public function test_get_paginated_snapshots_uses_default_per_page(): void
     {
-        DatasetSnapshot::factory()->count(20)->create();
+        $organization = Organization::factory()->create();
+        DatasetSnapshot::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots();
+        $result = $this->repository->getPaginatedSnapshots($organization->id);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -84,8 +89,8 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $dataset = Dataset::factory()->create();
         $otherDataset = Dataset::factory()->create();
 
-        DatasetSnapshot::factory()->for($dataset)->count(3)->create();
-        DatasetSnapshot::factory()->for($otherDataset)->count(2)->create();
+        DatasetSnapshot::factory()->for($dataset)->count(3)->create(['organization_id' => $dataset->organization_id]);
+        DatasetSnapshot::factory()->for($otherDataset)->count(2)->create(['organization_id' => $otherDataset->organization_id]);
 
         $result = $this->repository->getSnapshotsForDataset($dataset);
 
@@ -100,11 +105,12 @@ class DatasetSnapshotRepositoryTest extends TestCase
      */
     public function test_get_snapshots_for_dataset_with_id(): void
     {
+        $organization = Organization::factory()->create();
         $dataset = Dataset::factory()->create();
         $otherDataset = Dataset::factory()->create();
 
-        DatasetSnapshot::factory()->for($dataset)->count(3)->create();
-        DatasetSnapshot::factory()->for($otherDataset)->count(2)->create();
+        DatasetSnapshot::factory()->for($dataset)->count(3)->create(['organization_id' => $organization->id]);
+        DatasetSnapshot::factory()->for($otherDataset)->count(2)->create(['organization_id' => $organization->id]);
 
         $result = $this->repository->getSnapshotsForDataset($dataset->id);
 
@@ -189,8 +195,10 @@ class DatasetSnapshotRepositoryTest extends TestCase
     public function test_create_snapshot_creates_new_snapshot(): void
     {
         $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
 
         $data = [
+            'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'version_tag' => 'v1.0',
             'time_range_start' => now()->subMonths(3),
@@ -222,9 +230,11 @@ class DatasetSnapshotRepositoryTest extends TestCase
      */
     public function test_create_snapshot_with_minimal_data(): void
     {
-        $dataset = Dataset::factory()->create();
+        $organization = Organization::factory()->create();
+        $dataset = Dataset::factory()->create(['organization_id' => $organization->id]);
 
         $data = [
+            'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'version_tag' => 'v1.0',
             'residency_zone' => ResidencyZone::US,

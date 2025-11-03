@@ -6,6 +6,7 @@ use App\Enums\Status;
 use App\Enums\UserConsent\LegalBasis;
 use App\Enums\UserConsent\SubjectRealm;
 use App\Models\PdpProcessingRegister;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -33,6 +34,7 @@ class PdpProcessingRegisterFactory extends Factory
         );
 
         return [
+            'organization_id' => Organization::factory(),
             'purpose' => $this->faker->randomElement([
                 'Fraud detection',
                 'Service personalization',

@@ -16,6 +16,7 @@ class AiModelDataset extends Model
     protected $table = 'ai_model_dataset';
 
     protected $fillable = [
+        'organization_id',
         'ai_model_id',
         'ai_model_version_id',
         'dataset_id',

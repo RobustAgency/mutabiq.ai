@@ -17,6 +17,7 @@ use App\Enums\PublicationStatus;
 use App\Models\AiModel;
 use App\Models\AiModelVersion;
 use App\Models\AiModelCard;
+use App\Models\Organization;
 use Tests\TestCase;
 
 class AiModelCardRepositoryTest extends TestCase
@@ -33,15 +34,17 @@ class AiModelCardRepositoryTest extends TestCase
 
     public function test_it_can_get_paginated_ai_model_version_cards(): void
     {
-        $aiModel = AiModel::factory()->create();
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
 
         AiModelCard::factory()->count(15)->create([
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
         ]);
 
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCards(10);
+        $result = $this->aiModelCardRepository->getPaginatedAiModelCardsByOrganizationID($organization->id, 10);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(15, $result->total());
@@ -50,15 +53,17 @@ class AiModelCardRepositoryTest extends TestCase
 
     public function test_it_can_get_paginated_ai_model_cards_with_custom_per_page(): void
     {
+        $organization = Organization::factory()->create();
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
 
         AiModelCard::factory()->count(20)->create([
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
         ]);
 
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCards(5);
+        $result = $this->aiModelCardRepository->getPaginatedAiModelCardsByOrganizationID($organization->id, 5);
 
         $this->assertCount(5, $result->items());
         $this->assertEquals(20, $result->total());
@@ -88,9 +93,11 @@ class AiModelCardRepositoryTest extends TestCase
 
     public function test_it_create_an_ai_model_card(): void
     {
-        $aiModel = AiModel::factory()->create();
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
         $data = [
+            'organization_id' => $organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
             'title' => $this->faker->sentence,
@@ -170,10 +177,12 @@ class AiModelCardRepositoryTest extends TestCase
 
     public function test_it_can_create_model_card_with_all_enums(): void
     {
-        $aiModel = AiModel::factory()->create();
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
 
         $data = [
+            'organization_id' => $organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
             'title' => 'Complete Model Card',

@@ -13,14 +13,16 @@ use Illuminate\Support\Collection;
 class ConsentScopeRepository
 {
     /**
-     * Get paginated consent scopes.
+     * Get paginated consent scopes for a specific organization.
      *
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int, ConsentScope>
      */
-    public function getPaginatedConsentScopes(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedConsentScopes(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        return ConsentScope::with('dataset')
+        return ConsentScope::where('organization_id', $organizationId)
+            ->with('dataset')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

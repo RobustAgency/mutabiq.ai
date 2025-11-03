@@ -11,9 +11,13 @@ class AiModelVersion extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'ai_model_id',
         'version_number',
         'version_type',
+        'version_role',
+        'version_source',
+        'our_involvement',
         'description',
         'release_date',
         'release_notes',
@@ -26,12 +30,11 @@ class AiModelVersion extends Model
         'output_modalities',
         'deployment_status',
         'lifecycle_stage',
-        'compliance_check_status',
-        'validation_status',
         'deployment_environments',
-        'rollback_available',
         'has_performance_data',
-        'performance_baseline_established',
+        'customizations_applied',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -40,6 +43,6 @@ class AiModelVersion extends Model
         'deployment_environments' => 'array',
         'rollback_available' => 'boolean',
         'has_performance_data' => 'boolean',
-        'performance_baseline_established' => 'boolean',
+        'customizations_applied' => 'array',
     ];
 }

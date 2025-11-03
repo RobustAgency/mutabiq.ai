@@ -13,6 +13,7 @@ class Dataset extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'dataset_id',
         'name',
         'source_ids',

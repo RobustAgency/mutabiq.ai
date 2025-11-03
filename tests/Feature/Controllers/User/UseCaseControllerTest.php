@@ -10,6 +10,7 @@ use App\Enums\UseCase\Priority;
 use App\Enums\UseCase\RiskLevel;
 use App\Enums\UseCase\ROIClassification;
 use App\Enums\UseCase\Status;
+use App\Models\Organization;
 use App\Models\Stakeholder;
 use App\Models\UseCase;
 use App\Models\User;
@@ -21,12 +22,20 @@ class UseCaseControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    private Organization $organization;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->organization = Organization::factory()->create();
+    }
+
     public function test_user_can_get_use_cases(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
-        UseCase::factory()->count(3)->create();
+        UseCase::factory()->count(3)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->getJson('/api/use-cases?per_page=2');
         $response->assertOk();
@@ -35,11 +44,11 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_can_create_use_case(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
-        $businessOwner = Stakeholder::factory()->create();
-        $technicalOwner = Stakeholder::factory()->create();
+        $businessOwner = Stakeholder::factory()->create(['organization_id' => $this->organization->id]);
+        $technicalOwner = Stakeholder::factory()->create(['organization_id' => $this->organization->id]);
 
         $data = [
             'name' => 'New AI Use Case',
@@ -87,10 +96,11 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_can_get_specific_use_case(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
         $useCase = UseCase::factory()->create([
+            'organization_id' => $this->organization->id,
             'name' => 'Specific Use Case',
             'status' => Status::ACTIVE->value,
         ]);
@@ -108,7 +118,7 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_cannot_create_use_case_with_short_name(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
         $data = [
@@ -129,7 +139,7 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_cannot_create_use_case_with_short_description(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
         $data = [
@@ -150,7 +160,7 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_cannot_create_use_case_with_invalid_stakeholder_id(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
         $data = [
@@ -172,7 +182,7 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_cannot_create_use_case_with_invalid_enum_values(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
         $data = [
@@ -193,7 +203,7 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_cannot_create_use_case_with_negative_budget(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
         $data = [
@@ -215,12 +225,12 @@ class UseCaseControllerTest extends TestCase
 
     public function test_user_can_filter_use_cases_by_status(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
-        UseCase::factory()->create(['status' => Status::ACTIVE->value]);
-        UseCase::factory()->create(['status' => Status::DRAFT->value]);
-        UseCase::factory()->create(['status' => Status::ACTIVE->value]);
+        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::ACTIVE->value]);
+        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::DRAFT->value]);
+        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::ACTIVE->value]);
 
         $response = $this->getJson('/api/use-cases?status=' . Status::ACTIVE->value);
         $response->assertOk();

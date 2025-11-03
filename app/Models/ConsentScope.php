@@ -15,6 +15,7 @@ class ConsentScope extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'dataset_id',
         'purpose',
         'subject_realm',

@@ -8,11 +8,16 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class PdpProcessingRegisterRepository
 {
     /**
+     * Get paginated PDP processing registers for a specific organization.
+     * 
+     * @param int $organizationId
+     * @param int $perPage
      * @return LengthAwarePaginator<int, PdpProcessingRegister>
      */
-    public function getPaginatedRegisters(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedRegisters(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        return PdpProcessingRegister::orderBy('created_at', 'desc')
+        return PdpProcessingRegister::where('organization_id', $organizationId)
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 

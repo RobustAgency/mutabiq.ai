@@ -10,6 +10,7 @@ use App\Http\Resources\AiModelCardResource;
 use App\Models\AiModelCard;
 use App\Repositories\AiModelCardRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class AiModelCardController extends Controller
 {
@@ -17,8 +18,9 @@ class AiModelCardController extends Controller
 
     public function index(ListAiModelCardRequest $request): JsonResponse
     {
+        $organizationID = Auth::user()->organization_id;
         $perPage = $request->input('per_page') ?? 15;
-        $aiModelCards = $this->aiModelCardRepository->getPaginatedAiModelCards($perPage);
+        $aiModelCards = $this->aiModelCardRepository->getPaginatedAiModelCardsByOrganizationID($organizationID, $perPage);
         return response()->json([
             'error' => false,
             'data' => $aiModelCards,
@@ -28,6 +30,7 @@ class AiModelCardController extends Controller
     public function store(StoreAiModelCardRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $data['organization_id'] = $request->user()->organization_id;
         $this->aiModelCardRepository->createAiModelCard($data);
 
         return response()->json([

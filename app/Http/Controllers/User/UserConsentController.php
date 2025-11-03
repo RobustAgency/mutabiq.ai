@@ -10,6 +10,7 @@ use App\Http\Resources\UserConsentResource;
 use App\Models\UserConsent;
 use App\Repositories\UserConsentRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class UserConsentController extends Controller
 {
@@ -20,8 +21,9 @@ class UserConsentController extends Controller
      */
     public function index(ListUserConsentRequest $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $consents = $this->userConsentRepository->getPaginatedConsents($perPage);
+        $consents = $this->userConsentRepository->getPaginatedConsents($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -36,6 +38,7 @@ class UserConsentController extends Controller
     public function store(StoreUserConsentRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
 
         $consent = $this->userConsentRepository->createConsent($validated);
 

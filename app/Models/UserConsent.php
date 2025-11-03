@@ -16,6 +16,7 @@ class UserConsent extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'subject_key',
         'subject_realm',
         'jurisdiction',

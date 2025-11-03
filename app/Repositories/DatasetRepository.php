@@ -8,14 +8,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class DatasetRepository
 {
     /**
-     * Get paginated datasets.
+     * Get paginated datasets for a specific organization.
      *
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int, Dataset>
      */
-    public function getPaginatedDatasets(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedDatasets(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        $query = Dataset::with(['dataElements']);
+        $query = Dataset::where('organization_id', $organizationId)->with(['dataElements']);
         return $query->paginate($perPage);
     }
 

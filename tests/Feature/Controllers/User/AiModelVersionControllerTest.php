@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\AiModel;
 use App\Models\AiModelVersion;
+use App\Models\Organization;
 use App\Models\User;
 use App\Enums\ComplexityLevel;
 use App\Enums\ComplianceStatus;
@@ -18,11 +19,22 @@ class AiModelVersionControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    private Organization $organization;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->organization = Organization::factory()->create();
+    }
+
     public function test_user_can_get_all_ai_model_versions(): void
     {
-        $user = User::factory()->create();
-        $aiModel = AiModel::factory()->create();
-        AiModelVersion::factory()->count(5)->create(['ai_model_id' => $aiModel->id]);
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+        AiModelVersion::factory()->count(5)->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+        ]);
         $url = '/api/ai-model-versions?ai_model_id=' . $aiModel->id;
 
         $response = $this->actingAs($user)->getJson($url);
@@ -46,15 +58,11 @@ class AiModelVersionControllerTest extends TestCase
                         'complexity_level',
                         'deployment_status',
                         'lifecycle_stage',
-                        'validation_status',
-                        'compliance_check_status',
                         'parameter_count',
                         'input_modalities',
                         'output_modalities',
                         'deployment_environments',
-                        'rollback_available',
                         'has_performance_data',
-                        'performance_baseline_established',
                         'created_at',
                         'updated_at',
                     ],
@@ -65,8 +73,8 @@ class AiModelVersionControllerTest extends TestCase
 
     public function test_user_can_create_ai_model_version(): void
     {
-        $user = User::factory()->create();
-        $aiModel = AiModel::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
 
         $data = [
             'ai_model_id' => $aiModel->id,
@@ -101,8 +109,8 @@ class AiModelVersionControllerTest extends TestCase
 
     public function test_user_can_update_ai_model_version(): void
     {
-        $user = User::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id]);
 
         $updateData = [
             'version_number' => '1.0.1',
@@ -124,8 +132,8 @@ class AiModelVersionControllerTest extends TestCase
 
     public function test_user_can_get_ai_model_version(): void
     {
-        $user = User::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($user)->getJson("/api/ai-model-versions/{$aiModelVersion->id}");
 
@@ -163,7 +171,7 @@ class AiModelVersionControllerTest extends TestCase
 
     public function test_it_handles_validation_errors_on_create(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
 
         // Missing required fields
         $data = [
@@ -180,8 +188,8 @@ class AiModelVersionControllerTest extends TestCase
 
     public function test_it_handles_validation_errors_on_update(): void
     {
-        $user = User::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create();
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id]);
 
         // Invalid enum value
         $updateData = [

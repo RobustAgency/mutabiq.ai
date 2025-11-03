@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 class AiModelVersionRepository
 {
     /**
-     * Retrieve all AI model versions, optionally filtered by AI model ID.
+     * Retrieve all AI model versions, optionally filtered by AI model ID and organization.
      *
      * @param array $filters
      * @return \Illuminate\Database\Eloquent\Collection<int, AiModelVersion>
@@ -16,6 +16,10 @@ class AiModelVersionRepository
     public function getFilteredAiModelVersions(array $filters = []): Collection
     {
         $query = AiModelVersion::query();
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
 
         if (isset($filters['ai_model_id'])) {
             $query->where('ai_model_id', $filters['ai_model_id']);

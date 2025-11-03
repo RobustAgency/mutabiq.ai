@@ -49,27 +49,21 @@ class AiModelRepositoryTest extends TestCase
         $org = Organization::factory()->create();
         $user = User::factory()->create();
         $sourceOrg = Stakeholder::factory()->create(['type' => 'vendor_org']);
-        $custodian = Stakeholder::factory()->create(['type' => 'person']);
         $vendor = Vendor::factory()->create();
 
         return array_merge([
             'name' => 'Fraud Detector',
             'description' => 'Detects fraud in transactions.',
             'organization_id' => $org->id,
-            'source_organization_id' => $sourceOrg->id,
-            'custodian_id' => $custodian->id,
+            'source_org_stakeholder_id' => $sourceOrg->id,
             'vendor_id' => $vendor->id,
             'primary_category' => $this->enumFirstValue(PrimaryCategory::class),
             'type' => 'classification',
             'domain_specialization' => 'fraud_detection',
             'operational_status' => $this->enumFirstValue(OperationalStatus::class),
             'business_status' => $this->enumFirstValue(BusinessStatus::class),
-            'total_versions' => 1,
-            'strategic_importance' => $this->enumFirstValue(StrategicImportance::class),
             'regulatory_risk_classification' => 'low',
-            'organizational_role' => $this->enumFirstValue(OrganizationalRole::class),
             'ownership_type' => $this->enumFirstValue(OwnershipType::class),
-            'current_owner' => 'owner.user',
             'development_source' => $this->enumFirstValue(DevelopmentSource::class),
             'created_by' => $user->id,
             'updated_by' => $user->id,
@@ -93,13 +87,12 @@ class AiModelRepositoryTest extends TestCase
     {
         $organization = Organization::factory()->create();
 
-        AiModel::factory()->count(4)->create([
+        AiModel::factory()->count(3)->create([
             'organization_id' => $organization->id,
         ]);
-
         $results = $this->aiModelRepository->getAllAiModelsByOrganizationID($organization->id);
 
-        $this->assertCount(4, $results);
+        $this->assertCount(3, $results);
         $this->assertEquals($organization->id, $results->first()->organization_id);
     }
 

@@ -8,6 +8,7 @@ use App\Enums\UserConsent\Jurisdiction;
 use App\Enums\UserConsent\LegalBasis;
 use App\Enums\UserConsent\SubjectRealm;
 use App\Models\UserConsent;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -31,6 +32,7 @@ class UserConsentFactory extends Factory
         $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
 
         return [
+            'organization_id' => Organization::factory(),
             'subject_key' => fake()->unique()->regexify('[A-Z0-9]{32}'),
             'subject_realm' => fake()->randomElement(SubjectRealm::cases()),
             'jurisdiction' => fake()->randomElement(Jurisdiction::cases()),

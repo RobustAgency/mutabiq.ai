@@ -18,7 +18,9 @@ class AiModelUseCaseController extends Controller
 
     public function index(SearchAiModelUseCaseRequest $request): JsonResponse
     {
-        $aiModelUseCases = $this->aiModelUseCaseRepository->getFilteredAiModelUseCases($request->validated());
+        $filters = $request->validated();
+        $filters['organization_id'] = Auth::user()->organization_id;
+        $aiModelUseCases = $this->aiModelUseCaseRepository->getFilteredAiModelUseCases($filters);
         return response()->json([
             'error' => false,
             'message' => 'AI Model Use Case associations retrieved successfully',
@@ -30,6 +32,7 @@ class AiModelUseCaseController extends Controller
     {
         $user = Auth::user();
         $validated = $request->validated();
+        $validated['organization_id'] = $user->organization_id;
         $this->aiModelUseCaseRepository->createAiModelUseCase($user, $validated);
         return response()->json([
             'error' => false,

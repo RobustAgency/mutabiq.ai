@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\Stakeholder\Type;
 use App\Models\Stakeholder;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,6 +27,7 @@ class StakeholderFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'type' => fake()->randomElement(Type::cases())->value,
             'display_name' => fake()->name(),
             'legal_name' => fake()->optional()->company(),

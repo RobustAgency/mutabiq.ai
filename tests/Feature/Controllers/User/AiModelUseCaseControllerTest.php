@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\AiModel;
+use App\Models\Organization;
 use App\Models\UseCase;
 use App\Models\AiModelVersion;
 use App\Models\User;
@@ -17,6 +18,7 @@ class AiModelUseCaseControllerTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     private User $user;
+    private Organization $organization;
     private AiModel $aiModel;
     private UseCase $useCase;
     private AiModelVersion $aiModelVersion;
@@ -25,14 +27,17 @@ class AiModelUseCaseControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->aiModel = AiModel::factory()->create([
+            'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,
             'updated_by' => $this->user->id,
         ]);
-        $this->useCase = UseCase::factory()->create();
+        $this->useCase = UseCase::factory()->create(['organization_id' => $this->organization->id]);
         $this->aiModelVersion = AiModelVersion::factory()->create([
             'ai_model_id' => $this->aiModel->id,
+            'organization_id' => $this->organization->id,
         ]);
 
         $this->actingAs($this->user);
@@ -41,6 +46,7 @@ class AiModelUseCaseControllerTest extends TestCase
     private function createAiModelUseCase(array $attributes = []): AiModelUseCase
     {
         return AiModelUseCase::factory()->create(array_merge([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $this->aiModel->id,
             'use_case_id' => $this->useCase->id,
             'ai_model_version_id' => $this->aiModelVersion->id,
@@ -143,7 +149,7 @@ class AiModelUseCaseControllerTest extends TestCase
                     ],
                     'use_case' => [
                         'id' => $this->useCase->id,
-                        'title' => $this->useCase->title,
+                        'name' => $this->useCase->name,
                     ],
                     'ai_model_version' => [
                         'id' => $this->aiModelVersion->id,

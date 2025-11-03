@@ -12,14 +12,16 @@ use Illuminate\Support\Collection;
 class ConsentCoverageRepository
 {
     /**
-     * Get paginated consent coverages.
+     * Get paginated consent coverages for a specific organization.
      *
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int, ConsentCoverage>
      */
-    public function getPaginatedCoverages(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedCoverages(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        return ConsentCoverage::with(['dataset', 'snapshot'])
+        return ConsentCoverage::where('organization_id', $organizationId)
+            ->with(['dataset', 'snapshot'])
             ->orderBy('as_of', 'desc')
             ->paginate($perPage);
     }

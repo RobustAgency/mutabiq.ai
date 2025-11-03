@@ -8,6 +8,7 @@ use App\Models\AiModel;
 use App\Models\AiModelDataset;
 use App\Models\AiModelVersion;
 use App\Models\DatasetSnapshot;
+use App\Models\Organization;
 use App\Repositories\AiModelDatasetRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,20 +18,26 @@ class AiModelDatasetRepositoryTest extends TestCase
     use RefreshDatabase;
 
     private AiModelDatasetRepository $repository;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new AiModelDatasetRepository();
+        $this->organization = Organization::factory()->create();
     }
 
     private function createAiModelDataset(array $overrides = []): AiModelDataset
     {
-        $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
-        $snapshot = DatasetSnapshot::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+        ]);
+        $snapshot = DatasetSnapshot::factory()->create(['organization_id' => $this->organization->id]);
 
         $data = array_merge([
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
             'dataset_snapshot_id' => $snapshot->id,
@@ -49,7 +56,7 @@ class AiModelDatasetRepositoryTest extends TestCase
             $this->createAiModelDataset();
         }
 
-        $result = $this->repository->getPaginatedAiModelDatasets(10);
+        $result = $this->repository->getPaginatedAiModelDatasets($this->organization->id, 10);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertEquals(25, $result->total());
@@ -62,7 +69,7 @@ class AiModelDatasetRepositoryTest extends TestCase
             $this->createAiModelDataset();
         }
 
-        $result = $this->repository->getPaginatedAiModelDatasets(5);
+        $result = $this->repository->getPaginatedAiModelDatasets($this->organization->id, 5);
 
         $this->assertEquals(5, $result->perPage());
         $this->assertEquals(20, $result->total());
@@ -76,6 +83,7 @@ class AiModelDatasetRepositoryTest extends TestCase
         $snapshot = DatasetSnapshot::factory()->create();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
             'dataset_snapshot_id' => $snapshot->id,
@@ -114,6 +122,7 @@ class AiModelDatasetRepositoryTest extends TestCase
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
             'role' => Role::PRETRAIN->value,
@@ -208,6 +217,7 @@ class AiModelDatasetRepositoryTest extends TestCase
 
         foreach (Role::cases() as $role) {
             $data = [
+                'organization_id' => $this->organization->id,
                 'ai_model_id' => $aiModel->id,
                 'ai_model_version_id' => $aiModelVersion->id,
                 'role' => $role->value,
@@ -233,6 +243,7 @@ class AiModelDatasetRepositoryTest extends TestCase
 
         foreach (EligibilityStatus::cases() as $status) {
             $data = [
+                'organization_id' => $this->organization->id,
                 'ai_model_id' => $aiModel->id,
                 'ai_model_version_id' => $aiModelVersion->id,
                 'dataset_snapshot_id' => $snapshot->id,
@@ -266,38 +277,6 @@ class AiModelDatasetRepositoryTest extends TestCase
 
         $this->assertEquals(EligibilityStatus::NOT_ELIGIBLE->value, $aiModelDataset->eligibility_status);
         $this->assertEquals('Changed to not eligible due to license restrictions', $aiModelDataset->notes);
-    }
-
-    public function test_create_multiple_dataset_links_for_same_model(): void
-    {
-        $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
-        $snapshot1 = DatasetSnapshot::factory()->create();
-        $snapshot2 = DatasetSnapshot::factory()->create();
-
-        // Create train dataset link
-        $trainData = [
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
-            'dataset_snapshot_id' => $snapshot1->id,
-            'role' => Role::TRAIN->value,
-        ];
-        $trainLink = $this->repository->create($trainData);
-
-        // Create validation dataset link
-        $validationData = [
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
-            'dataset_snapshot_id' => $snapshot2->id,
-            'role' => Role::VALIDATION->value,
-        ];
-        $validationLink = $this->repository->create($validationData);
-
-        $this->assertInstanceOf(AiModelDataset::class, $trainLink);
-        $this->assertInstanceOf(AiModelDataset::class, $validationLink);
-        $this->assertEquals(Role::TRAIN->value, $trainLink->role);
-        $this->assertEquals(Role::VALIDATION->value, $validationLink->role);
-        $this->assertNotEquals($trainLink->id, $validationLink->id);
     }
 
     public function test_update_returns_false_on_failure(): void

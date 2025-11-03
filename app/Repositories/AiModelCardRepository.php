@@ -13,9 +13,9 @@ class AiModelCardRepository
      * @param int $perPage
      * @return LengthAwarePaginator<int, AiModelCard>
      */
-    public function getPaginatedAiModelCards(int $perPage): LengthAwarePaginator
+    public function getPaginatedAiModelCardsByOrganizationID(int $organizationId, int $perPage): LengthAwarePaginator
     {
-        return AiModelCard::paginate($perPage);
+        return AiModelCard::where('organization_id', $organizationId)->paginate($perPage);
     }
 
     public function createAiModelCard(array $data): AiModelCard

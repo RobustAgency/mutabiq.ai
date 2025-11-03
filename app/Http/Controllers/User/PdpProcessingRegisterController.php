@@ -10,6 +10,7 @@ use App\Models\PdpProcessingRegister;
 use App\Repositories\PdpProcessingRegisterRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PdpProcessingRegisterController extends Controller
 {
@@ -22,8 +23,9 @@ class PdpProcessingRegisterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $organizationId = Auth::user()->organization_id;
         $perPage = $request->input('per_page', 15);
-        $registers = $this->repository->getPaginatedRegisters($perPage);
+        $registers = $this->repository->getPaginatedRegisters($organizationId, $perPage);
 
         return response()->json([
             'error' => false,
@@ -37,7 +39,9 @@ class PdpProcessingRegisterController extends Controller
      */
     public function store(StorePdpProcessingRegisterRequest $request): JsonResponse
     {
-        $register = $this->repository->createRegister($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $register = $this->repository->createRegister($validated);
 
         return response()->json([
             'error' => false,

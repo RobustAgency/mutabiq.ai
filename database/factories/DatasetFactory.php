@@ -13,6 +13,7 @@ use App\Enums\Dataset\Purpose;
 use App\Enums\Dataset\Sensitivity;
 use App\Enums\Dataset\StorageFormat;
 use App\Models\DataSource;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -32,6 +33,7 @@ class DatasetFactory extends Factory
         $consentRequired = $lawfulBasis === LawfulBasis::CONSENT;
 
         return [
+            'organization_id' => Organization::factory(),
             'name' => fake()->words(3, true) . ' Dataset',
             'source_ids' => fake()->randomElements(
                 DataSource::pluck('id')->toArray() ?: [1, 2, 3],

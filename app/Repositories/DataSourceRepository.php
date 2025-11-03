@@ -8,14 +8,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class DataSourceRepository
 {
     /**
-     * Get paginated data sources.
+     * Get paginated data sources for a specific organization.
      *
+     * @param int $organizationId
      * @param int $perPage
      * @return LengthAwarePaginator<int , DataSource>
      */
-    public function getPaginatedDataSources(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedDataSources(int $organizationId, int $perPage = 15): LengthAwarePaginator
     {
-        return DataSource::paginate($perPage);
+        return DataSource::where('organization_id', $organizationId)->paginate($perPage);
     }
 
     /**
