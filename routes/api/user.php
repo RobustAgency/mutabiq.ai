@@ -36,6 +36,7 @@ use App\Http\Controllers\IncidentActionController;
 use App\Http\Controllers\IncidentRootCauseAnalysisController;
 use App\Http\Controllers\IncidentNotificationController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
+use App\Http\Controllers\AiModelArtifactController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -273,5 +274,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{correctivePreventiveAction}', 'show');
         Route::post('{correctivePreventiveAction}', 'update');
         Route::delete('{correctivePreventiveAction}', 'destroy');
+    });
+
+    Route::prefix('ai-model-artifacts')->controller(AiModelArtifactController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiModelArtifact}', 'show');
+        Route::post('{aiModelArtifact}', 'update');
+        Route::delete('{aiModelArtifact}', 'destroy');
     });
 });
