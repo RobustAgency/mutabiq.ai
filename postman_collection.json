@@ -1582,6 +1582,1553 @@
 				}
 			],
 			"description": "Manage associations between AI models and use cases"
+		},
+		{
+			"name": "Stakeholders",
+			"item": [
+				{
+					"name": "List Stakeholders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stakeholders?type=&search=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stakeholders"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "",
+									"description": "Filter by stakeholder type"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search term"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get filtered list of stakeholders for the user's organization.\n\n**Optional Query Parameters:**\n- `type` (string): Filter by stakeholder type\n- `search` (string, max 255): Search term\n- `per_page` (integer, 1-100): Results per page\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stakeholder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"person\", // [person, team, vendor_org, regulator, customer_group, committee_secretariat]\n    \"display_name\": \"John Smith\",\n    \"legal_name\": \"John Michael Smith\",\n    \"org_unit\": \"AI Governance Team\",\n    \"email\": \"john.smith@example.com\",\n    \"phone\": \"+1234567890\",\n    \"vendor_id\": null,\n    \"role_tags\": [\"AI Ethics Lead\", \"Data Protection Officer\"],\n    \"timezone\": \"America/New_York\",\n    \"classification\": \"Internal\",\n    \"country\": \"United States\",\n    \"external_ref\": \"EMP-12345\",\n    \"active\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/stakeholders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stakeholders"
+							]
+						},
+						"description": "Create a new stakeholder for the organization.\n\n**Required Fields:**\n- `type` (string): Stakeholder type\n- `display_name` (string, max 255): Display name\n- `timezone` (string): Valid timezone\n- `classification` (string, max 255): Classification\n- `active` (boolean): Active status\n\n**Type Options:**\n- `person` - Individual person\n- `team` - Team or group\n- `vendor_org` - Vendor organization\n- `regulator` - Regulatory body\n- `customer_group` - Customer group\n- `committee_secretariat` - Committee/secretariat\n\n**Optional Fields:**\n- `legal_name` (string, max 255): Legal name\n- `org_unit` (string, max 255): Organization unit\n- `email` (email, max 255): Email address\n- `phone` (string, max 20): Phone number\n- `vendor_id` (integer): Vendor ID (if type is vendor_org)\n- `role_tags` (array): Role tags (max 100 chars each)\n- `country` (string, max 500): Country\n- `external_ref` (string, max 255): External reference ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stakeholder Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stakeholders/:stakeholder",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stakeholders",
+								":stakeholder"
+							],
+							"variable": [
+								{
+									"key": "stakeholder",
+									"value": "1",
+									"description": "Stakeholder ID"
+								}
+							]
+						},
+						"description": "Get details of a specific stakeholder.\n\n**Path Parameters:**\n- `stakeholder` (integer): Stakeholder ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stakeholder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"display_name\": \"John Smith (Updated)\",\n    \"email\": \"john.smith.new@example.com\",\n    \"role_tags\": [\"AI Ethics Lead\", \"Data Protection Officer\", \"Privacy Champion\"],\n    \"active\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/stakeholders/:stakeholder",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stakeholders",
+								":stakeholder"
+							],
+							"variable": [
+								{
+									"key": "stakeholder",
+									"value": "1",
+									"description": "Stakeholder ID"
+								}
+							]
+						},
+						"description": "Update an existing stakeholder. Uses the same validation as create.\n\n**Path Parameters:**\n- `stakeholder` (integer): Stakeholder ID\n\n**All fields follow the same rules as Create Stakeholder**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Stakeholder",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stakeholders/:stakeholder",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stakeholders",
+								":stakeholder"
+							],
+							"variable": [
+								{
+									"key": "stakeholder",
+									"value": "1",
+									"description": "Stakeholder ID"
+								}
+							]
+						},
+						"description": "Delete a stakeholder.\n\n**Path Parameters:**\n- `stakeholder` (integer): Stakeholder ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Stakeholder management for tracking people, teams, and organizations involved in AI governance"
+		},
+		{
+			"name": "Data Sources",
+			"item": [
+				{
+					"name": "List Data Sources",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-sources?per_page=15&page=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-sources"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (min 1)"
+								}
+							]
+						},
+						"description": "Get paginated list of data sources for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n- `page` (integer, min 1): Page number\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Data Source",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Customer Analytics Database\",\n    \"system_type\": \"Data Warehouse\", // [Application DB, Data Lake, Data Warehouse, Operational API, Files/Buckets, 3rd-Party SaaS, Streaming/Kafka]\n    \"owner_team\": \"Data Engineering Team\",\n    \"data_domains\": [\"Customer\", \"Sales\", \"Marketing\"],\n    \"access_method\": \"JDBC\", // [JDBC, ODBC, S3, GCS, API, FTP/SFTP, Kafka, Other]\n    \"residency\": \"US\", // [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n    \"classification\": \"Confidential\", // [Public, Internal, Confidential, Restricted]\n    \"hosting_model\": \"cloud\", // [on_prem, cloud, hybrid]\n    \"service_model\": \"paas\", // [saas, paas, iaas, on_prem]\n    \"cloud_provider\": \"aws\", // [aws, azure, gcp, other, none]\n    \"primary_region\": \"us-east-1\",\n    \"secondary_region\": \"us-west-2\",\n    \"network_ref\": \"VPC-PROD-001\",\n    \"retention_policy_ref\": \"RET-POLICY-7YEARS\",\n    \"catalog_uri\": \"https://catalog.example.com/sources/customer-analytics\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-sources",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-sources"
+							]
+						},
+						"description": "Create a new data source.\n\n**Required Fields:**\n- `name` (string, max 255): Data source name\n- `system_type` (string): Type of system\n- `owner_team` (string, max 255): Owning team\n- `data_domains` (array): Data domains (array of strings)\n- `access_method` (string): Access method\n- `residency` (string): Data residency location\n- `classification` (string): Data classification level\n- `hosting_model` (string): Hosting model\n- `service_model` (string): Service model\n- `cloud_provider` (string): Cloud provider\n\n**System Type Options:**\n- `Application DB`\n- `Data Lake`\n- `Data Warehouse`\n- `Operational API`\n- `Files/Buckets`\n- `3rd-Party SaaS`\n- `Streaming/Kafka`\n\n**Access Method Options:**\n- `JDBC`\n- `ODBC`\n- `S3`\n- `GCS`\n- `API`\n- `FTP/SFTP`\n- `Kafka`\n- `Other`\n\n**Data Residency Options:**\n- `AE` - United Arab Emirates\n- `EU` - European Union\n- `KSA` - Kingdom of Saudi Arabia\n- `US` - United States\n- `UK` - United Kingdom\n- `QA` - Qatar\n- `JO` - Jordan\n- `MA` - Morocco\n- `BH` - Bahrain\n- `Other`\n\n**Data Classification Options:**\n- `Public`\n- `Internal`\n- `Confidential`\n- `Restricted`\n\n**Hosting Model Options:**\n- `on_prem`\n- `cloud`\n- `hybrid`\n\n**Service Model Options:**\n- `saas`\n- `paas`\n- `iaas`\n- `on_prem`\n\n**Cloud Provider Options:**\n- `aws`\n- `azure`\n- `gcp`\n- `other`\n- `none`\n\n**Optional Fields:**\n- `primary_region` (string, max 255): Primary region\n- `secondary_region` (string, max 255): Secondary region\n- `network_ref` (string, max 255): Network reference\n- `retention_policy_ref` (string, max 255): Retention policy reference\n- `catalog_uri` (string, max 255, URL): Catalog URI\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Data Source Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-sources/:dataSource",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-sources",
+								":dataSource"
+							],
+							"variable": [
+								{
+									"key": "dataSource",
+									"value": "1",
+									"description": "Data Source ID"
+								}
+							]
+						},
+						"description": "Get details of a specific data source.\n\n**Path Parameters:**\n- `dataSource` (integer): Data Source ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Data Source",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Customer Analytics Database (Updated)\",\n    \"classification\": \"Restricted\", // [Public, Internal, Confidential, Restricted]\n    \"primary_region\": \"us-east-2\",\n    \"catalog_uri\": \"https://catalog.example.com/sources/customer-analytics-v2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-sources/:dataSource",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-sources",
+								":dataSource"
+							],
+							"variable": [
+								{
+									"key": "dataSource",
+									"value": "1",
+									"description": "Data Source ID"
+								}
+							]
+						},
+						"description": "Update an existing data source.\n\n**Path Parameters:**\n- `dataSource` (integer): Data Source ID\n\n**All fields are optional and follow the same validation as Create Data Source**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Data Source",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-sources/:dataSource",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-sources",
+								":dataSource"
+							],
+							"variable": [
+								{
+									"key": "dataSource",
+									"value": "1",
+									"description": "Data Source ID"
+								}
+							]
+						},
+						"description": "Delete a data source.\n\n**Path Parameters:**\n- `dataSource` (integer): Data Source ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Data source management for tracking databases, APIs, data lakes, and other data systems"
+		},
+		{
+			"name": "Datasets",
+			"item": [
+				{
+					"name": "List Datasets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/datasets?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"datasets"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of datasets for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Dataset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Customer Training Dataset\",\n    \"source_ids\": [1, 2],\n    \"purpose\": \"train\", // [train, val, test, online, analytics]\n    \"schema_summary\": \"Contains customer demographics, transaction history, and engagement metrics. 50 features total.\",\n    \"sensitivity\": \"Confidential\", // [Public, Internal, Confidential, Restricted]\n    \"contains_pii\": \"Yes\", // [Yes, No]\n    \"data_subject_categories\": [\"Customers\", \"Prospects\"], // [Customers, Prospects, Employees, Vendors, Minors, Other]\n    \"controller_role\": \"Controller\", // [Controller, Joint Controller, Processor]\n    \"lawful_basis\": \"Legitimate Interests\", // [Consent, Contract, Legal Obligation, Legitimate Interests, Public Task, Vital Interests]\n    \"lawful_basis_detail\": \"Processing for fraud prevention and service improvement under legitimate interests\",\n    \"consent_required\": true,\n    \"consent_coverage_pct\": 95,\n    \"consent_source_ref\": \"CONSENT-TRACKER-2024\",\n    \"licensing_basis\": \"Internal Use Only\",\n    \"license_type\": \"Proprietary\", // [Proprietary, Open (permissive), Open (copyleft), Commercial, Dataset EULA]\n    \"privacy_notice_ref\": \"PRIVACY-NOTICE-V2\",\n    \"cross_border_transfer\": \"SCCs\", // [None, Adequacy, SCCs, DPA Addendum, Derogation]\n    \"data_structure\": \"structured\", // [structured, semi_structured, unstructured]\n    \"storage_format\": \"columnar_parquet\", // [table, columnar_parquet, avro, jsonl, csv, doc, pdf, html, image, audio, video, mixture]\n    \"content_types\": [\"tabular\", \"time_series\"],\n    \"retention_policy_ref\": \"RET-7YEARS\",\n    \"dpia_ref\": \"DPIA-2024-001\",\n    \"aia_ref\": \"AIA-2024-001\",\n    \"owner_team\": \"Data Science Team\",\n    \"refresh_cadence\": \"Daily\",\n    \"quality_SLA\": \"99.5% completeness, <0.1% error rate\",\n    \"catalog_asset_id\": \"CAT-DS-12345\",\n    \"catalog_uri\": \"https://catalog.example.com/datasets/customer-training\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/datasets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"datasets"
+							]
+						},
+						"description": "Create a new dataset with comprehensive privacy and compliance metadata.\n\n**Required Fields:**\n- `name` (string, max 255): Dataset name\n- `source_ids` (array): Data source IDs (must exist)\n- `purpose` (string): Dataset purpose\n- `sensitivity` (string): Data sensitivity level\n- `contains_pii` (string): Whether PII is present\n- `controller_role` (string): GDPR controller role\n- `lawful_basis` (string): GDPR lawful basis\n- `consent_required` (boolean): Consent required flag\n- `cross_border_transfer` (string): Cross-border transfer mechanism\n- `data_structure` (string): Data structure type\n- `storage_format` (string): Storage format\n- `owner_team` (string, max 255): Owning team\n\n**Purpose Options:**\n- `train` - Training dataset\n- `val` - Validation dataset\n- `test` - Test dataset\n- `online` - Online/production data\n- `analytics` - Analytics dataset\n\n**Sensitivity Options:**\n- `Public`\n- `Internal`\n- `Confidential`\n- `Restricted`\n\n**Contains PII Options:**\n- `Yes`\n- `No`\n\n**Data Subject Category Options:**\n- `Customers`\n- `Prospects`\n- `Employees`\n- `Vendors`\n- `Minors`\n- `Other`\n\n**Controller Role Options:**\n- `Controller`\n- `Joint Controller`\n- `Processor`\n\n**Lawful Basis Options:**\n- `Consent`\n- `Contract`\n- `Legal Obligation`\n- `Legitimate Interests`\n- `Public Task`\n- `Vital Interests`\n\n**License Type Options:**\n- `Proprietary`\n- `Open (permissive)`\n- `Open (copyleft)`\n- `Commercial`\n- `Dataset EULA`\n\n**Cross Border Transfer Options:**\n- `None`\n- `Adequacy`\n- `SCCs` - Standard Contractual Clauses\n- `DPA Addendum`\n- `Derogation`\n\n**Data Structure Options:**\n- `structured`\n- `semi_structured`\n- `unstructured`\n\n**Storage Format Options:**\n- `table`\n- `columnar_parquet`\n- `avro`\n- `jsonl`\n- `csv`\n- `doc`\n- `pdf`\n- `html`\n- `image`\n- `audio`\n- `video`\n- `mixture`\n\n**Optional Fields:**\n- `schema_summary` (string): Schema description\n- `data_subject_categories` (array): Categories of data subjects\n- `lawful_basis_detail` (string): Detailed lawful basis explanation\n- `consent_coverage_pct` (integer, 0-100): Consent coverage percentage\n- `consent_source_ref` (string, max 255): Consent source reference\n- `licensing_basis` (string, max 255): Licensing basis\n- `license_type` (string): License type\n- `privacy_notice_ref` (string, max 255): Privacy notice reference\n- `content_types` (array): Content types (array of strings)\n- `retention_policy_ref` (string, max 255): Retention policy reference\n- `dpia_ref` (string, max 255): Data Protection Impact Assessment reference\n- `aia_ref` (string, max 255): AI Impact Assessment reference\n- `refresh_cadence` (string, max 255): Data refresh frequency\n- `quality_SLA` (string, max 255): Quality SLA\n- `catalog_asset_id` (string, max 255): Catalog asset ID\n- `catalog_uri` (string, max 255, URL): Catalog URI\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dataset Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/datasets/:dataset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"datasets",
+								":dataset"
+							],
+							"variable": [
+								{
+									"key": "dataset",
+									"value": "1",
+									"description": "Dataset ID"
+								}
+							]
+						},
+						"description": "Get details of a specific dataset.\n\n**Path Parameters:**\n- `dataset` (integer): Dataset ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Dataset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Customer Training Dataset v2\",\n    \"consent_coverage_pct\": 98,\n    \"quality_SLA\": \"99.7% completeness, <0.05% error rate\",\n    \"refresh_cadence\": \"Real-time\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/datasets/:dataset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"datasets",
+								":dataset"
+							],
+							"variable": [
+								{
+									"key": "dataset",
+									"value": "1",
+									"description": "Dataset ID"
+								}
+							]
+						},
+						"description": "Update an existing dataset.\n\n**Path Parameters:**\n- `dataset` (integer): Dataset ID\n\n**All fields are optional and follow the same validation as Create Dataset**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Dataset",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/datasets/:dataset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"datasets",
+								":dataset"
+							],
+							"variable": [
+								{
+									"key": "dataset",
+									"value": "1",
+									"description": "Dataset ID"
+								}
+							]
+						},
+						"description": "Delete a dataset.\n\n**Path Parameters:**\n- `dataset` (integer): Dataset ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Dataset management with comprehensive privacy, compliance, and data governance metadata"
+		},
+		{
+			"name": "Data Elements",
+			"item": [
+				{
+					"name": "List Data Elements",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-elements?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-elements"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of data elements for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Data Element",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"customer_email\",\n    \"business_definition\": \"Primary email address used for customer communication and account identification\",\n    \"data_type\": \"string\", // [string, integer, decimal, boolean, date, datetime, timestamp, json, binary, array, other]\n    \"format\": \"email\",\n    \"sensitivity\": \"Confidential\", // [Public, Internal, Confidential, Restricted]\n    \"pii_flag\": \"Yes\", // [Yes, No, May_Contain]\n    \"personal_data_category\": \"Contact\", // [Identifier, Contact, Financial, Behavioral, Location, Biometric, Health, Sensitive-Other]\n    \"special_category_flag\": \"No\", // [Yes, No]\n    \"cde_flag\": \"Yes\", // [Yes, No]\n    \"cde_category\": \"Strategic\", // [Strategic, Compliance, External Reporting, Operational, Financial, Risk, Customer Experience]\n    \"owner_team\": \"Customer Data Team\",\n    \"quality_rules_ref\": \"QR-EMAIL-001: Valid email format, not null, unique\",\n    \"catalog_column_id\": \"COL-12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-elements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-elements"
+							]
+						},
+						"description": "Create a new data element with privacy and compliance metadata.\n\n**Required Fields:**\n- `name` (string, max 255): Data element name\n- `data_type` (string): Data type\n- `sensitivity` (string): Sensitivity level\n- `pii_flag` (string): PII flag\n- `special_category_flag` (string): Special category flag (GDPR Article 9)\n- `cde_flag` (string): Critical Data Element flag\n\n**Data Type Options:**\n- `string`\n- `integer`\n- `decimal`\n- `boolean`\n- `date`\n- `datetime`\n- `timestamp`\n- `json`\n- `binary`\n- `array`\n- `other`\n\n**Sensitivity Options:**\n- `Public`\n- `Internal`\n- `Confidential`\n- `Restricted`\n\n**PII Flag Options:**\n- `Yes` - Definitely contains PII\n- `No` - Does not contain PII\n- `May_Contain` - May contain PII\n\n**Personal Data Category Options:**\n- `Identifier` - Direct identifiers (name, ID number)\n- `Contact` - Contact information (email, phone)\n- `Financial` - Financial data\n- `Behavioral` - Behavioral data\n- `Location` - Location data\n- `Biometric` - Biometric data\n- `Health` - Health data\n- `Sensitive-Other` - Other sensitive data\n\n**Special Category Flag Options:**\n- `Yes` - Special category data (GDPR Article 9)\n- `No` - Not special category\n\n**CDE Flag Options:**\n- `Yes` - Critical Data Element\n- `No` - Not critical\n\n**CDE Category Options:**\n- `Strategic`\n- `Compliance`\n- `External Reporting`\n- `Operational`\n- `Financial`\n- `Risk`\n- `Customer Experience`\n\n**Optional Fields:**\n- `business_definition` (string): Business description\n- `format` (string, max 255): Data format (e.g., 'email', 'UUID')\n- `personal_data_category` (string): Personal data category\n- `cde_category` (string): CDE category\n- `owner_team` (string, max 255): Owning team\n- `quality_rules_ref` (string): Quality rules reference\n- `catalog_column_id` (string, max 255): Catalog column ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Data Element Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-elements/:dataElement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-elements",
+								":dataElement"
+							],
+							"variable": [
+								{
+									"key": "dataElement",
+									"value": "1",
+									"description": "Data Element ID"
+								}
+							]
+						},
+						"description": "Get details of a specific data element.\n\n**Path Parameters:**\n- `dataElement` (integer): Data Element ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Data Element",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"business_definition\": \"Primary email address used for customer communication, account identification, and marketing campaigns\",\n    \"sensitivity\": \"Restricted\", // [Public, Internal, Confidential, Restricted]\n    \"quality_rules_ref\": \"QR-EMAIL-002: Valid email format, not null, unique, no disposable domains\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-elements/:dataElement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-elements",
+								":dataElement"
+							],
+							"variable": [
+								{
+									"key": "dataElement",
+									"value": "1",
+									"description": "Data Element ID"
+								}
+							]
+						},
+						"description": "Update an existing data element.\n\n**Path Parameters:**\n- `dataElement` (integer): Data Element ID\n\n**All fields are optional and follow the same validation as Create Data Element**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Data Element",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-elements/:dataElement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-elements",
+								":dataElement"
+							],
+							"variable": [
+								{
+									"key": "dataElement",
+									"value": "1",
+									"description": "Data Element ID"
+								}
+							]
+						},
+						"description": "Delete a data element.\n\n**Path Parameters:**\n- `dataElement` (integer): Data Element ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Data element (column/field) management with privacy and compliance metadata"
+		},
+		{
+			"name": "Dataset Element Mapping",
+			"item": [
+				{
+					"name": "Associate Data Element with Dataset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"organization_id\": 1,\n    \"dataset_id\": 1,\n    \"data_element_id\": 1,\n    \"column_name\": \"email\",\n    \"nullable\": \"No\", // [Yes, No]\n    \"sensitivity_override\": \"Restricted\", // [Public, Internal, Confidential, Restricted]\n    \"pii_override\": \"Yes\", // [Inherit, Yes, No]\n    \"transform_applied\": \"Email normalization and validation\",\n    \"quality_rules_applied\": \"Valid format, not null, unique, no disposable domains\",\n    \"cde_in_dataset\": \"Yes\", // [Yes, No]\n    \"cde_category_in_dataset\": \"Strategic\", // [Strategic, Compliance, External Reporting, Operational, Financial, Risk, Customer Experience]\n    \"lineage_source_column\": \"raw_data.user_emails.email_address\",\n    \"deprecated\": \"No\" // [Yes, No]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/associate-data-element-with-dataset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"associate-data-element-with-dataset"
+							]
+						},
+						"description": "Create an association between a data element and a dataset, with column-specific overrides and lineage.\n\n**Required Fields:**\n- `organization_id` (integer): Organization ID (must exist)\n- `dataset_id` (integer): Dataset ID (must exist)\n- `data_element_id` (integer): Data Element ID (must exist)\n- `column_name` (string, max 255): Column name in dataset\n- `nullable` (string): Whether column can be null\n- `cde_in_dataset` (string): CDE flag in this dataset\n\n**Nullable Options:**\n- `Yes`\n- `No`\n\n**Sensitivity Override Options:**\n- `Public`\n- `Internal`\n- `Confidential`\n- `Restricted`\n\n**PII Override Options:**\n- `Inherit` - Use data element's PII flag\n- `Yes` - Override as PII\n- `No` - Override as non-PII\n\n**CDE In Dataset Options:**\n- `Yes` - Critical in this dataset\n- `No` - Not critical in this dataset\n\n**CDE Category In Dataset Options:**\n- `Strategic`\n- `Compliance`\n- `External Reporting`\n- `Operational`\n- `Financial`\n- `Risk`\n- `Customer Experience`\n\n**Deprecated Options:**\n- `Yes` - Column is deprecated\n- `No` - Column is active\n\n**Optional Fields:**\n- `sensitivity_override` (string): Override sensitivity level\n- `pii_override` (string): Override PII flag\n- `transform_applied` (string, max 255): Transformations applied\n- `quality_rules_applied` (string): Quality rules\n- `cde_category_in_dataset` (string): CDE category\n- `lineage_source_column` (string, max 255): Source column lineage\n- `deprecated` (string): Deprecation status\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Map data elements to datasets with column-specific metadata and overrides"
+		},
+		{
+			"name": "Dataset Snapshots",
+			"item": [
+				{
+					"name": "List Dataset Snapshots",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dataset-snapshots?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-snapshots"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of dataset snapshots for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Dataset Snapshot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"dataset_id\": 1,\n    \"version_tag\": \"v2.3.1-prod\",\n    \"time_range_start\": \"2025-01-01\",\n    \"time_range_end\": \"2025-10-31\",\n    \"row_count\": 2500000,\n    \"quality_checksums\": \"SHA256:a3f5b2...\",\n    \"pii_element_count\": 8,\n    \"special_category_element_count\": 2,\n    \"masking_anonymization_method\": \"SHA-256 hashing for emails, k-anonymity for locations\",\n    \"privacy_transform_evidence_ref\": \"PRIVACY-AUDIT-2025-001\",\n    \"residency_zone\": \"US\", // [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n    \"storage_uri\": \"s3://datasets-prod/customer-training/v2.3.1/\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/dataset-snapshots",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-snapshots"
+							]
+						},
+						"description": "Create a new dataset snapshot for versioning and lineage tracking.\n\n**Required Fields:**\n- `dataset_id` (integer): Dataset ID (must exist)\n- `version_tag` (string, max 50): Version tag\n- `residency_zone` (string): Data residency zone\n- `storage_uri` (string, max 500): Storage location URI\n\n**Residency Zone Options:**\n- `AE` - United Arab Emirates\n- `EU` - European Union\n- `KSA` - Kingdom of Saudi Arabia\n- `US` - United States\n- `UK` - United Kingdom\n- `QA` - Qatar\n- `JO` - Jordan\n- `MA` - Morocco\n- `BH` - Bahrain\n- `Other`\n\n**Optional Fields:**\n- `time_range_start` (date): Start date of data range\n- `time_range_end` (date): End date (must be >= start date)\n- `row_count` (integer, min 0): Number of rows\n- `quality_checksums` (string, max 255): Quality checksums\n- `pii_element_count` (integer, min 0): Count of PII elements\n- `special_category_element_count` (integer, min 0): Count of special category elements\n- `masking_anonymization_method` (string, max 255): Privacy techniques applied\n- `privacy_transform_evidence_ref` (string, max 255): Privacy audit reference\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dataset Snapshot Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dataset-snapshots/:datasetSnapshot",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-snapshots",
+								":datasetSnapshot"
+							],
+							"variable": [
+								{
+									"key": "datasetSnapshot",
+									"value": "1",
+									"description": "Dataset Snapshot ID"
+								}
+							]
+						},
+						"description": "Get details of a specific dataset snapshot.\n\n**Path Parameters:**\n- `datasetSnapshot` (integer): Dataset Snapshot ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Dataset Snapshot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"version_tag\": \"v2.3.1-prod-updated\",\n    \"row_count\": 2550000,\n    \"quality_checksums\": \"SHA256:b4g6c3...\",\n    \"privacy_transform_evidence_ref\": \"PRIVACY-AUDIT-2025-001-UPDATED\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/dataset-snapshots/:datasetSnapshot",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-snapshots",
+								":datasetSnapshot"
+							],
+							"variable": [
+								{
+									"key": "datasetSnapshot",
+									"value": "1",
+									"description": "Dataset Snapshot ID"
+								}
+							]
+						},
+						"description": "Update an existing dataset snapshot.\n\n**Path Parameters:**\n- `datasetSnapshot` (integer): Dataset Snapshot ID\n\n**All fields are optional and follow the same validation as Create Dataset Snapshot**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Dataset Snapshot",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dataset-snapshots/:datasetSnapshot",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-snapshots",
+								":datasetSnapshot"
+							],
+							"variable": [
+								{
+									"key": "datasetSnapshot",
+									"value": "1",
+									"description": "Dataset Snapshot ID"
+								}
+							]
+						},
+						"description": "Delete a dataset snapshot.\n\n**Path Parameters:**\n- `datasetSnapshot` (integer): Dataset Snapshot ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Dataset snapshot management for versioning, lineage tracking, and privacy compliance"
+		},
+		{
+			"name": "AI Model Datasets",
+			"item": [
+				{
+					"name": "List AI Model Datasets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-datasets?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-datasets"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page"
+								}
+							]
+						},
+						"description": "Get paginated list of AI model-dataset associations for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create AI Model Dataset Link",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ai_model_id\": 1,\n    \"ai_model_version_id\": 1,\n    \"dataset_id\": 1,\n    \"dataset_snapshot_id\": 1,\n    \"role\": \"train\", // [pretrain, train, fine_tune, align_rlhf, validation, test, eval_benchmark, rag_corpus, drift_baseline, online_feedback]\n    \"access_path\": \"s3://ml-datasets/customer-training/v2.3.1/\",\n    \"transform_pack_link\": \"s3://ml-transforms/preprocessing-v1.2.py\",\n    \"license_check_ref\": \"LICENSE-CHECK-2024-001\",\n    \"privacy_check_ref\": \"PRIVACY-REVIEW-2024-001\",\n    \"eligibility_status\": \"eligible\", // [eligible, eligible_with_conditions, not_eligible]\n    \"notes\": \"Customer churn prediction training dataset with k-anonymity applied\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-datasets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-datasets"
+							]
+						},
+						"description": "Create a link between an AI model version and a dataset.\n\n**Required Fields:**\n- `ai_model_id` (integer): AI Model ID (must exist)\n- `ai_model_version_id` (integer): AI Model Version ID (must exist)\n- `role` (string): Dataset role in ML lifecycle\n\n**Conditionally Required:**\n- `dataset_snapshot_id` (integer): Required for train, validation, test, and eval_benchmark roles for reproducibility and audit purposes\n\n**Dataset Role Options:**\n- `pretrain` - Pre-training dataset\n- `train` - Training dataset\n- `fine_tune` - Fine-tuning dataset\n- `align_rlhf` - RLHF alignment dataset\n- `validation` - Validation dataset\n- `test` - Test dataset\n- `eval_benchmark` - Evaluation/benchmark dataset\n- `rag_corpus` - RAG corpus dataset\n- `drift_baseline` - Drift monitoring baseline\n- `online_feedback` - Online feedback data\n\n**Eligibility Status Options:**\n- `eligible` - Dataset eligible for use\n- `eligible_with_conditions` - Eligible with conditions\n- `not_eligible` - Not eligible for use\n\n**Optional Fields:**\n- `dataset_id` (integer): Dataset ID\n- `dataset_snapshot_id` (integer): Specific snapshot ID\n- `access_path` (string, max 500): Dataset access path\n- `transform_pack_link` (string, max 500): Link to transformation scripts\n- `license_check_ref` (string, max 255): License compliance reference\n- `privacy_check_ref` (string, max 255): Privacy compliance reference\n- `eligibility_status` (string): Eligibility status\n- `notes` (string): Additional notes\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Model Dataset Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-datasets/:aiModelDataset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-datasets",
+								":aiModelDataset"
+							],
+							"variable": [
+								{
+									"key": "aiModelDataset",
+									"value": "1",
+									"description": "AI Model Dataset Link ID"
+								}
+							]
+						},
+						"description": "Get details of a specific AI model-dataset link.\n\n**Path Parameters:**\n- `aiModelDataset` (integer): AI Model Dataset Link ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update AI Model Dataset Link",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eligibility_status\": \"eligible_with_conditions\", // [eligible, eligible_with_conditions, not_eligible]\n    \"privacy_check_ref\": \"PRIVACY-REVIEW-2024-001-UPDATED\",\n    \"notes\": \"Customer churn prediction training dataset with k-anonymity applied. Updated with additional privacy safeguards.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-datasets/:aiModelDataset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-datasets",
+								":aiModelDataset"
+							],
+							"variable": [
+								{
+									"key": "aiModelDataset",
+									"value": "1",
+									"description": "AI Model Dataset Link ID"
+								}
+							]
+						},
+						"description": "Update an existing AI model-dataset link.\n\n**Path Parameters:**\n- `aiModelDataset` (integer): AI Model Dataset Link ID\n\n**All fields are optional and follow the same validation as Create AI Model Dataset Link**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Link AI models to datasets with role-based tracking and compliance metadata"
+		},
+		{
+			"name": "User Consents",
+			"item": [
+				{
+					"name": "List User Consents",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user-consents?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user-consents"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of user consents for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create User Consent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subject_key\": \"customer-12345\",\n    \"subject_realm\": \"customer\", // [customer, prospect, employee, vendor, other]\n    \"jurisdiction\": \"EU\", // [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n    \"consent_purpose\": [\"training_ai\", \"analytics\"], // [marketing, analytics, personalization, training_ai, service_operations, support, research, other]\n    \"consent_status\": \"granted\", // [granted, denied, withdrawn, expired, not_obtained]\n    \"legal_basis\": \"consent\", // [consent, contract, legal_obligation, legitimate_interests, public_task, vital_interests]\n    \"source_system\": \"Customer Portal v2.3\",\n    \"evidence_ref\": \"CONSENT-FORM-2024-11-04-12345\",\n    \"effective_from\": \"2024-11-04\",\n    \"effective_to\": \"2026-11-04\",\n    \"scope\": \"Consent for using customer transaction data for AI model training and analytics purposes\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user-consents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user-consents"
+							]
+						},
+						"description": "Create a new user consent record for GDPR and privacy compliance.\n\n**Required Fields:**\n- `subject_key` (string, max 255): Subject identifier\n- `subject_realm` (string): Type of data subject\n- `jurisdiction` (string): Legal jurisdiction\n- `consent_purpose` (array, min 1): Array of consent purposes\n- `consent_status` (string): Current consent status\n- `legal_basis` (string): GDPR legal basis\n- `source_system` (string, max 255): System that captured consent\n- `evidence_ref` (string, max 255): Evidence reference\n- `effective_from` (date): Effective start date\n\n**Subject Realm Options:**\n- `customer`\n- `prospect`\n- `employee`\n- `vendor`\n- `other`\n\n**Jurisdiction Options:**\n- `AE` - United Arab Emirates\n- `EU` - European Union\n- `KSA` - Kingdom of Saudi Arabia\n- `US` - United States\n- `UK` - United Kingdom\n- `QA` - Qatar\n- `JO` - Jordan\n- `MA` - Morocco\n- `BH` - Bahrain\n- `Other`\n\n**Consent Purpose Options:**\n- `marketing` - Marketing communications\n- `analytics` - Analytics and insights\n- `personalization` - Personalization\n- `training_ai` - AI model training\n- `service_operations` - Service operations\n- `support` - Customer support\n- `research` - Research purposes\n- `other` - Other purposes\n\n**Consent Status Options:**\n- `granted` - Consent granted\n- `denied` - Consent denied\n- `withdrawn` - Consent withdrawn\n- `expired` - Consent expired\n- `not_obtained` - Consent not obtained\n\n**Legal Basis Options:**\n- `consent` - GDPR Article 6(1)(a)\n- `contract` - GDPR Article 6(1)(b)\n- `legal_obligation` - GDPR Article 6(1)(c)\n- `legitimate_interests` - GDPR Article 6(1)(f)\n- `public_task` - GDPR Article 6(1)(e)\n- `vital_interests` - GDPR Article 6(1)(d)\n\n**Optional Fields:**\n- `effective_to` (date): Effective end date (must be >= effective_from)\n- `scope` (string): Detailed scope description\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Consent Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user-consents/:userConsent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user-consents",
+								":userConsent"
+							],
+							"variable": [
+								{
+									"key": "userConsent",
+									"value": "1",
+									"description": "User Consent ID"
+								}
+							]
+						},
+						"description": "Get details of a specific user consent record.\n\n**Path Parameters:**\n- `userConsent` (integer): User Consent ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Consent",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"consent_status\": \"withdrawn\", // [granted, denied, withdrawn, expired, not_obtained]\n    \"effective_to\": \"2024-12-01\",\n    \"scope\": \"Consent for using customer transaction data for AI model training and analytics purposes. User withdrew consent on 2024-12-01.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user-consents/:userConsent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user-consents",
+								":userConsent"
+							],
+							"variable": [
+								{
+									"key": "userConsent",
+									"value": "1",
+									"description": "User Consent ID"
+								}
+							]
+						},
+						"description": "Update an existing user consent record (e.g., to mark as withdrawn).\n\n**Path Parameters:**\n- `userConsent` (integer): User Consent ID\n\n**All fields are optional and follow the same validation as Create User Consent**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Consent",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user-consents/:userConsent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user-consents",
+								":userConsent"
+							],
+							"variable": [
+								{
+									"key": "userConsent",
+									"value": "1",
+									"description": "User Consent ID"
+								}
+							]
+						},
+						"description": "Delete a user consent record.\n\n**Path Parameters:**\n- `userConsent` (integer): User Consent ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "User consent management for GDPR and privacy compliance"
+		},
+		{
+			"name": "Consent Scopes",
+			"item": [
+				{
+					"name": "List Consent Scopes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-scopes?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-scopes"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of consent scopes for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Consent Scope",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"dataset_id\": 1,\n    \"purpose\": [\"training_ai\", \"analytics\"], // [marketing, analytics, personalization, training_ai, service_operations, support, research, other]\n    \"subject_realm\": \"customer\", // [customer, prospect, employee, vendor, other]\n    \"jurisdiction\": \"EU\", // [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n    \"effective_from\": \"2024-11-04\",\n    \"effective_to\": \"2026-11-04\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/consent-scopes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-scopes"
+							]
+						},
+						"description": "Create a consent scope defining which datasets require consent for specific purposes.\n\n**Required Fields:**\n- `dataset_id` (integer): Dataset ID (must exist)\n- `purpose` (array): Array of consent purposes\n- `subject_realm` (string): Type of data subject\n- `jurisdiction` (string): Legal jurisdiction\n- `effective_from` (date): Effective start date\n\n**Purpose Options:**\n- `marketing` - Marketing communications\n- `analytics` - Analytics and insights\n- `personalization` - Personalization\n- `training_ai` - AI model training\n- `service_operations` - Service operations\n- `support` - Customer support\n- `research` - Research purposes\n- `other` - Other purposes\n\n**Subject Realm Options:**\n- `customer`\n- `prospect`\n- `employee`\n- `vendor`\n- `other`\n\n**Jurisdiction Options:**\n- `AE` - United Arab Emirates\n- `EU` - European Union\n- `KSA` - Kingdom of Saudi Arabia\n- `US` - United States\n- `UK` - United Kingdom\n- `QA` - Qatar\n- `JO` - Jordan\n- `MA` - Morocco\n- `BH` - Bahrain\n- `Other`\n\n**Optional Fields:**\n- `effective_to` (date): Effective end date (must be >= effective_from)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Consent Scope Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-scopes/:consentScope",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-scopes",
+								":consentScope"
+							],
+							"variable": [
+								{
+									"key": "consentScope",
+									"value": "1",
+									"description": "Consent Scope ID"
+								}
+							]
+						},
+						"description": "Get details of a specific consent scope.\n\n**Path Parameters:**\n- `consentScope` (integer): Consent Scope ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Consent Scope",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"purpose\": [\"training_ai\", \"analytics\", \"research\"], // [marketing, analytics, personalization, training_ai, service_operations, support, research, other]\n    \"effective_to\": \"2027-11-04\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/consent-scopes/:consentScope",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-scopes",
+								":consentScope"
+							],
+							"variable": [
+								{
+									"key": "consentScope",
+									"value": "1",
+									"description": "Consent Scope ID"
+								}
+							]
+						},
+						"description": "Update an existing consent scope.\n\n**Path Parameters:**\n- `consentScope` (integer): Consent Scope ID\n\n**All fields are optional and follow the same validation as Create Consent Scope**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Consent Scope",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-scopes/:consentScope",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-scopes",
+								":consentScope"
+							],
+							"variable": [
+								{
+									"key": "consentScope",
+									"value": "1",
+									"description": "Consent Scope ID"
+								}
+							]
+						},
+						"description": "Delete a consent scope.\n\n**Path Parameters:**\n- `consentScope` (integer): Consent Scope ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Define consent requirements for datasets by purpose, subject type, and jurisdiction"
 		}
 	],
 	"event": [

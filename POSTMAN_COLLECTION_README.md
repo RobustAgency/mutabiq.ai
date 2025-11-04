@@ -5,8 +5,29 @@ This Postman collection provides comprehensive API documentation for the Mutabiq
 
 ## Getting Started
 
-### 1. Import the Collection
-1. Open Postman
+### 1. Import the - **Authentication**: 2 endpoints
+- **User Profile**: 1 endpoint
+- **Billing & Subscriptions**: 6 endpoints
+- **Organizations**: 2 endpoints
+- **Team Members**: 4 endpoints
+- **Frameworks**: 2 endpoints
+- **Projects**: 5 endpoints
+- **AI Models**: 3 endpoints
+- **AI Model Versions**: 4 endpoints
+- **AI Model Cards**: 4 endpoints
+- **Use Cases**: 3 endpoints
+- **AI Model Use Cases**: 5 endpoints
+- **Stakeholders**: 5 endpoints
+- **Data Sources**: 5 endpoints
+- **Datasets**: 5 endpoints
+- **Data Elements**: 5 endpoints
+- **Dataset Element Mapping**: 1 endpoint
+- **Dataset Snapshots**: 5 endpoints
+- **AI Model Datasets**: 4 endpoints
+- **User Consents**: 5 endpoints
+- **Consent Scopes**: 5 endpoints
+
+**Total: 81 endpoints** across 21 sectionsostman
 2. Click **Import** button
 3. Select the `postman_collection.json` file
 4. The collection will be imported with all endpoints
@@ -116,6 +137,162 @@ Association management between AI models and business use cases.
 - Version-specific associations
 - Relationship type classification (primary, secondary, experimental, backup)
 
+### 11. Stakeholders
+Management of people, teams, vendors, and organizations involved in AI governance.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List Stakeholders | GET | Get filtered stakeholders | ✅ |
+| Create Stakeholder | POST | Create new stakeholder | ✅ |
+| Get Stakeholder Details | GET | Get specific stakeholder | ✅ |
+| Update Stakeholder | POST | Update stakeholder | ✅ |
+| Delete Stakeholder | DELETE | Remove stakeholder | ✅ |
+
+**Key Features:**
+- Multiple stakeholder types (person, team, vendor, regulator, etc.)
+- Role tagging and classification
+- Vendor association
+- Contact information management
+
+### 12. Data Sources
+Tracking databases, APIs, data lakes, and other data systems.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List Data Sources | GET | Get paginated data sources | ✅ |
+| Create Data Source | POST | Create new data source | ✅ |
+| Get Data Source Details | GET | Get specific data source | ✅ |
+| Update Data Source | POST | Update data source | ✅ |
+| Delete Data Source | DELETE | Remove data source | ✅ |
+
+**Key Features:**
+- System type classification (DB, Data Lake, API, SaaS, etc.)
+- Cloud provider and residency tracking
+- Access method documentation
+- Data classification and hosting model
+
+### 13. Datasets
+Comprehensive dataset management with privacy, compliance, and data governance metadata.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List Datasets | GET | Get paginated datasets | ✅ |
+| Create Dataset | POST | Create new dataset | ✅ |
+| Get Dataset Details | GET | Get specific dataset | ✅ |
+| Update Dataset | POST | Update dataset | ✅ |
+| Delete Dataset | DELETE | Remove dataset | ✅ |
+
+**Key Features:**
+- GDPR compliance tracking (PII, consent, lawful basis)
+- Privacy and licensing metadata
+- Data structure and format classification
+- Quality SLA and refresh cadence
+- DPIA and AIA references
+
+### 14. Data Elements
+Data element (column/field) management with privacy and compliance metadata.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List Data Elements | GET | Get paginated data elements | ✅ |
+| Create Data Element | POST | Create new data element | ✅ |
+| Get Data Element Details | GET | Get specific data element | ✅ |
+| Update Data Element | POST | Update data element | ✅ |
+| Delete Data Element | DELETE | Remove data element | ✅ |
+
+**Key Features:**
+- Data type and format definition
+- PII and special category classification (GDPR Article 9)
+- Personal data categorization
+- Critical Data Element (CDE) tracking
+- Sensitivity levels and quality rules
+
+### 15. Dataset Element Mapping
+Map data elements to datasets with column-specific metadata and overrides.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| Associate Data Element with Dataset | POST | Link element to dataset | ✅ |
+
+**Key Features:**
+- Column-level mapping with lineage
+- Sensitivity and PII overrides
+- Transform and quality rules documentation
+- CDE status per dataset
+- Deprecation tracking
+
+### 16. Dataset Snapshots
+Dataset snapshot management for versioning, lineage tracking, and privacy compliance.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List Dataset Snapshots | GET | Get paginated snapshots | ✅ |
+| Create Dataset Snapshot | POST | Create new snapshot | ✅ |
+| Get Dataset Snapshot Details | GET | Get specific snapshot | ✅ |
+| Update Dataset Snapshot | POST | Update snapshot | ✅ |
+| Delete Dataset Snapshot | DELETE | Remove snapshot | ✅ |
+
+**Key Features:**
+- Version tagging and time ranges
+- Row counts and quality checksums
+- PII and special category element counts
+- Privacy transformation documentation
+- Data residency zone tracking
+
+### 17. AI Model Datasets
+Link AI models to datasets with role-based tracking and compliance metadata.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List AI Model Datasets | GET | Get paginated model-dataset links | ✅ |
+| Create AI Model Dataset Link | POST | Link model to dataset with role | ✅ |
+| Get AI Model Dataset Details | GET | Get specific link | ✅ |
+| Update AI Model Dataset Link | POST | Update link | ✅ |
+
+**Key Features:**
+- Role-based dataset tracking (train, test, validation, etc.)
+- Access path and transformation references
+- License and privacy check documentation
+- Eligibility status tracking
+- Reproducibility support with snapshot IDs
+
+### 18. User Consents
+User consent management for GDPR and privacy compliance.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List User Consents | GET | Get paginated user consents | ✅ |
+| Create User Consent | POST | Create new consent record | ✅ |
+| Get User Consent Details | GET | Get specific consent | ✅ |
+| Update User Consent | PUT | Update consent | ✅ |
+| Delete User Consent | DELETE | Remove consent | ✅ |
+
+**Key Features:**
+- Subject realm classification (customer, employee, etc.)
+- Multi-jurisdiction support (EU, US, UK, etc.)
+- Multiple consent purposes (marketing, AI training, etc.)
+- GDPR legal basis tracking (consent, contract, legitimate interests, etc.)
+- Evidence and source system tracking
+- Effective date ranges
+
+### 19. Consent Scopes
+Define consent requirements for datasets by purpose, subject type, and jurisdiction.
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| List Consent Scopes | GET | Get paginated consent scopes | ✅ |
+| Create Consent Scope | POST | Create new consent scope | ✅ |
+| Get Consent Scope Details | GET | Get specific scope | ✅ |
+| Update Consent Scope | PUT | Update scope | ✅ |
+| Delete Consent Scope | DELETE | Remove scope | ✅ |
+
+**Key Features:**
+- Dataset-level consent requirements
+- Purpose-based consent tracking
+- Subject realm and jurisdiction filtering
+- Effective date ranges
+- Multi-purpose support
+
 ---
 
 ## 📊 Total Endpoints Summary
@@ -132,8 +309,14 @@ Association management between AI models and business use cases.
 - **AI Model Cards**: 4 endpoints
 - **Use Cases**: 3 endpoints
 - **AI Model Use Cases**: 5 endpoints
+- **Stakeholders**: 5 endpoints
+- **Data Sources**: 5 endpoints
+- **Datasets**: 5 endpoints
+- **Data Elements**: 5 endpoints
+- **Dataset Element Mapping**: 1 endpoint
+- **Dataset Snapshots**: 5 endpoints
 
-**Total: 41 Endpoints**
+**Total: 67 Endpoints**
 
 ---
 
@@ -377,6 +560,363 @@ Association management between AI models and business use cases.
 - D2
 - D3
 - D4
+```
+
+### Stakeholder Type
+```
+- person
+- team
+- vendor_org
+- regulator
+- customer_group
+- committee_secretariat
+```
+
+### Data Source - System Type
+```
+- Application DB
+- Data Lake
+- Data Warehouse
+- Operational API
+- Files/Buckets
+- 3rd-Party SaaS
+- Streaming/Kafka
+```
+
+### Data Source - Access Method
+```
+- JDBC
+- ODBC
+- S3
+- GCS
+- API
+- FTP/SFTP
+- Kafka
+- Other
+```
+
+### Data Source - Data Residency
+```
+- AE (United Arab Emirates)
+- EU (European Union)
+- KSA (Kingdom of Saudi Arabia)
+- US (United States)
+- UK (United Kingdom)
+- QA (Qatar)
+- JO (Jordan)
+- MA (Morocco)
+- BH (Bahrain)
+- Other
+```
+
+### Data Source - Data Classification
+```
+- Public
+- Internal
+- Confidential
+- Restricted
+```
+
+### Data Source - Hosting Model
+```
+- on_prem
+- cloud
+- hybrid
+```
+
+### Data Source - Service Model
+```
+- saas
+- paas
+- iaas
+- on_prem
+```
+
+### Data Source - Cloud Provider
+```
+- aws
+- azure
+- gcp
+- other
+- none
+```
+
+### Dataset - Purpose
+```
+- train
+- val
+- test
+- online
+- analytics
+```
+
+### Dataset - Sensitivity
+```
+- Public
+- Internal
+- Confidential
+- Restricted
+```
+
+### Dataset - Contains PII
+```
+- Yes
+- No
+```
+
+### Dataset - Data Subject Category
+```
+- Customers
+- Prospects
+- Employees
+- Vendors
+- Minors
+- Other
+```
+
+### Dataset - Controller Role
+```
+- Controller
+- Joint Controller
+- Processor
+```
+
+### Dataset - Lawful Basis
+```
+- Consent
+- Contract
+- Legal Obligation
+- Legitimate Interests
+- Public Task
+- Vital Interests
+```
+
+### Dataset - License Type
+```
+- Proprietary
+- Open (permissive)
+- Open (copyleft)
+- Commercial
+- Dataset EULA
+```
+
+### Dataset - Cross Border Transfer
+```
+- None
+- Adequacy
+- SCCs
+- DPA Addendum
+- Derogation
+```
+
+### Dataset - Data Structure
+```
+- structured
+- semi_structured
+- unstructured
+```
+
+### Dataset - Storage Format
+```
+- table
+- columnar_parquet
+- avro
+- jsonl
+- csv
+- doc
+- pdf
+- html
+- image
+- audio
+- video
+- mixture
+```
+
+### Data Element - Data Type
+```
+- string
+- integer
+- decimal
+- boolean
+- date
+- datetime
+- timestamp
+- json
+- binary
+- array
+- other
+```
+
+### Data Element - Sensitivity
+```
+- Public
+- Internal
+- Confidential
+- Restricted
+```
+
+### Data Element - PII Flag
+```
+- Yes
+- No
+- May_Contain
+```
+
+### Data Element - Personal Data Category
+```
+- Identifier
+- Contact
+- Financial
+- Behavioral
+- Location
+- Biometric
+- Health
+- Sensitive-Other
+```
+
+### Data Element - Special Category Flag
+```
+- Yes (GDPR Article 9)
+- No
+```
+
+### Data Element - CDE Flag
+```
+- Yes (Critical Data Element)
+- No
+```
+
+### Data Element - CDE Category
+```
+- Strategic
+- Compliance
+- External Reporting
+- Operational
+- Financial
+- Risk
+- Customer Experience
+```
+
+### Dataset Element Map - Nullable
+```
+- Yes
+- No
+```
+
+### Dataset Element Map - Sensitivity Override
+```
+- Public
+- Internal
+- Confidential
+- Restricted
+```
+
+### Dataset Element Map - PII Override
+```
+- Inherit
+- Yes
+- No
+```
+
+### Dataset Element Map - CDE In Dataset
+```
+- Yes
+- No
+```
+
+### Dataset Element Map - Deprecated
+```
+- Yes
+- No
+```
+
+### Dataset Snapshot - Residency Zone
+```
+- AE (United Arab Emirates)
+- EU (European Union)
+- KSA (Kingdom of Saudi Arabia)
+- US (United States)
+- UK (United Kingdom)
+- QA (Qatar)
+- JO (Jordan)
+- MA (Morocco)
+- BH (Bahrain)
+- Other
+```
+
+### AI Model Dataset - Role
+```
+- pretrain (Pre-training dataset)
+- train (Training dataset)
+- fine_tune (Fine-tuning dataset)
+- align_rlhf (RLHF alignment dataset)
+- validation (Validation dataset)
+- test (Test dataset)
+- eval_benchmark (Evaluation/benchmark dataset)
+- rag_corpus (RAG corpus dataset)
+- drift_baseline (Drift monitoring baseline)
+- online_feedback (Online feedback data)
+```
+
+### AI Model Dataset - Eligibility Status
+```
+- eligible (Dataset eligible for use)
+- eligible_with_conditions (Eligible with conditions)
+- not_eligible (Not eligible for use)
+```
+
+### User Consent - Subject Realm
+```
+- customer
+- prospect
+- employee
+- vendor
+- other
+```
+
+### User Consent - Jurisdiction
+```
+- AE (United Arab Emirates)
+- EU (European Union)
+- KSA (Kingdom of Saudi Arabia)
+- US (United States)
+- UK (United Kingdom)
+- QA (Qatar)
+- JO (Jordan)
+- MA (Morocco)
+- BH (Bahrain)
+- Other
+```
+
+### User Consent - Consent Purpose
+```
+- marketing (Marketing communications)
+- analytics (Analytics and insights)
+- personalization (Personalization)
+- training_ai (AI model training)
+- service_operations (Service operations)
+- support (Customer support)
+- research (Research purposes)
+- other (Other purposes)
+```
+
+### User Consent - Consent Status
+```
+- granted (Consent granted)
+- denied (Consent denied)
+- withdrawn (Consent withdrawn)
+- expired (Consent expired)
+- not_obtained (Consent not obtained)
+```
+
+### User Consent - Legal Basis (GDPR Article 6)
+```
+- consent (GDPR Article 6(1)(a) - Consent)
+- contract (GDPR Article 6(1)(b) - Contract)
+- legal_obligation (GDPR Article 6(1)(c) - Legal Obligation)
+- legitimate_interests (GDPR Article 6(1)(f) - Legitimate Interests)
+- public_task (GDPR Article 6(1)(e) - Public Task)
+- vital_interests (GDPR Article 6(1)(d) - Vital Interests)
 ```
 
 ## Common Response Format
