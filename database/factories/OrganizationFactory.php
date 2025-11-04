@@ -20,8 +20,8 @@ class OrganizationFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => $this->faker->company(),
-            'website' => $this->faker->unique()->url(),
-            'phone' => $this->faker->unique()->phoneNumber(),
+            'website' => $this->faker->url(),
+            'phone' => $this->faker->phoneNumber(),
             'country' => $this->faker->country(),
         ];
     }

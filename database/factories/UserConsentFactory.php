@@ -33,7 +33,7 @@ class UserConsentFactory extends Factory
 
         return [
             'organization_id' => Organization::factory(),
-            'subject_key' => fake()->unique()->regexify('[A-Z0-9]{32}'),
+            'subject_key' => fake()->regexify('[A-Z0-9]{32}'),
             'subject_realm' => fake()->randomElement(SubjectRealm::cases()),
             'jurisdiction' => fake()->randomElement(Jurisdiction::cases()),
             'consent_purpose' => $purposeValues,

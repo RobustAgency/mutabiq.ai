@@ -30,7 +30,7 @@ class StakeholderController extends Controller
     public function store(StoreStakeholderRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = Auth::user()->organization_id;
         $stakeholder = $this->stakeholderRepository->create($validated);
 
         return response()->json([

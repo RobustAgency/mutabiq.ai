@@ -19,7 +19,7 @@ class FrameworkFactory extends Factory
         return [
             'user_id' => \App\Models\User::factory(),
             'name' => $this->faker->word(),
-            'code' => strtoupper($this->faker->unique()->lexify('???')),
+            'code' => strtoupper($this->faker->lexify('???###')),
             'type' => $this->faker->randomElement(['Type A', 'Type B', 'Type C']),
             'geography' => $this->faker->country(),
             'category' => $this->faker->randomElement(['mandatory', 'voluntary']),

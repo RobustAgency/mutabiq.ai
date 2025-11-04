@@ -32,7 +32,7 @@ class StakeholderFactory extends Factory
             'display_name' => fake()->name(),
             'legal_name' => fake()->optional()->company(),
             'org_unit' => fake()->optional()->randomElement(['Engineering', 'Sales', 'Marketing', 'Operations']),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => fake()->safeEmail(),
             'phone' => fake()->optional()->phoneNumber(),
             'vendor_id' => fake()->optional()->numerify('VND-####'),
             'role_tags' => fake()->randomElements(['admin', 'user', 'manager'], rand(1, 2)),

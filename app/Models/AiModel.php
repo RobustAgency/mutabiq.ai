@@ -17,6 +17,7 @@ class AiModel extends Model
         'description',
         'organization_id',
         'source_org_stakeholder_id',
+        'organizational_role',
         'owner_stakeholder_id',
         'vendor_id',
         'current_version_id',
@@ -30,6 +31,7 @@ class AiModel extends Model
         'development_source',
         'created_by',
         'updated_by',
+        'creator_email',
     ];
 
     /**

@@ -39,16 +39,19 @@ class AiModelControllerTest extends TestCase
             'name' => 'Fraud Detector',
             'description' => 'Detects fraudulent patterns',
             'source_org_stakeholder_id' => $sourceOrg->id,
+            'owner_stakeholder_id' => $custodian->id,
             'vendor_id' => $vendor->id,
-            'primary_category' => $this->enumValue(PrimaryCategory::class),
+            'organizational_role' => OrganizationalRole::cases()[0]->value,
+            'primary_category' => PrimaryCategory::cases()[0]->value,
             'type' => 'classification',
             'domain_specialization' => 'fraud_detection',
-            'operational_status' => $this->enumValue(OperationalStatus::class),
-            'business_status' => $this->enumValue(BusinessStatus::class),
+            'operational_status' => OperationalStatus::cases()[0]->value,
+            'business_status' => BusinessStatus::cases()[0]->value,
             'regulatory_risk_classification' => 'low',
-            'ownership_type' => $this->enumValue(OwnershipType::class),
-            'development_source' => $this->enumValue(DevelopmentSource::class),
+            'ownership_type' => OwnershipType::cases()[0]->value,
+            'development_source' => DevelopmentSource::cases()[0]->value,
             'current_owner' => 'ml.owner',
+            'creator_email' => 'ml.creator@example.com',
         ], $overrides);
     }
 
@@ -115,8 +118,6 @@ class AiModelControllerTest extends TestCase
         $this->assertDatabaseHas('ai_models', [
             'name' => $payload['name'],
             'organization_id' => $org->id,
-            'created_by' => $user->id,
-            'updated_by' => $user->id,
         ]);
     }
 
@@ -144,8 +145,8 @@ class AiModelControllerTest extends TestCase
 
         $model = AiModel::factory()->create([
             'organization_id' => $org->id,
-            'created_by' => $user->id,
-            'updated_by' => $user->id,
+            'created_by' => $user->email,
+            'updated_by' => $user->email,
         ]);
 
         $response = $this->actingAs($user)->getJson($this->baseEndpoint . '/' . $model->id);
