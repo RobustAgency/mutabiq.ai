@@ -60,7 +60,7 @@ class StoreAiModelVersionRequest extends FormRequest
             'deployment_environments.*' => ['string', 'max:100'],
 
             // Flags
-            'has_performance_data' => ['sometimes', 'boolean'],
+            'has_performance_data' => ['required', 'boolean'],
         ];
     }
 }
