@@ -45,8 +45,6 @@ class StoreUseCaseRequest extends FormRequest
             'budget_allocated' => ['nullable', 'numeric', 'min:0'],
             'target_go_live_date' => ['nullable', 'date'],
             'status' => ['required', Rule::enum(Status::class)],
-            'created_by' => ['required', 'email'],
-            'updated_by' => ['nullable', 'email'],
             'roi_assessment' => ['nullable', 'boolean'],
             'risk_assessment' => ['nullable', 'boolean'],
             'data_assessment' => ['nullable', 'boolean'],
@@ -56,7 +54,7 @@ class StoreUseCaseRequest extends FormRequest
             'estimated_revenue_increase' => ['nullable', 'numeric', 'min:0'],
             'estimated_fte_capacity_saving' => ['nullable', 'integer', 'min:0'],
             'data_availability_status' => ['nullable', Rule::enum(DataAvailabilityStatus::class)],
-            'data_readiness' => ['nullable', Rule::enum(DataReadiness::class)],
+            'data_readiness' => ['required', Rule::enum(DataReadiness::class)],
         ];
     }
 }
