@@ -12,6 +12,7 @@ class AiIncident extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'title',
         'summary',
         'category',

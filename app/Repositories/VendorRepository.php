@@ -10,9 +10,10 @@ class VendorRepository
     /**
      * @return LengthAwarePaginator<int, Vendor>
      */
-    public function getPaginatedVendors(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedVendors(int $organizationID, int $perPage = 15): LengthAwarePaginator
     {
         return Vendor::with('stakeholder')
+            ->where('organization_id', $organizationID)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

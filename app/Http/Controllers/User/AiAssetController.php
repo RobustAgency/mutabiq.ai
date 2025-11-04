@@ -23,7 +23,8 @@ class AiAssetController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 15);
-        $aiAssets = $this->repository->getPaginatedAiAssets($perPage);
+        $organizationID = $request->user()->organization_id;
+        $aiAssets = $this->repository->getPaginatedAiAssets($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -37,7 +38,9 @@ class AiAssetController extends Controller
      */
     public function store(StoreAiAssetRequest $request): JsonResponse
     {
-        $aiAsset = $this->repository->createAiAsset($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $aiAsset = $this->repository->createAiAsset($validated);
 
         return response()->json([
             'error' => false,

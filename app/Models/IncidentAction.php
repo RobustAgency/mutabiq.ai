@@ -12,6 +12,7 @@ class IncidentAction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'ai_incident_id',
         'action_type',
         'description',

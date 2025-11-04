@@ -23,7 +23,8 @@ class VendorController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 15);
-        $vendors = $this->repository->getPaginatedVendors($perPage);
+        $organizationID = $request->user()->organization_id;
+        $vendors = $this->repository->getPaginatedVendors($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -37,7 +38,9 @@ class VendorController extends Controller
      */
     public function store(StoreVendorRequest $request): JsonResponse
     {
-        $vendor = $this->repository->createVendor($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $vendor = $this->repository->createVendor($validated);
 
         return response()->json([
             'error' => false,
