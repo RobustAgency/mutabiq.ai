@@ -8,6 +8,7 @@ use App\Http\Resources\IncidentActionResource;
 use App\Models\IncidentAction;
 use App\Repositories\IncidentActionRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class IncidentActionController extends Controller
 {
@@ -18,9 +19,11 @@ class IncidentActionController extends Controller
     /**
      * Display a listing of incident actions.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $incidentActions = $this->incidentActionRepository->getPaginatedIncidentActions();
+        $perPage = $request->input('per_page') ?? 15;
+        $organizationID = $request->user()->organization_id;
+        $incidentActions = $this->incidentActionRepository->getPaginatedIncidentActions($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -34,7 +37,9 @@ class IncidentActionController extends Controller
      */
     public function store(StoreIncidentActionRequest $request): JsonResponse
     {
-        $incidentAction = $this->incidentActionRepository->createIncidentAction($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $incidentAction = $this->incidentActionRepository->createIncidentAction($validated);
 
         return response()->json([
             'error' => false,

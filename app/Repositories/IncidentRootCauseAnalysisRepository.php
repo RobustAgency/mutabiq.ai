@@ -10,9 +10,10 @@ class IncidentRootCauseAnalysisRepository
     /**
      * @return LengthAwarePaginator<int, IncidentRootCauseAnalysis>
      */
-    public function getPaginatedIncidentRootCauseAnalyses(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedIncidentRootCauseAnalyses(int $organizationID, int $perPage = 15): LengthAwarePaginator
     {
         return IncidentRootCauseAnalysis::with('aiIncident')
+            ->where('organization_id', $organizationID)
             ->paginate($perPage);
     }
 

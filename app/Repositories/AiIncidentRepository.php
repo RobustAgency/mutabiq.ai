@@ -12,9 +12,10 @@ class AiIncidentRepository
      *
      * @return LengthAwarePaginator<int, AiIncident>
      */
-    public function getPaginatedAiIncidents(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedAiIncidents(int $organizationID, int $perPage = 15): LengthAwarePaginator
     {
         return AiIncident::query()
+            ->where('organization_id', $organizationID)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

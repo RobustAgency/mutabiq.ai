@@ -10,9 +10,10 @@ class AiAssetRepository
     /**
      * @return LengthAwarePaginator<int, AiAsset>
      */
-    public function getPaginatedAiAssets(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedAiAssets(int $organizationID, int $perPage = 15): LengthAwarePaginator
     {
         return AiAsset::with(['vendor', 'vendorAgreement'])
+            ->where('organization_id', $organizationID)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

@@ -8,6 +8,7 @@ use App\Http\Resources\IncidentRootCauseAnalysisResource;
 use App\Models\IncidentRootCauseAnalysis;
 use App\Repositories\IncidentRootCauseAnalysisRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class IncidentRootCauseAnalysisController extends Controller
 {
@@ -18,9 +19,11 @@ class IncidentRootCauseAnalysisController extends Controller
     /**
      * Display a listing of incident root cause analyses.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $incidentRootCauseAnalyses = $this->incidentRootCauseAnalysisRepository->getPaginatedIncidentRootCauseAnalyses();
+        $perPage = $request->input('per_page') ?? 15;
+        $organizationID = $request->user()->organization_id;
+        $incidentRootCauseAnalyses = $this->incidentRootCauseAnalysisRepository->getPaginatedIncidentRootCauseAnalyses($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -34,7 +37,9 @@ class IncidentRootCauseAnalysisController extends Controller
      */
     public function store(StoreIncidentRootCauseAnalysisRequest $request): JsonResponse
     {
-        $incidentRootCauseAnalysis = $this->incidentRootCauseAnalysisRepository->createIncidentRootCauseAnalysis($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $incidentRootCauseAnalysis = $this->incidentRootCauseAnalysisRepository->createIncidentRootCauseAnalysis($validated);
 
         return response()->json([
             'error' => false,

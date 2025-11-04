@@ -23,7 +23,8 @@ class AgreementController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 15);
-        $agreements = $this->repository->getPaginatedAgreements($perPage);
+        $organizationID = $request->user()->organization_id;
+        $agreements = $this->repository->getPaginatedAgreements($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -37,7 +38,9 @@ class AgreementController extends Controller
      */
     public function store(StoreAgreementRequest $request): JsonResponse
     {
-        $agreement = $this->repository->createAgreement($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $agreement = $this->repository->createAgreement($validated);
 
         return response()->json([
             'error' => false,

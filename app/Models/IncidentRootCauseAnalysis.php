@@ -12,6 +12,7 @@ class IncidentRootCauseAnalysis extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'ai_incident_id',
         'rca_method',
         'immediate_cause',

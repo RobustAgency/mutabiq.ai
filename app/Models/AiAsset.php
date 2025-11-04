@@ -12,6 +12,7 @@ class AiAsset extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'vendor_id',
         'vendor_effective_from',
         'vendor_effective_to',

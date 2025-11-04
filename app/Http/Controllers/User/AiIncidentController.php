@@ -23,7 +23,8 @@ class AiIncidentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 15);
-        $aiIncidents = $this->repository->getPaginatedAiIncidents($perPage);
+        $organizationID = $request->user()->organization_id;
+        $aiIncidents = $this->repository->getPaginatedAiIncidents($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -37,7 +38,9 @@ class AiIncidentController extends Controller
      */
     public function store(StoreAiIncidentRequest $request): JsonResponse
     {
-        $aiIncident = $this->repository->createAiIncident($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $aiIncident = $this->repository->createAiIncident($validated);
 
         return response()->json([
             'error' => false,

@@ -10,9 +10,10 @@ class CorrectivePreventiveActionRepository
     /**
      * @return LengthAwarePaginator<int, CorrectivePreventiveAction>
      */
-    public function getPaginatedCorrectivePreventiveActions(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedCorrectivePreventiveActions(int $organizationID, int $perPage = 15): LengthAwarePaginator
     {
         return CorrectivePreventiveAction::with('aiModel')
+            ->where('organization_id', $organizationID)
             ->paginate($perPage);
     }
 
