@@ -28,7 +28,7 @@ class StoreAiModelRequest extends FormRequest
                 Rule::exists('stakeholders', 'id'),
             ],
             'owner_stakeholder_id' => [
-                'nullable',
+                'required',
                 Rule::exists('stakeholders', 'id'),
             ],
             'vendor_id' => ['nullable', 'exists:vendors,id'],
@@ -43,6 +43,14 @@ class StoreAiModelRequest extends FormRequest
             'current_version_id' => ['required_if:operational_status,production', 'exists:ai_model_versions,id'],
             'organizational_role' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, OrganizationalRole::cases()))],
             'creator_email' => ['required', 'email'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'owner_stakeholder_id.required' => 'The model owner is required.',
+            'owner_stakeholder_id.exists' => 'The selected model owner is invalid.',
         ];
     }
 }
