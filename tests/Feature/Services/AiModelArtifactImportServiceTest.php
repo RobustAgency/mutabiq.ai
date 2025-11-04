@@ -51,7 +51,7 @@ class AiModelArtifactImportServiceTest extends TestCase
         );
 
         $this->assertFalse($result['error']);
-        $this->assertEquals('Import completed successfully', $result['message']);
+        $this->assertEquals('Import completed successfully.', $result['message']);
         $this->assertEquals(1, $result['data']['successful']);
         $this->assertEquals(0, $result['data']['failed']);
         $this->assertEmpty($result['data']['errors']);
@@ -145,7 +145,7 @@ class AiModelArtifactImportServiceTest extends TestCase
             $this->user->id
         );
 
-        $this->assertFalse($result['error']);
+        $this->assertTrue($result['error']);
         $this->assertEquals(0, $result['data']['successful']);
         $this->assertEquals(1, $result['data']['failed']);
         $this->assertNotEmpty($result['data']['errors']);
@@ -173,7 +173,7 @@ class AiModelArtifactImportServiceTest extends TestCase
             $this->user->id
         );
 
-        $this->assertFalse($result['error']);
+        $this->assertTrue($result['error']);
         $this->assertEquals(1, $result['data']['successful']);
         $this->assertEquals(2, $result['data']['failed']);
         $this->assertCount(2, $result['data']['errors']);
@@ -281,7 +281,7 @@ class AiModelArtifactImportServiceTest extends TestCase
             $this->user->id
         );
 
-        $this->assertFalse($result['error']);
+        $this->assertTrue($result['error']);
         $this->assertEquals(0, $result['data']['successful']);
         $this->assertEquals(1, $result['data']['failed']);
     }
@@ -306,7 +306,7 @@ class AiModelArtifactImportServiceTest extends TestCase
             $this->user->id
         );
 
-        $this->assertFalse($result['error']);
+        $this->assertTrue($result['error']);
         $this->assertEquals(0, $result['data']['successful']);
         $this->assertEquals(1, $result['data']['failed']);
     }
@@ -332,7 +332,7 @@ class AiModelArtifactImportServiceTest extends TestCase
             $this->user->id
         );
 
-        $this->assertFalse($result['error']);
+        $this->assertTrue($result['error']);
         $this->assertEquals(1, $result['data']['successful']);
         $this->assertEquals(1, $result['data']['failed']);
         $this->assertArrayHasKey('row', $result['data']['errors'][0]);

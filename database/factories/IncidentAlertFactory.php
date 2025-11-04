@@ -22,6 +22,7 @@ class IncidentAlertFactory extends Factory
         $lastSeenAt = $this->faker->optional(0.7)->dateTimeBetween($firstSeenAt, 'now');
 
         return [
+            'organization_id' => \App\Models\Organization::factory(),
             'ai_incident_id' => AiIncident::factory(),
             'source_type' => $this->faker->randomElement(array_map(fn($c) => $c->value, AlertSourceType::cases())),
             'source_ref' => $this->faker->optional(0.6)->regexify('[A-Z]{3}-[0-9]{3,6}'),

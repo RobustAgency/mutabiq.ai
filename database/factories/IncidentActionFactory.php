@@ -6,6 +6,7 @@ use App\Enums\IncidentAction\ActionType;
 use App\Enums\IncidentAction\ValidationResult;
 use App\Models\AiIncident;
 use App\Models\IncidentAction;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,6 +26,7 @@ class IncidentActionFactory extends Factory
         $completedAt = $hasCompleted ? $this->faker->dateTimeBetween($startedAt, 'now') : null;
 
         return [
+            'organization_id' => Organization::factory(),
             'ai_incident_id' => AiIncident::factory(),
             'action_type' => $this->faker->randomElement(ActionType::cases())->value,
             'description' => $this->faker->paragraph(2),

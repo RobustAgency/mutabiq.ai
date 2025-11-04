@@ -22,6 +22,7 @@ class IncidentRootCauseAnalysisFactory extends Factory
         $approvedAt = $this->faker->dateTimeBetween('-30 days', 'now');
 
         return [
+            'organization_id' => \App\Models\Organization::factory(),
             'ai_incident_id' => AiIncident::factory(),
             'rca_method' => $this->faker->randomElement(RcaMethod::cases())->value,
             'immediate_cause' => $this->faker->paragraph(2),

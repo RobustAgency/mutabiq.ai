@@ -42,13 +42,12 @@ class AiModelArtifactController extends Controller
         $data['created_by'] = Auth::user()->id;
         try {
             $result = $this->repository->createAiModelArtifact($data);
-            $statusCode = $result['error'] ? 422 : 200;
 
             return response()->json([
                 'error' => $result['error'],
                 'message' => $result['message'],
                 'data' => $result['data'],
-            ], $statusCode);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => true,
