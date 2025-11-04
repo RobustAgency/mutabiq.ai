@@ -10,4 +10,3 @@ Route::post('accept-invite', [TeamInvitationController::class, 'acceptInvitation
 
 require __DIR__ . '/api/admin.php';
 require __DIR__ . '/api/user.php';
-

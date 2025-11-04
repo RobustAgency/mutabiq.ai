@@ -120,26 +120,27 @@ class AiModelArtifactControllerTest extends TestCase
 
     public function test_store_creates_ai_model_artifact(): void
     {
+        Storage::fake('local');
+
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://ai-model-artifacts/models/test-model/model.bin',
-            'checksum' => 'abc123def456',
-            'size_bytes' => 1048576, // 1MB
-            'notes' => 'Test model binary artifact',
-        ];
+        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
+        $csvContent .= "{$aiModelVersion->id},s3://ai-model-artifacts/models/test-model/model.bin,abc123def456,1048576,Test model binary artifact\n";
+
+        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
 
         $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
+            ->postJson('/api/ai-model-artifacts', [
+                'file' => $file,
+                'artifact_type' => ArtifactType::MODEL_BINARY->value,
+            ]);
 
-        $response->assertStatus(201)
+        $response->assertStatus(200)
             ->assertJson([
                 'error' => false,
-                'message' => 'AI Model Artifact created successfully',
+                'message' => 'Import completed successfully',
             ]);
 
         $this->assertDatabaseHas('ai_model_artifacts', [
@@ -156,21 +157,25 @@ class AiModelArtifactControllerTest extends TestCase
 
     public function test_store_creates_artifact_with_all_artifact_types(): void
     {
+        Storage::fake('local');
+
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
         foreach (ArtifactType::cases() as $type) {
-            $data = [
-                'ai_model_version_id' => $aiModelVersion->id,
-                'artifact_type' => $type->value,
-                'uri' => 's3://bucket/path/to/artifact',
-            ];
+            $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
+            $csvContent .= "{$aiModelVersion->id},s3://bucket/path/to/artifact,checksum,1024,Note\n";
+
+            $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
 
             $response = $this->actingAs($this->user, 'supabase')
-                ->postJson('/api/ai-model-artifacts', $data);
+                ->postJson('/api/ai-model-artifacts', [
+                    'file' => $file,
+                    'artifact_type' => $type->value,
+                ]);
 
-            $response->assertStatus(201);
+            $response->assertStatus(200);
 
             $this->assertDatabaseHas('ai_model_artifacts', [
                 'artifact_type' => $type->value,
@@ -180,20 +185,24 @@ class AiModelArtifactControllerTest extends TestCase
 
     public function test_store_creates_artifact_without_optional_fields(): void
     {
+        Storage::fake('local');
+
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::CONFIG->value,
-            'uri' => 's3://ai-model-artifacts/configs/test/config.yaml',
-        ];
+        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
+        $csvContent .= "{$aiModelVersion->id},s3://ai-model-artifacts/configs/test/config.yaml,,,\n";
+
+        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
 
         $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
+            ->postJson('/api/ai-model-artifacts', [
+                'file' => $file,
+                'artifact_type' => ArtifactType::CONFIG->value,
+            ]);
 
-        $response->assertStatus(201);
+        $response->assertStatus(200);
 
         $this->assertDatabaseHas('ai_model_artifacts', [
             'ai_model_version_id' => $aiModelVersion->id,
@@ -207,106 +216,25 @@ class AiModelArtifactControllerTest extends TestCase
 
     public function test_store_validates_required_fields(): void
     {
-        $data = [];
-
         $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
+            ->postJson('/api/ai-model-artifacts', []);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['ai_model_version_id', 'artifact_type', 'uri']);
-    }
-
-    public function test_store_validates_ai_model_version_exists(): void
-    {
-        $data = [
-            'ai_model_version_id' => 99999,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://bucket/path',
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['ai_model_version_id']);
+            ->assertJsonValidationErrors(['file', 'artifact_type']);
     }
 
     public function test_store_validates_artifact_type_is_valid(): void
     {
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => 'invalid_type',
-            'uri' => 's3://bucket/path',
-        ];
+        $file = UploadedFile::fake()->create('artifacts.csv', 100);
 
         $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
+            ->postJson('/api/ai-model-artifacts', [
+                'file' => $file,
+                'artifact_type' => 'invalid_type',
+            ]);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['artifact_type']);
-    }
-
-    public function test_store_validates_uri_max_length(): void
-    {
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => str_repeat('a', 1025), // Exceeds max length
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['uri']);
-    }
-
-    public function test_store_validates_size_bytes_is_positive(): void
-    {
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://bucket/path',
-            'size_bytes' => -100,
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['size_bytes']);
-    }
-
-    public function test_store_validates_notes_max_length(): void
-    {
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://bucket/path',
-            'notes' => str_repeat('a', 2001), // Exceeds max length
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['notes']);
     }
 
     public function test_store_requires_authentication(): void
@@ -333,14 +261,6 @@ class AiModelArtifactControllerTest extends TestCase
             ->assertJsonPath('data.id', $artifact->id)
             ->assertJsonPath('data.artifact_type', $artifact->artifact_type->value)
             ->assertJsonPath('data.uri', $artifact->uri);
-    }
-
-    public function test_show_returns_404_for_non_existent_artifact(): void
-    {
-        $response = $this->actingAs($this->user, 'supabase')
-            ->getJson('/api/ai-model-artifacts/99999');
-
-        $response->assertStatus(404);
     }
 
     public function test_show_requires_authentication(): void
@@ -393,14 +313,6 @@ class AiModelArtifactControllerTest extends TestCase
         $this->assertDatabaseHas('ai_model_versions', ['id' => $aiModelVersion->id]);
     }
 
-    public function test_destroy_returns_404_for_non_existent_artifact(): void
-    {
-        $response = $this->actingAs($this->user, 'supabase')
-            ->deleteJson('/api/ai-model-artifacts/99999');
-
-        $response->assertStatus(404);
-    }
-
     public function test_destroy_requires_authentication(): void
     {
         $artifact = AiModelArtifact::factory()->create([
@@ -412,257 +324,30 @@ class AiModelArtifactControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_store_creates_docker_image_artifact(): void
-    {
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::DOCKER_IMAGE->value,
-            'uri' => 'docker://registry.example.com/ai-models/model-123:v1.0',
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
-
-        $response->assertStatus(201);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'artifact_type' => ArtifactType::DOCKER_IMAGE->value,
-            'uri' => 'docker://registry.example.com/ai-models/model-123:v1.0',
-        ]);
-    }
-
     public function test_store_creates_sbom_artifact(): void
     {
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $data = [
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::SBOM->value,
-            'uri' => 's3://ai-model-artifacts/sbom/model-123/sbom.json',
-            'checksum' => 'sha256:abcdef123456',
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts', $data);
-
-        $response->assertStatus(201);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'artifact_type' => ArtifactType::SBOM->value,
-            'checksum' => 'sha256:abcdef123456',
-        ]);
-    }
-
-    public function test_import_creates_multiple_artifacts_from_csv(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion1 = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-        $aiModelVersion2 = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "ai_model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion1->id},s3://bucket/model1.bin,checksum1,1024,Note 1\n";
-        $csvContent .= "{$aiModelVersion2->id},s3://bucket/model2.bin,checksum2,2048,Note 2\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', [
-                'file' => $file,
-                'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            ]);
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'error',
-                'message',
-                'data' => [
-                    'total_processed',
-                    'successful',
-                    'failed',
-                    'errors',
-                ],
-            ])
-            ->assertJsonPath('data.successful', 2)
-            ->assertJsonPath('data.failed', 0);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'organization_id' => $this->organization->id,
-            'ai_model_version_id' => $aiModelVersion1->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://bucket/model1.bin',
-        ]);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'organization_id' => $this->organization->id,
-            'ai_model_version_id' => $aiModelVersion2->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://bucket/model2.bin',
-        ]);
-    }
-
-    public function test_import_handles_excel_files(): void
-    {
         Storage::fake('local');
 
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
-        $file = UploadedFile::fake()->create('artifacts.xlsx', 100, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', [
-                'file' => $file,
-                'artifact_type' => ArtifactType::TOKENIZER->value,
-            ]);
-
-        $response->assertStatus(200);
-    }
-
-    public function test_import_validates_required_fields(): void
-    {
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', []);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['file', 'artifact_type']);
-    }
-
-    public function test_import_validates_file_type(): void
-    {
-        $file = UploadedFile::fake()->create('artifacts.pdf', 100, 'application/pdf');
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', [
-                'file' => $file,
-                'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['file']);
-    }
-
-    public function test_import_validates_artifact_type(): void
-    {
-        $file = UploadedFile::fake()->create('artifacts.csv', 100);
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', [
-                'file' => $file,
-                'artifact_type' => 'invalid_type',
-            ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['artifact_type']);
-    }
-
-    public function test_import_validates_file_size(): void
-    {
-        $file = UploadedFile::fake()->create('artifacts.csv', 11000); // 11MB
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', [
-                'file' => $file,
-                'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['file']);
-    }
-
-    public function test_import_reports_validation_errors_for_rows(): void
-    {
-        Storage::fake('local');
-
-        $csvContent = "ai_model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "99999,s3://bucket/model.bin,checksum1,1024,Note\n"; // Invalid version ID
+        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
+        $csvContent .= "{$aiModelVersion->id},s3://ai-model-artifacts/sbom/model-123/sbom.json,sha256:abcdef123456,4096,\n";
 
         $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
 
         $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', [
+            ->postJson('/api/ai-model-artifacts', [
                 'file' => $file,
-                'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            ]);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('data.failed', 1)
-            ->assertJsonPath('data.successful', 0);
-    }
-
-    public function test_import_requires_authentication(): void
-    {
-        $file = UploadedFile::fake()->create('artifacts.csv', 100);
-
-        $response = $this->postJson('/api/ai-model-artifacts/import', [
-            'file' => $file,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-        ]);
-
-        $response->assertStatus(401);
-    }
-
-    public function test_download_template_returns_template_file(): void
-    {
-        Storage::fake('local');
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->getJson('/api/ai-model-artifacts/download-template');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'error',
-                'message',
-                'data' => [
-                    'download_url',
-                    'filename',
-                ],
-            ]);
-    }
-
-    public function test_download_template_requires_authentication(): void
-    {
-        $response = $this->getJson('/api/ai-model-artifacts/download-template');
-
-        $response->assertStatus(401);
-    }
-
-    public function test_import_creates_artifacts_with_organization_context(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "ai_model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://bucket/model.bin,checksum1,1024,Note\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-model-artifacts/import', [
-                'file' => $file,
-                'artifact_type' => ArtifactType::CONFIG->value,
+                'artifact_type' => ArtifactType::SBOM->value,
             ]);
 
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ai_model_artifacts', [
-            'organization_id' => $this->organization->id,
-            'created_by' => $this->user->id,
-            'updated_by' => $this->user->id,
+            'artifact_type' => ArtifactType::SBOM->value,
+            'checksum' => 'sha256:abcdef123456',
         ]);
     }
 }

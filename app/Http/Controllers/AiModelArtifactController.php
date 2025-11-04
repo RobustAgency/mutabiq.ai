@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ImportAiModelArtifactsRequest;
 use App\Http\Requests\StoreAiModelArtifactRequest;
-use App\Http\Requests\UpdateAiModelArtifactRequest;
 use App\Http\Resources\AiModelArtifactResource;
 use App\Models\AiModelArtifact;
 use App\Repositories\AiModelArtifactRepository;
-use App\Services\AiModelArtifactImportService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,10 +42,10 @@ class AiModelArtifactController extends Controller
         $data['created_by'] = Auth::user()->id;
         try {
             $result = $this->repository->createAiModelArtifact($data);
-            $statusCode = $result['success'] ? 200 : 422;
+            $statusCode = $result['error'] ? 422 : 200;
 
             return response()->json([
-                'error' => !$result['success'],
+                'error' => $result['error'],
                 'message' => $result['message'],
                 'data' => $result['data'],
             ], $statusCode);
@@ -67,70 +64,6 @@ class AiModelArtifactController extends Controller
             'data' => new AiModelArtifactResource($aiModelArtifact),
             'message' => 'AI Model Artifact retrieved successfully'
         ]);
-    }
-
-    /**
-     * Bulk import AI Model Artifacts from CSV or Excel file
-     */
-    public function import(ImportAiModelArtifactsRequest $request): JsonResponse
-    {
-        try {
-            $file = $request->file('file');
-            $artifactType = $request->input('artifact_type');
-            $organizationId = Auth::user()->organization_id;
-            $userId = Auth::user()->id;
-
-            $result = $this->importService->import(
-                $file,
-                $organizationId,
-                $artifactType,
-                $userId,
-                $userId
-            );
-
-            $statusCode = $result['success'] ? 200 : 422;
-
-            return response()->json([
-                'error' => !$result['success'],
-                'message' => $result['message'],
-                'data' => $result['data'],
-            ], $statusCode);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json([
-                'error' => true,
-                'message' => $e->getMessage(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => true,
-                'message' => 'An unexpected error occurred during import: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Download import template
-     */
-    public function downloadTemplate(): JsonResponse
-    {
-        try {
-            $path = $this->importService->generateTemplate();
-            $filename = basename($path);
-
-            return response()->json([
-                'error' => false,
-                'message' => 'Template generated successfully',
-                'data' => [
-                    'download_url' => url('storage/templates/' . $filename),
-                    'filename' => $filename,
-                ],
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => true,
-                'message' => 'Failed to generate template: ' . $e->getMessage(),
-            ], 500);
-        }
     }
 
     public function destroy(AiModelArtifact $aiModelArtifact): JsonResponse

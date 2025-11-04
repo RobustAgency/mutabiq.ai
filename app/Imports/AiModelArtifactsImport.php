@@ -20,28 +20,25 @@ class AiModelArtifactsImport implements ToCollection, WithHeadingRow, WithBatchI
     protected int $successCount = 0;
     protected int $failureCount = 0;
 
-    public function __construct(
-        int $organizationId,
-        string $artifactType,
-        int $createdBy,
-    ) {
+    public function __construct(int $organizationId, string $artifactType, int $createdBy)
+    {
         $this->organizationId = $organizationId;
         $this->artifactType = $artifactType;
         $this->createdBy = $createdBy;
     }
 
     /**
-     * @param Collection $collection
+     * @param Collection <int, array> $collection
      */
-    public function collection(Collection $collection)
+    public function collection(Collection $collection): void
     {
         foreach ($collection as $index => $row) {
             try {
-                $this->validateRow($row->toArray(), $index + 2); // +2 because of header row and 0-index
+                $this->validateRow($row->toArray(), $index + 2);
 
                 AiModelArtifact::create([
                     'organization_id' => $this->organizationId,
-                    'ai_model_version_id' => $row['ai_model_version_id'],
+                    'ai_model_version_id' => $row['model_version_id'],
                     'artifact_type' => $this->artifactType,
                     'uri' => $row['uri'],
                     'checksum' => $row['checksum'] ?? null,
@@ -77,14 +74,13 @@ class AiModelArtifactsImport implements ToCollection, WithHeadingRow, WithBatchI
     protected function validateRow(array $row, int $rowNumber): void
     {
         $validator = Validator::make($row, [
-            'ai_model_version_id' => ['required', 'integer', 'exists:ai_model_versions,id'],
+            'model_version_id' => ['required', 'integer', 'exists:ai_model_versions,id'],
             'uri' => ['required', 'string', 'max:1024'],
             'checksum' => ['nullable', 'string', 'max:255'],
             'size_bytes' => ['nullable', 'integer', 'min:0'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ], [
-            'ai_model_version_id.required' => "Row {$rowNumber}: The AI model version is required.",
-            'ai_model_version_id.exists' => "Row {$rowNumber}: The selected AI model version does not exist.",
+            'model_version_id.required' => "Row {$rowNumber}: The AI model version is required.",
             'uri.required' => "Row {$rowNumber}: The URI is required.",
             'uri.max' => "Row {$rowNumber}: The URI must not exceed 1024 characters.",
             'size_bytes.min' => "Row {$rowNumber}: The size in bytes must be at least 0.",
