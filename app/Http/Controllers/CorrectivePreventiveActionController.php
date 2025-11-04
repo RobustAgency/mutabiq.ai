@@ -8,6 +8,7 @@ use App\Http\Resources\CorrectivePreventiveActionResource;
 use App\Models\CorrectivePreventiveAction;
 use App\Repositories\CorrectivePreventiveActionRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CorrectivePreventiveActionController extends Controller
 {
@@ -18,9 +19,11 @@ class CorrectivePreventiveActionController extends Controller
     /**
      * Display a listing of corrective preventive actions.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $correctivePreventiveActions = $this->repository->getPaginatedCorrectivePreventiveActions();
+        $perPage = $request->input('per_page') ?? 15;
+        $organizationID = $request->user()->organization_id;
+        $correctivePreventiveActions = $this->repository->getPaginatedCorrectivePreventiveActions($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -34,7 +37,9 @@ class CorrectivePreventiveActionController extends Controller
      */
     public function store(StoreCorrectivePreventiveActionRequest $request): JsonResponse
     {
-        $correctivePreventiveAction = $this->repository->createCorrectivePreventiveAction($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $correctivePreventiveAction = $this->repository->createCorrectivePreventiveAction($validated);
 
         return response()->json([
             'error' => false,

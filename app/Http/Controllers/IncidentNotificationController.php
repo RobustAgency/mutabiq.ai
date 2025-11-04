@@ -8,6 +8,7 @@ use App\Http\Resources\IncidentNotificationResource;
 use App\Models\IncidentNotification;
 use App\Repositories\IncidentNotificationRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class IncidentNotificationController extends Controller
 {
@@ -18,9 +19,11 @@ class IncidentNotificationController extends Controller
     /**
      * Display a listing of incident notifications.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $incidentNotifications = $this->incidentNotificationRepository->getPaginatedIncidentNotifications();
+        $perPage = $request->input('per_page') ?? 15;
+        $organizationID = $request->user()->organization_id;
+        $incidentNotifications = $this->incidentNotificationRepository->getPaginatedIncidentNotifications($organizationID, $perPage);
 
         return response()->json([
             'error' => false,
@@ -34,7 +37,9 @@ class IncidentNotificationController extends Controller
      */
     public function store(StoreIncidentNotificationRequest $request): JsonResponse
     {
-        $incidentNotification = $this->incidentNotificationRepository->createIncidentNotification($request->validated());
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $incidentNotification = $this->incidentNotificationRepository->createIncidentNotification($validated);
 
         return response()->json([
             'error' => false,

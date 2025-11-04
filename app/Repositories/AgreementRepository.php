@@ -10,9 +10,10 @@ class AgreementRepository
     /**
      * @return LengthAwarePaginator<int, Agreement>
      */
-    public function getPaginatedAgreements(int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedAgreements(int $organizationID, int $perPage = 15): LengthAwarePaginator
     {
         return Agreement::with('vendor')
+            ->where('organization_id', $organizationID)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

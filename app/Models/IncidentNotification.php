@@ -12,6 +12,7 @@ class IncidentNotification extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'ai_incident_id',
         'audience_type',
         'channel',

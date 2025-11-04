@@ -14,6 +14,7 @@ class Vendor extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'vendor_name',
         'legal_name',
         'hq_country',

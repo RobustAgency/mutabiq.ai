@@ -12,6 +12,7 @@ class CorrectivePreventiveAction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'source_type',
         'source_id',
         'ai_model_id',

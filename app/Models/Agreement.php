@@ -12,6 +12,7 @@ class Agreement extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'vendor_id',
         'agreement_type',
         'status',

@@ -12,6 +12,7 @@ class IncidentAlert extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'ai_incident_id',
         'source_type',
         'source_ref',
