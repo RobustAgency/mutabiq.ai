@@ -38,6 +38,8 @@ class StoreUseCaseRequest extends FormRequest
             'technical_owner_id' => ['nullable', 'integer', 'exists:stakeholders,id'],
             'business_domain' => ['required', Rule::enum(BusinessDomain::class)],
             'roi_classification' => ['nullable', Rule::enum(ROIClassification::class)],
+            'created_by' => ['required', 'email'],
+            'updated_by' => ['nullable', 'email'],
             'priority' => ['nullable', Rule::enum(Priority::class)],
             'risk_level' => ['required', Rule::enum(RiskLevel::class)],
             'data_sensitivity' => ['required', Rule::enum(DataSensitivity::class)],
@@ -53,8 +55,8 @@ class StoreUseCaseRequest extends FormRequest
             'estimated_reduction_in_cost' => ['nullable', 'numeric', 'min:0'],
             'estimated_revenue_increase' => ['nullable', 'numeric', 'min:0'],
             'estimated_fte_capacity_saving' => ['nullable', 'integer', 'min:0'],
-            'data_availability_status' => ['required', Rule::enum(DataAvailabilityStatus::class)],
-            'data_readiness' => ['required', Rule::enum(DataReadiness::class)],
+            'data_availability_status' => ['nullable', Rule::enum(DataAvailabilityStatus::class)],
+            'data_readiness' => ['nullable', Rule::enum(DataReadiness::class)],
         ];
     }
 }
