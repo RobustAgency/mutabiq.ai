@@ -3129,6 +3129,2432 @@
 				}
 			],
 			"description": "Define consent requirements for datasets by purpose, subject type, and jurisdiction"
+		},
+		{
+			"name": "Consent Coverages",
+			"item": [
+				{
+					"name": "List Consent Coverages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-coverages?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-coverages"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of consent coverages for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Consent Coverage",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"dataset_id\": 1,\n    \"snapshot_id\": null,\n    \"purpose\": [\"training_ai\", \"analytics\"], // [marketing, analytics, personalization, training_ai, service_operations, support, research, other]\n    \"jurisdiction\": \"EU\", // [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n    \"as_of\": \"2025-11-04\",\n    \"subjects_total\": 10000,\n    \"subjects_with_valid_consent\": 9500,\n    \"coverage_pct\": 95.0,\n    \"evidence_ref\": \"CONSENT-AUDIT-2025-Q4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/consent-coverages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-coverages"
+							]
+						},
+						"description": "Create a new consent coverage record to track consent compliance for a dataset.\n\n**Required Fields:**\n- `dataset_id` (integer): Dataset ID (must exist)\n- `purpose` (array): Array of consent purposes\n- `jurisdiction` (string): Legal jurisdiction [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n- `as_of` (date): Coverage measurement date\n- `subjects_total` (integer, min 0): Total number of data subjects\n- `subjects_with_valid_consent` (integer, min 0, <= subjects_total): Subjects with valid consent\n- `coverage_pct` (number, 0-100): Coverage percentage\n- `evidence_ref` (string, max 255): Reference to evidence documentation\n\n**Purpose Options:**\n- `marketing` - Marketing communications\n- `analytics` - Analytics and insights\n- `personalization` - Personalization\n- `training_ai` - AI model training\n- `service_operations` - Service operations\n- `support` - Customer support\n- `research` - Research purposes\n- `other` - Other purposes\n\n**Optional Fields:**\n- `snapshot_id` (integer): Dataset Snapshot ID (if applicable)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Consent Coverage Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-coverages/:consentCoverage",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-coverages",
+								":consentCoverage"
+							],
+							"variable": [
+								{
+									"key": "consentCoverage",
+									"value": "1",
+									"description": "Consent Coverage ID"
+								}
+							]
+						},
+						"description": "Get details of a specific consent coverage record.\n\n**Path Parameters:**\n- `consentCoverage` (integer): Consent Coverage ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Consent Coverage",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subjects_with_valid_consent\": 9750,\n    \"coverage_pct\": 97.5,\n    \"evidence_ref\": \"CONSENT-AUDIT-2025-Q4-UPDATED\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/consent-coverages/:consentCoverage",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-coverages",
+								":consentCoverage"
+							],
+							"variable": [
+								{
+									"key": "consentCoverage",
+									"value": "1",
+									"description": "Consent Coverage ID"
+								}
+							]
+						},
+						"description": "Update an existing consent coverage record.\n\n**Path Parameters:**\n- `consentCoverage` (integer): Consent Coverage ID\n\n**All fields are optional and follow the same validation as Create Consent Coverage**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Consent Coverage",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-coverages/:consentCoverage",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-coverages",
+								":consentCoverage"
+							],
+							"variable": [
+								{
+									"key": "consentCoverage",
+									"value": "1",
+									"description": "Consent Coverage ID"
+								}
+							]
+						},
+						"description": "Delete a consent coverage record.\n\n**Path Parameters:**\n- `consentCoverage` (integer): Consent Coverage ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Track consent coverage metrics for datasets across jurisdictions and purposes"
+		},
+		{
+			"name": "Dataset Subject Populations",
+			"item": [
+				{
+					"name": "List Dataset Subject Populations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dataset-subject-populations?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-subject-populations"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of dataset subject populations for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Dataset Subject Population",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"dataset_id\": 1,\n    \"snapshot_id\": null,\n    \"subject_realm\": \"customer\", // [customer, prospect, employee, vendor, other]\n    \"jurisdiction\": \"EU\", // [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n    \"subjects_total\": 50000,\n    \"as_of\": \"2025-11-04\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/dataset-subject-populations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-subject-populations"
+							]
+						},
+						"description": "Create a new dataset subject population record to track data subjects in a dataset.\n\n**Required Fields:**\n- `dataset_id` (integer): Dataset ID (must exist)\n- `subject_realm` (string): Type of data subject [customer, prospect, employee, vendor, other]\n- `jurisdiction` (string): Legal jurisdiction [AE, EU, KSA, US, UK, QA, JO, MA, BH, Other]\n- `subjects_total` (integer, min 0): Total number of subjects\n- `as_of` (date): Population measurement date\n\n**Subject Realm Options:**\n- `customer` - Customers\n- `prospect` - Prospects\n- `employee` - Employees\n- `vendor` - Vendors\n- `other` - Other types\n\n**Jurisdiction Options:**\n- `AE` - United Arab Emirates\n- `EU` - European Union\n- `KSA` - Kingdom of Saudi Arabia\n- `US` - United States\n- `UK` - United Kingdom\n- `QA` - Qatar\n- `JO` - Jordan\n- `MA` - Morocco\n- `BH` - Bahrain\n- `Other`\n\n**Optional Fields:**\n- `snapshot_id` (integer): Dataset Snapshot ID (if applicable)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dataset Subject Population Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dataset-subject-populations/:datasetSubjectPopulation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-subject-populations",
+								":datasetSubjectPopulation"
+							],
+							"variable": [
+								{
+									"key": "datasetSubjectPopulation",
+									"value": "1",
+									"description": "Dataset Subject Population ID"
+								}
+							]
+						},
+						"description": "Get details of a specific dataset subject population record.\n\n**Path Parameters:**\n- `datasetSubjectPopulation` (integer): Dataset Subject Population ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Dataset Subject Population",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subjects_total\": 52000,\n    \"as_of\": \"2025-11-05\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/dataset-subject-populations/:datasetSubjectPopulation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-subject-populations",
+								":datasetSubjectPopulation"
+							],
+							"variable": [
+								{
+									"key": "datasetSubjectPopulation",
+									"value": "1",
+									"description": "Dataset Subject Population ID"
+								}
+							]
+						},
+						"description": "Update an existing dataset subject population record.\n\n**Path Parameters:**\n- `datasetSubjectPopulation` (integer): Dataset Subject Population ID\n\n**All fields are optional and follow the same validation as Create Dataset Subject Population**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Dataset Subject Population",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dataset-subject-populations/:datasetSubjectPopulation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dataset-subject-populations",
+								":datasetSubjectPopulation"
+							],
+							"variable": [
+								{
+									"key": "datasetSubjectPopulation",
+									"value": "1",
+									"description": "Dataset Subject Population ID"
+								}
+							]
+						},
+						"description": "Delete a dataset subject population record.\n\n**Path Parameters:**\n- `datasetSubjectPopulation` (integer): Dataset Subject Population ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Track data subject populations in datasets by type and jurisdiction for compliance reporting"
+		},
+		{
+			"name": "PDP Processing Registers",
+			"item": [
+				{
+					"name": "List PDP Processing Registers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pdp-processing-registers?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pdp-processing-registers"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of PDP (Personal Data Protection) processing registers for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create PDP Processing Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"purpose\": \"Customer Analytics and AI Model Training for churn prediction\",\n    \"controller_role\": \"Data Controller\",\n    \"data_subject_categories\": [\"Customers\", \"Prospects\"],\n    \"personal_data_categories\": [\"Contact Information\", \"Transaction History\", \"Behavioral Data\", \"Demographic Data\"],\n    \"lawful_basis\": \"legitimate_interests\", // [consent, contract, legal_obligation, legitimate_interests, public_task, vital_interests]\n    \"lawful_basis_detail\": \"Processing customer data for fraud prevention, service improvement, and churn prediction under legitimate interests (Article 6(1)(f) GDPR). Balancing test completed showing minimal impact on data subjects with significant business benefits.\",\n    \"retention_policy_ref\": \"RET-POLICY-7YEARS\",\n    \"recipients\": [\"Internal Analytics Team\", \"Cloud Service Provider (AWS)\"],\n    \"international_transfer_ref\": \"SCC-2024-AWS\",\n    \"dpia_required_flag\": \"Yes - Completed\",\n    \"security_measures_ref\": \"SEC-措施-2024\",\n    \"owner_team\": \"Data Protection Team\",\n    \"effective_from\": \"2025-01-01\",\n    \"effective_to\": \"2026-12-31\",\n    \"status\": \"Active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pdp-processing-registers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pdp-processing-registers"
+							]
+						},
+						"description": "Create a new PDP processing register entry for GDPR/privacy compliance.\n\n**Required Fields:**\n- `purpose` (string): Purpose of data processing\n- `controller_role` (string, max 255): Role (Controller, Joint Controller, Processor)\n- `data_subject_categories` (array, min 1): Categories of data subjects\n- `data_subject_categories.*` (string, max 255): Each category name\n- `personal_data_categories` (array, min 1): Categories of personal data\n- `personal_data_categories.*` (string, max 255): Each category name\n- `lawful_basis` (string, max 255): Legal basis for processing\n- `owner_team` (string, max 255): Team responsible\n- `status` (string, max 255): Current status\n\n**Lawful Basis Options:**\n- `consent` - Consent from data subject\n- `contract` - Processing necessary for contract\n- `legal_obligation` - Legal obligation\n- `legitimate_interests` - Legitimate interests\n- `public_task` - Public task or official authority\n- `vital_interests` - Vital interests of data subject\n\n**Optional Fields:**\n- `lawful_basis_detail` (string): Detailed explanation of lawful basis\n- `retention_policy_ref` (string, max 255): Reference to retention policy\n- `recipients` (array): List of data recipients\n- `recipients.*` (string, max 255): Each recipient name\n- `international_transfer_ref` (string, max 255): Reference for international transfers\n- `dpia_required_flag` (string, max 255): DPIA requirement status\n- `security_measures_ref` (string, max 255): Reference to security measures\n- `effective_from` (date): Start date\n- `effective_to` (date, >= effective_from): End date\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get PDP Processing Register Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pdp-processing-registers/:pdpProcessingRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pdp-processing-registers",
+								":pdpProcessingRegister"
+							],
+							"variable": [
+								{
+									"key": "pdpProcessingRegister",
+									"value": "1",
+									"description": "PDP Processing Register ID"
+								}
+							]
+						},
+						"description": "Get details of a specific PDP processing register.\n\n**Path Parameters:**\n- `pdpProcessingRegister` (integer): PDP Processing Register ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update PDP Processing Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"Active - Under Review\",\n    \"dpia_required_flag\": \"Yes - Completed and Approved\",\n    \"effective_to\": \"2027-12-31\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pdp-processing-registers/:pdpProcessingRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pdp-processing-registers",
+								":pdpProcessingRegister"
+							],
+							"variable": [
+								{
+									"key": "pdpProcessingRegister",
+									"value": "1",
+									"description": "PDP Processing Register ID"
+								}
+							]
+						},
+						"description": "Update an existing PDP processing register.\n\n**Path Parameters:**\n- `pdpProcessingRegister` (integer): PDP Processing Register ID\n\n**All fields are optional and follow the same validation as Create PDP Processing Register**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete PDP Processing Register",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pdp-processing-registers/:pdpProcessingRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pdp-processing-registers",
+								":pdpProcessingRegister"
+							],
+							"variable": [
+								{
+									"key": "pdpProcessingRegister",
+									"value": "1",
+									"description": "PDP Processing Register ID"
+								}
+							]
+						},
+						"description": "Delete a PDP processing register.\n\n**Path Parameters:**\n- `pdpProcessingRegister` (integer): PDP Processing Register ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Maintain GDPR Article 30 Register of Processing Activities for personal data protection compliance"
+		},
+		{
+			"name": "Vendors",
+			"item": [
+				{
+					"name": "List Vendors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vendors?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"vendors"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of vendors for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Vendor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"vendor_name\": \"OpenAI Inc.\",\n    \"legal_name\": \"OpenAI OpCo, LLC\",\n    \"hq_country\": \"US\",\n    \"risk_tier\": \"tier_2\", // [tier_1, tier_2, tier_3, tier_4]\n    \"status\": \"approved\", // [evaluating, approved, conditionally_approved, restricted, suspended, terminated]\n    \"stakeholder_id\": 1,\n    \"primary_contacts\": [\n        {\n            \"name\": \"John Smith\",\n            \"email\": \"john.smith@openai.com\",\n            \"role\": \"Account Manager\",\n            \"phone\": \"+1-555-0123\",\n            \"primary\": true\n        }\n    ],\n    \"metadata\": {\n        \"industry\": \"AI/ML Services\",\n        \"employees\": \"500+\",\n        \"certifications\": [\"ISO 27001\", \"SOC 2 Type II\"]\n    },\n    \"notes\": \"Leading AI research and deployment company. Provides GPT models via API.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/vendors",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"vendors"
+							]
+						},
+						"description": "Create a new vendor record for third-party management.\n\n**Required Fields:**\n- `vendor_name` (string, max 255): Vendor name\n- `legal_name` (string, max 255): Legal entity name\n- `hq_country` (string, 2 chars uppercase): HQ country code (ISO 3166-1 alpha-2)\n- `risk_tier` (string): Risk classification tier\n- `status` (string): Vendor status\n- `stakeholder_id` (integer): Associated stakeholder ID (must exist)\n\n**Risk Tier Options:**\n- `tier_1` - Critical/High Risk\n- `tier_2` - Significant/Medium-High Risk\n- `tier_3` - Moderate/Medium Risk\n- `tier_4` - Low Risk\n\n**Status Options:**\n- `evaluating` - Under evaluation\n- `approved` - Approved for use\n- `conditionally_approved` - Conditionally approved\n- `restricted` - Restricted use\n- `suspended` - Temporarily suspended\n- `terminated` - Relationship terminated\n\n**Optional Fields:**\n- `primary_contacts` (array): Array of contact objects\n  - `name` (string): Contact name\n  - `email` (email): Contact email\n  - `role` (string): Contact role\n  - `phone` (string): Contact phone\n  - `primary` (boolean): Is primary contact\n- `metadata` (object/JSON): Additional vendor metadata\n- `notes` (string): Additional notes\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vendor Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vendors/:vendor",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"vendors",
+								":vendor"
+							],
+							"variable": [
+								{
+									"key": "vendor",
+									"value": "1",
+									"description": "Vendor ID"
+								}
+							]
+						},
+						"description": "Get details of a specific vendor.\n\n**Path Parameters:**\n- `vendor` (integer): Vendor ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vendor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"risk_tier\": \"tier_1\", // [tier_1, tier_2, tier_3, tier_4]\n    \"status\": \"approved\", // [evaluating, approved, conditionally_approved, restricted, suspended, terminated]\n    \"notes\": \"Updated to Tier 1 due to critical AI services dependency. Recent security audit completed.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/vendors/:vendor",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"vendors",
+								":vendor"
+							],
+							"variable": [
+								{
+									"key": "vendor",
+									"value": "1",
+									"description": "Vendor ID"
+								}
+							]
+						},
+						"description": "Update an existing vendor record.\n\n**Path Parameters:**\n- `vendor` (integer): Vendor ID\n\n**All fields are optional and follow the same validation as Create Vendor**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Vendor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/vendors/:vendor",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"vendors",
+								":vendor"
+							],
+							"variable": [
+								{
+									"key": "vendor",
+									"value": "1",
+									"description": "Vendor ID"
+								}
+							]
+						},
+						"description": "Delete a vendor record.\n\n**Path Parameters:**\n- `vendor` (integer): Vendor ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage third-party vendors and suppliers for AI services, data processing, and other business operations"
+		},
+		{
+			"name": "Agreements",
+			"item": [
+				{
+					"name": "List Agreements",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/agreements?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"agreements"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of vendor agreements for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Agreement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"vendor_id\": 1,\n    \"agreement_type\": \"dpa\", // [msa, dpa, order_form, addendum, sla, other]\n    \"status\": \"active\", // [draft, active, lapsed, terminated]\n    \"effective_from\": \"2025-01-01\",\n    \"effective_to\": \"2026-12-31\",\n    \"training_opt_out\": \"yes\", // [yes, no, not_applicable]\n    \"audit_rights\": \"yes\", // [yes, no, limited]\n    \"transfer_mechanism\": \"sccs\", // [adequacy, sccs, bcrs, dpa_addendum, derogation, none]\n    \"sla_terms\": {\n        \"availability_target_pct\": 99.9,\n        \"latency_p95_ms\": 500,\n        \"support_tier\": \"Enterprise 24/7\",\n        \"breach_definition\": \"Availability below 99.9% for any rolling 30-day period\",\n        \"credit_schedule_ref\": \"SLA-CREDITS-2025\",\n        \"monitoring_ref\": \"MONITORING-DASHBOARD-URL\"\n    },\n    \"doc_ref\": \"https://documents.example.com/agreements/vendor-1/dpa-2025.pdf\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/agreements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"agreements"
+							]
+						},
+						"description": "Create a new vendor agreement (DPA, MSA, SLA, etc.).\n\n**Required Fields:**\n- `vendor_id` (integer): Vendor ID (must exist)\n- `agreement_type` (string): Type of agreement\n- `status` (string): Agreement status\n- `effective_from` (date): Start date\n- `effective_to` (date, > effective_from): End date\n- `doc_ref` (string, max 500): Document reference/URL\n\n**Agreement Type Options:**\n- `msa` - Master Service Agreement\n- `dpa` - Data Processing Agreement\n- `order_form` - Order Form/SOW\n- `addendum` - Addendum\n- `sla` - Service Level Agreement\n- `other` - Other agreement type\n\n**Status Options:**\n- `draft` - Draft/in negotiation\n- `active` - Active/in force\n- `lapsed` - Expired/lapsed\n- `terminated` - Terminated\n\n**Training Opt-Out Options:**\n- `yes` - Customer data cannot be used for training\n- `no` - Vendor may use data for training\n- `not_applicable` - Not applicable/not specified\n\n**Audit Rights Options:**\n- `yes` - Full audit rights granted\n- `no` - No audit rights\n- `limited` - Limited audit rights\n\n**Transfer Mechanism Options:**\n- `adequacy` - Adequacy decision\n- `sccs` - Standard Contractual Clauses\n- `bcrs` - Binding Corporate Rules\n- `dpa_addendum` - DPA Addendum\n- `derogation` - Derogation\n- `none` - No international transfer\n\n**Optional Fields:**\n- `training_opt_out` (string): Whether customer opts out of training\n- `audit_rights` (string): Audit rights granted\n- `transfer_mechanism` (string): International data transfer mechanism\n- `sla_terms` (object): SLA terms\n  - `availability_target_pct` (number, 0-100): Target availability %\n  - `latency_p95_ms` (integer, >= 0): P95 latency in milliseconds\n  - `support_tier` (string): Support tier level\n  - `breach_definition` (string): SLA breach definition\n  - `credit_schedule_ref` (string): Credit schedule reference\n  - `monitoring_ref` (string): Monitoring reference\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Agreement Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/agreements/:agreement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"agreements",
+								":agreement"
+							],
+							"variable": [
+								{
+									"key": "agreement",
+									"value": "1",
+									"description": "Agreement ID"
+								}
+							]
+						},
+						"description": "Get details of a specific vendor agreement.\n\n**Path Parameters:**\n- `agreement` (integer): Agreement ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Agreement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"active\", // [draft, active, lapsed, terminated]\n    \"effective_to\": \"2027-12-31\",\n    \"sla_terms\": {\n        \"availability_target_pct\": 99.95,\n        \"latency_p95_ms\": 400\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/agreements/:agreement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"agreements",
+								":agreement"
+							],
+							"variable": [
+								{
+									"key": "agreement",
+									"value": "1",
+									"description": "Agreement ID"
+								}
+							]
+						},
+						"description": "Update an existing vendor agreement.\n\n**Path Parameters:**\n- `agreement` (integer): Agreement ID\n\n**All fields are optional and follow the same validation as Create Agreement**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Agreement",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/agreements/:agreement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"agreements",
+								":agreement"
+							],
+							"variable": [
+								{
+									"key": "agreement",
+									"value": "1",
+									"description": "Agreement ID"
+								}
+							]
+						},
+						"description": "Delete a vendor agreement record.\n\n**Path Parameters:**\n- `agreement` (integer): Agreement ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage vendor agreements including DPAs, MSAs, SLAs, and other contractual arrangements"
+		},
+		{
+			"name": "AI Assets",
+			"item": [
+				{
+					"name": "List AI Assets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-assets?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-assets"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of AI assets for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create AI Asset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"vendor_id\": 1,\n    \"vendor_effective_from\": \"2025-01-01\",\n    \"vendor_effective_to\": \"2026-12-31\",\n    \"vendor_agreement_id\": 1,\n    \"vendor_assessment_id\": 123\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-assets"
+							]
+						},
+						"description": "Create a new AI asset record for tracking third-party AI services and models.\n\n**All Fields are Optional:**\n- `vendor_id` (integer): Vendor ID (must exist if provided)\n- `vendor_effective_from` (date): Vendor relationship start date\n- `vendor_effective_to` (date, > vendor_effective_from): Vendor relationship end date\n- `vendor_agreement_id` (integer): Associated agreement ID (must exist if provided)\n- `vendor_assessment_id` (integer): Vendor assessment ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Asset Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-assets/:aiAsset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-assets",
+								":aiAsset"
+							],
+							"variable": [
+								{
+									"key": "aiAsset",
+									"value": "1",
+									"description": "AI Asset ID"
+								}
+							]
+						},
+						"description": "Get details of a specific AI asset.\n\n**Path Parameters:**\n- `aiAsset` (integer): AI Asset ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update AI Asset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"vendor_effective_to\": \"2027-12-31\",\n    \"vendor_assessment_id\": 456\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-assets/:aiAsset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-assets",
+								":aiAsset"
+							],
+							"variable": [
+								{
+									"key": "aiAsset",
+									"value": "1",
+									"description": "AI Asset ID"
+								}
+							]
+						},
+						"description": "Update an existing AI asset record.\n\n**Path Parameters:**\n- `aiAsset` (integer): AI Asset ID\n\n**All fields are optional and follow the same validation as Create AI Asset**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete AI Asset",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-assets/:aiAsset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-assets",
+								":aiAsset"
+							],
+							"variable": [
+								{
+									"key": "aiAsset",
+									"value": "1",
+									"description": "AI Asset ID"
+								}
+							]
+						},
+						"description": "Delete an AI asset record.\n\n**Path Parameters:**\n- `aiAsset` (integer): AI Asset ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Track third-party AI services, models, and assets used in the organization"
+		},
+		{
+			"name": "AI Incidents",
+			"item": [
+				{
+					"name": "List AI Incidents",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-incidents?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-incidents"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of AI incidents for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create AI Incident",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Unauthorized Access to Customer Data via API\",\n    \"summary\": \"Multiple unauthorized API requests detected accessing customer PII data. The incident was identified through automated monitoring alerts. Investigation shows a potential credential leak leading to unauthorized data access affecting approximately 500 users.\",\n    \"category\": \"security\", // [safety, privacy, security, bias_fairness, reliability, availability, legal_compliance, vendor, other]\n    \"severity\": \"sev2_high\", // [sev1_critical, sev2_high, sev3_medium, sev4_low, near_miss]\n    \"status\": \"contained\", // [open, contained, monitoring, resolved, closed]\n    \"stage\": \"prod\", // [ideation, conception, dev, test, staging, prod, retirement]\n    \"ic_owner\": \"Security Team Lead\",\n    \"ai_model_id\": 1,\n    \"ai_model_version_id\": 5,\n    \"use_case_id\": 2,\n    \"first_seen_at\": \"2025-11-04T08:30:00Z\",\n    \"declared_at\": \"2025-11-04T09:15:00Z\",\n    \"resolved_at\": null,\n    \"closed_at\": null,\n    \"impacted_users\": \"Approximately 500 users\",\n    \"impacted_data\": [\"pii\", \"sensitive_personal\"], // [pii, sensitive_personal, financial, health, ip_copyright, none, unknown]\n    \"impacted_systems\": \"Customer API Gateway, Authentication Service, User Profile Database\",\n    \"linked_release_id\": \"REL-2025-042\",\n    \"linked_risk_id\": \"RISK-2025-018\",\n    \"linked_assessment_id\": \"ASSESS-2025-007\",\n    \"linked_capa_id\": null,\n    \"evidence_link\": \"https://evidence.example.com/incidents/2025-11-04-api-breach\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-incidents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-incidents"
+							]
+						},
+						"description": "Create a new AI incident record for tracking safety, security, privacy, or other AI-related incidents.\n\n**Required Fields:**\n- `title` (string, max 255): Incident title\n- `summary` (string): Detailed incident summary\n- `category` (string): Incident category\n- `severity` (string): Incident severity level\n- `status` (string): Current incident status\n- `stage` (string): Lifecycle stage where incident occurred\n- `ic_owner` (string, max 255): Incident Commander/Owner\n- `first_seen_at` (date): When incident was first observed\n- `declared_at` (date): When incident was officially declared\n- `impacted_data` (array, min 1): Types of data impacted\n\n**Category Options:**\n- `safety` - AI safety incident\n- `privacy` - Privacy violation\n- `security` - Security breach\n- `bias_fairness` - Bias or fairness issue\n- `reliability` - Reliability/performance issue\n- `availability` - Availability/downtime\n- `legal_compliance` - Legal or compliance violation\n- `vendor` - Vendor-related incident\n- `other` - Other category\n\n**Severity Options:**\n- `sev1_critical` - Critical/Severity 1\n- `sev2_high` - High/Severity 2\n- `sev3_medium` - Medium/Severity 3\n- `sev4_low` - Low/Severity 4\n- `near_miss` - Near miss (no actual impact)\n\n**Status Options:**\n- `open` - Open/Active\n- `contained` - Contained (stopped spreading)\n- `monitoring` - Under monitoring\n- `resolved` - Resolved\n- `closed` - Closed\n\n**Stage Options:**\n- `ideation` - Ideation phase\n- `conception` - Conception phase\n- `dev` - Development\n- `test` - Testing\n- `staging` - Staging environment\n- `prod` - Production\n- `retirement` - Retirement phase\n\n**Impacted Data Options:**\n- `pii` - Personally Identifiable Information\n- `sensitive_personal` - Sensitive personal data\n- `financial` - Financial data\n- `health` - Health data\n- `ip_copyright` - IP/Copyright\n- `none` - No data impacted\n- `unknown` - Unknown\n\n**Optional Fields:**\n- `ai_model_id` (integer): Related AI model ID\n- `ai_model_version_id` (integer): Related model version ID\n- `use_case_id` (integer): Related use case ID\n- `resolved_at` (date, >= declared_at): Resolution date\n- `closed_at` (date, >= resolved_at): Closure date\n- `impacted_users` (string, max 255): Description of impacted users\n- `impacted_systems` (string): Description of impacted systems\n- `linked_release_id` (string, max 255): Related release ID\n- `linked_risk_id` (string, max 255): Related risk ID\n- `linked_assessment_id` (string, max 255): Related assessment ID\n- `linked_capa_id` (string, max 255): Related CAPA ID\n- `evidence_link` (URL, max 255): Link to evidence\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Incident Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-incidents/:aiIncident",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-incidents",
+								":aiIncident"
+							],
+							"variable": [
+								{
+									"key": "aiIncident",
+									"value": "1",
+									"description": "AI Incident ID"
+								}
+							]
+						},
+						"description": "Get details of a specific AI incident.\n\n**Path Parameters:**\n- `aiIncident` (integer): AI Incident ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update AI Incident",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"resolved\", // [open, contained, monitoring, resolved, closed]\n    \"severity\": \"sev3_medium\", // [sev1_critical, sev2_high, sev3_medium, sev4_low, near_miss]\n    \"resolved_at\": \"2025-11-05T14:30:00Z\",\n    \"summary\": \"Updated: All unauthorized access has been blocked. Credentials have been rotated. Affected users have been notified. Monitoring continues for 48 hours.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-incidents/:aiIncident",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-incidents",
+								":aiIncident"
+							],
+							"variable": [
+								{
+									"key": "aiIncident",
+									"value": "1",
+									"description": "AI Incident ID"
+								}
+							]
+						},
+						"description": "Update an existing AI incident record.\n\n**Path Parameters:**\n- `aiIncident` (integer): AI Incident ID\n\n**All fields are optional and follow the same validation as Create AI Incident**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete AI Incident",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-incidents/:aiIncident",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-incidents",
+								":aiIncident"
+							],
+							"variable": [
+								{
+									"key": "aiIncident",
+									"value": "1",
+									"description": "AI Incident ID"
+								}
+							]
+						},
+						"description": "Delete an AI incident record.\n\n**Path Parameters:**\n- `aiIncident` (integer): AI Incident ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage AI safety, security, and privacy incidents throughout the AI lifecycle"
+		},
+		{
+			"name": "Incident Alerts",
+			"item": [
+				{
+					"name": "List Incident Alerts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-alerts?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-alerts"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of incident alerts for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Incident Alert",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ai_incident_id\": 1,\n    \"source_type\": \"monitoring_rule\", // [kri, monitoring_rule, human_report, vendor_notice, security_tool, other]\n    \"source_ref\": \"ALERT-RULE-AUTH-001\",\n    \"rule_version\": \"v2.3\",\n    \"context\": \"Monitoring rule detected 15+ failed authentication attempts from IP 192.168.1.100 within 5 minutes, followed by successful login and abnormal data access patterns.\",\n    \"first_seen_at\": \"2025-11-04T08:30:00Z\",\n    \"last_seen_at\": \"2025-11-04T08:45:00Z\",\n    \"evidence_link\": \"https://monitoring.example.com/alerts/2025-11-04-auth-anomaly-001\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-alerts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-alerts"
+							]
+						},
+						"description": "Create a new incident alert record that triggered or contributed to an incident.\n\n**Required Fields:**\n- `ai_incident_id` (integer): Related AI incident ID (must exist)\n- `source_type` (string): Type of alert source\n- `first_seen_at` (date): When alert was first detected\n\n**Source Type Options:**\n- `kri` - Key Risk Indicator\n- `monitoring_rule` - Automated monitoring rule\n- `human_report` - Manual human report\n- `vendor_notice` - Vendor notification\n- `security_tool` - Security tool alert\n- `other` - Other source type\n\n**Optional Fields:**\n- `source_ref` (string, max 255): Reference to alert source\n- `rule_version` (string, max 255): Version of the rule that triggered\n- `context` (string): Additional context about the alert\n- `last_seen_at` (date, >= first_seen_at): When alert was last detected\n- `evidence_link` (URL, max 2048): Link to evidence/logs\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Incident Alert Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-alerts/:incidentAlert",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-alerts",
+								":incidentAlert"
+							],
+							"variable": [
+								{
+									"key": "incidentAlert",
+									"value": "1",
+									"description": "Incident Alert ID"
+								}
+							]
+						},
+						"description": "Get details of a specific incident alert.\n\n**Path Parameters:**\n- `incidentAlert` (integer): Incident Alert ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Incident Alert",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"last_seen_at\": \"2025-11-04T09:00:00Z\",\n    \"context\": \"Updated: Total of 23 failed authentication attempts detected. Pattern stopped after credential rotation at 09:00 UTC.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-alerts/:incidentAlert",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-alerts",
+								":incidentAlert"
+							],
+							"variable": [
+								{
+									"key": "incidentAlert",
+									"value": "1",
+									"description": "Incident Alert ID"
+								}
+							]
+						},
+						"description": "Update an existing incident alert record.\n\n**Path Parameters:**\n- `incidentAlert` (integer): Incident Alert ID\n\n**All fields are optional and follow the same validation as Create Incident Alert**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Incident Alert",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-alerts/:incidentAlert",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-alerts",
+								":incidentAlert"
+							],
+							"variable": [
+								{
+									"key": "incidentAlert",
+									"value": "1",
+									"description": "Incident Alert ID"
+								}
+							]
+						},
+						"description": "Delete an incident alert record.\n\n**Path Parameters:**\n- `incidentAlert` (integer): Incident Alert ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Track alerts and triggers that led to or contributed to AI incidents"
+		},
+		{
+			"name": "Incident Actions",
+			"item": [
+				{
+					"name": "List Incident Actions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-actions?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-actions"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of incident actions for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Incident Action",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ai_incident_id\": 1,\n    \"action_type\": \"key_rotation\", // [kill_switch, rollback_release, key_rotation, blocklist_update, traffic_throttle, model_disable_tool, policy_change, communication, data_purge, other]\n    \"description\": \"Immediate rotation of all API keys and credentials used by the affected authentication service. All existing sessions invalidated. New credentials issued to authorized users through secure channel.\",\n    \"performed_by\": \"Security Team - John Doe\",\n    \"started_at\": \"2025-11-04T09:00:00Z\",\n    \"completed_at\": \"2025-11-04T09:30:00Z\",\n    \"validation_result\": \"passed\", // [passed, failed, pending, not_applicable]\n    \"validation_notes\": \"All systems verified. No unauthorized access detected after key rotation. Monitoring confirms normal operations resumed.\",\n    \"linked_release_id\": \"REL-2025-042-HOTFIX\",\n    \"evidence_link\": \"https://evidence.example.com/actions/2025-11-04-key-rotation-001\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-actions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-actions"
+							]
+						},
+						"description": "Create a new incident action record documenting remediation steps taken.\n\n**Required Fields:**\n- `ai_incident_id` (integer): Related AI incident ID (must exist)\n- `action_type` (string): Type of action taken\n- `description` (string): Detailed description of the action\n- `performed_by` (string, max 255): Person/team who performed the action\n- `started_at` (date): When action was started\n- `validation_result` (string): Result of action validation\n\n**Action Type Options:**\n- `kill_switch` - Emergency kill switch activation\n- `rollback_release` - Rollback to previous release\n- `key_rotation` - Credential/key rotation\n- `blocklist_update` - Update blocklist/allowlist\n- `traffic_throttle` - Throttle/rate limit traffic\n- `model_disable_tool` - Disable model or tool\n- `policy_change` - Policy/configuration change\n- `communication` - User/stakeholder communication\n- `data_purge` - Data purge/deletion\n- `other` - Other action type\n\n**Validation Result Options:**\n- `passed` - Action validated successfully\n- `failed` - Action validation failed\n- `pending` - Validation pending\n- `not_applicable` - Validation not applicable\n\n**Optional Fields:**\n- `completed_at` (date, >= started_at): When action was completed\n- `validation_notes` (string): Notes about validation\n- `linked_release_id` (string, max 255): Related release ID\n- `evidence_link` (URL, max 2048): Link to evidence/logs\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Incident Action Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-actions/:incidentAction",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-actions",
+								":incidentAction"
+							],
+							"variable": [
+								{
+									"key": "incidentAction",
+									"value": "1",
+									"description": "Incident Action ID"
+								}
+							]
+						},
+						"description": "Get details of a specific incident action.\n\n**Path Parameters:**\n- `incidentAction` (integer): Incident Action ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Incident Action",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"completed_at\": \"2025-11-04T09:30:00Z\",\n    \"validation_result\": \"passed\", // [passed, failed, pending, not_applicable]\n    \"validation_notes\": \"Post-rotation monitoring completed. All systems operating normally. No security events detected in 24-hour monitoring period.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-actions/:incidentAction",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-actions",
+								":incidentAction"
+							],
+							"variable": [
+								{
+									"key": "incidentAction",
+									"value": "1",
+									"description": "Incident Action ID"
+								}
+							]
+						},
+						"description": "Update an existing incident action record.\n\n**Path Parameters:**\n- `incidentAction` (integer): Incident Action ID\n\n**All fields are optional and follow the same validation as Create Incident Action**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Incident Action",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-actions/:incidentAction",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-actions",
+								":incidentAction"
+							],
+							"variable": [
+								{
+									"key": "incidentAction",
+									"value": "1",
+									"description": "Incident Action ID"
+								}
+							]
+						},
+						"description": "Delete an incident action record.\n\n**Path Parameters:**\n- `incidentAction` (integer): Incident Action ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Document and track remediation actions taken in response to AI incidents"
+		},
+		{
+			"name": "Incident Root Cause Analyses",
+			"item": [
+				{
+					"name": "List Incident Root Cause Analyses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-root-cause-analyses?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-root-cause-analyses"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page (1-100, default: 15)"
+								}
+							]
+						},
+						"description": "Retrieve a paginated list of all incident root cause analysis records.\n\n**Query Parameters:**\n- `per_page` (integer, optional): Number of items per page (1-100, default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Incident Root Cause Analysis",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ai_incident_id\": 1,\n  \"rca_method\": \"5_whys\", // [5_whys, fishbone, timeline_analysis, fault_tree, other]\n  \"immediate_cause\": \"Model inference endpoint received malformed input data causing null pointer exception\",\n  \"latent_causes\": [\"Insufficient input validation layer\", \"Missing null handling in preprocessing pipeline\", \"Inadequate integration testing coverage for edge cases\"],\n  \"lessons_learned\": \"Need robust input validation at API gateway layer before reaching model inference. Defensive programming practices must include null handling throughout the stack.\",\n  \"recommendations\": \"1. Implement JSON schema validation at API gateway\\n2. Add null coalescing in preprocessing functions\\n3. Expand integration test suite with fuzzing techniques\\n4. Establish input validation standards for all ML endpoints\",\n  \"approved_by\": \"jane.smith@example.com\",\n  \"approved_at\": \"2024-01-15T10:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-root-cause-analyses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-root-cause-analyses"
+							]
+						},
+						"description": "Create a new incident root cause analysis record.\n\n**Required Fields:**\n- `ai_incident_id` (integer): ID of associated AI incident (must exist)\n- `rca_method` (string): Root cause analysis methodology [5_whys, fishbone, timeline_analysis, fault_tree, other]\n- `immediate_cause` (string, max 1000): The immediate/proximate cause identified\n- `latent_causes` (array): List of underlying latent causes (each max 500 chars)\n- `lessons_learned` (string): Key takeaways from the analysis\n- `recommendations` (string): Actionable recommendations to prevent recurrence\n\n**Optional Fields:**\n- `approved_by` (string, max 255): Email/identifier of person approving the RCA\n- `approved_at` (datetime): Timestamp when RCA was approved\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Incident Root Cause Analysis Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-root-cause-analyses/:incidentRootCauseAnalysis",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-root-cause-analyses",
+								":incidentRootCauseAnalysis"
+							],
+							"variable": [
+								{
+									"key": "incidentRootCauseAnalysis",
+									"value": "1",
+									"description": "Incident Root Cause Analysis ID"
+								}
+							]
+						},
+						"description": "Retrieve details of a specific incident root cause analysis record.\n\n**Path Parameters:**\n- `incidentRootCauseAnalysis` (integer): Incident Root Cause Analysis ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Incident Root Cause Analysis",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"recommendations\": \"1. Implement JSON schema validation at API gateway\\n2. Add null coalescing in preprocessing functions\\n3. Expand integration test suite with fuzzing techniques\\n4. Establish input validation standards for all ML endpoints\\n5. Add automated regression testing for fixed issues\",\n  \"approved_by\": \"john.doe@example.com\",\n  \"approved_at\": \"2024-01-15T14:30:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-root-cause-analyses/:incidentRootCauseAnalysis",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-root-cause-analyses",
+								":incidentRootCauseAnalysis"
+							],
+							"variable": [
+								{
+									"key": "incidentRootCauseAnalysis",
+									"value": "1",
+									"description": "Incident Root Cause Analysis ID"
+								}
+							]
+						},
+						"description": "Update an existing incident root cause analysis record.\n\n**Path Parameters:**\n- `incidentRootCauseAnalysis` (integer): Incident Root Cause Analysis ID\n\n**All fields are optional and follow the same validation as Create Incident Root Cause Analysis**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Incident Root Cause Analysis",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-root-cause-analyses/:incidentRootCauseAnalysis",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-root-cause-analyses",
+								":incidentRootCauseAnalysis"
+							],
+							"variable": [
+								{
+									"key": "incidentRootCauseAnalysis",
+									"value": "1",
+									"description": "Incident Root Cause Analysis ID"
+								}
+							]
+						},
+						"description": "Delete an incident root cause analysis record.\n\n**Path Parameters:**\n- `incidentRootCauseAnalysis` (integer): Incident Root Cause Analysis ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Perform and document root cause analyses for AI incidents using various methodologies"
+		},
+		{
+			"name": "Incident Notifications",
+			"item": [
+				{
+					"name": "List Incident Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-notifications?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-notifications"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page (1-100, default: 15)"
+								}
+							]
+						},
+						"description": "Retrieve a paginated list of all incident notification records.\n\n**Query Parameters:**\n- `per_page` (integer, optional): Number of items per page (1-100, default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Incident Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ai_incident_id\": 1,\n  \"audience_type\": \"customers\", // [internal_exec, internal_staff, customers, regulator, vendor, media, other]\n  \"channel\": \"status_page\", // [email, portal, status_page, phone, meeting, legal_letter, other]\n  \"notice_summary\": \"We experienced a service degradation in our recommendation engine between 2:00 PM and 2:45 PM UTC. The issue has been resolved and all systems are operating normally. No customer data was compromised.\",\n  \"notified_at\": \"2024-01-12T15:00:00Z\",\n  \"follow_up_required\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-notifications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-notifications"
+							]
+						},
+						"description": "Create a new incident notification record.\n\n**Required Fields:**\n- `ai_incident_id` (integer): ID of associated AI incident (must exist)\n- `audience_type` (string): Target audience for the notification [internal_exec, internal_staff, customers, regulator, vendor, media, other]\n- `channel` (string): Communication channel used [email, portal, status_page, phone, meeting, legal_letter, other]\n- `notice_summary` (string): Summary of the notification sent\n- `notified_at` (datetime): When the notification was sent\n\n**Optional Fields:**\n- `follow_up_required` (boolean): Whether follow-up communication is needed (default: false)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Incident Notification Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-notifications/:incidentNotification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-notifications",
+								":incidentNotification"
+							],
+							"variable": [
+								{
+									"key": "incidentNotification",
+									"value": "1",
+									"description": "Incident Notification ID"
+								}
+							]
+						},
+						"description": "Retrieve details of a specific incident notification record.\n\n**Path Parameters:**\n- `incidentNotification` (integer): Incident Notification ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Incident Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"follow_up_required\": false,\n  \"notice_summary\": \"We experienced a service degradation in our recommendation engine between 2:00 PM and 2:45 PM UTC. The issue has been resolved and all systems are operating normally. No customer data was compromised. Follow-up: Root cause identified and fix deployed.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/incident-notifications/:incidentNotification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-notifications",
+								":incidentNotification"
+							],
+							"variable": [
+								{
+									"key": "incidentNotification",
+									"value": "1",
+									"description": "Incident Notification ID"
+								}
+							]
+						},
+						"description": "Update an existing incident notification record.\n\n**Path Parameters:**\n- `incidentNotification` (integer): Incident Notification ID\n\n**All fields are optional and follow the same validation as Create Incident Notification**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Incident Notification",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/incident-notifications/:incidentNotification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"incident-notifications",
+								":incidentNotification"
+							],
+							"variable": [
+								{
+									"key": "incidentNotification",
+									"value": "1",
+									"description": "Incident Notification ID"
+								}
+							]
+						},
+						"description": "Delete an incident notification record.\n\n**Path Parameters:**\n- `incidentNotification` (integer): Incident Notification ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Track and manage stakeholder notifications sent regarding AI incidents"
+		},
+		{
+			"name": "Corrective Preventive Actions",
+			"item": [
+				{
+					"name": "List Corrective Preventive Actions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/corrective-preventive-actions?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"corrective-preventive-actions"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page (1-100, default: 15)"
+								}
+							]
+						},
+						"description": "Retrieve a paginated list of all corrective and preventive action (CAPA) records.\n\n**Query Parameters:**\n- `per_page` (integer, optional): Number of items per page (1-100, default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Corrective Preventive Action",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"source_type\": \"incident\", // [incident, risk, feedback, override, audit, assessment, other]\n  \"source_id\": 1,\n  \"title\": \"Implement comprehensive input validation at API gateway\",\n  \"capa_type\": \"preventive\", // [corrective, preventive, both]\n  \"priority\": \"high\", // [low, medium, high, critical]\n  \"owner_team\": \"engineering\", // [product_ops, engineering, data_science, security, privacy, risk, legal, vendor_mgmt]\n  \"due_date\": \"2024-02-15\",\n  \"status\": \"in_progress\", // [new, in_progress, blocked, pending_verification, closed]\n  \"verification_result\": \"pending\" // [pending, passed, failed, not_applicable] - Required when status is 'closed'\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/corrective-preventive-actions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"corrective-preventive-actions"
+							]
+						},
+						"description": "Create a new corrective and preventive action (CAPA) record.\n\n**Required Fields:**\n- `source_type` (string): Type of source that triggered this CAPA [incident, risk, feedback, override, audit, assessment, other]\n- `source_id` (integer): ID of the source record\n- `title` (string, max 255): Brief description of the CAPA\n- `capa_type` (string): Type of action [corrective, preventive, both]\n- `priority` (string): Priority level [low, medium, high, critical]\n- `owner_team` (string): Team responsible for implementation [product_ops, engineering, data_science, security, privacy, risk, legal, vendor_mgmt]\n- `due_date` (date): Target completion date\n- `status` (string): Current status [new, in_progress, blocked, pending_verification, closed]\n\n**Conditional Fields:**\n- `verification_result` (string): Result of verification [pending, passed, failed, not_applicable] - **Required when status is 'closed'**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Corrective Preventive Action Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/corrective-preventive-actions/:correctivePreventiveAction",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"corrective-preventive-actions",
+								":correctivePreventiveAction"
+							],
+							"variable": [
+								{
+									"key": "correctivePreventiveAction",
+									"value": "1",
+									"description": "Corrective Preventive Action ID"
+								}
+							]
+						},
+						"description": "Retrieve details of a specific corrective and preventive action (CAPA) record.\n\n**Path Parameters:**\n- `correctivePreventiveAction` (integer): Corrective Preventive Action ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Corrective Preventive Action",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"closed\", // [new, in_progress, blocked, pending_verification, closed]\n  \"verification_result\": \"passed\", // [pending, passed, failed, not_applicable] - Required when status is 'closed'\n  \"priority\": \"medium\" // [low, medium, high, critical]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/corrective-preventive-actions/:correctivePreventiveAction",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"corrective-preventive-actions",
+								":correctivePreventiveAction"
+							],
+							"variable": [
+								{
+									"key": "correctivePreventiveAction",
+									"value": "1",
+									"description": "Corrective Preventive Action ID"
+								}
+							]
+						},
+						"description": "Update an existing corrective and preventive action (CAPA) record.\n\n**Path Parameters:**\n- `correctivePreventiveAction` (integer): Corrective Preventive Action ID\n\n**All fields are optional and follow the same validation as Create Corrective Preventive Action**\n\n**Note:** When updating status to 'closed', verification_result must be provided\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Corrective Preventive Action",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/corrective-preventive-actions/:correctivePreventiveAction",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"corrective-preventive-actions",
+								":correctivePreventiveAction"
+							],
+							"variable": [
+								{
+									"key": "correctivePreventiveAction",
+									"value": "1",
+									"description": "Corrective Preventive Action ID"
+								}
+							]
+						},
+						"description": "Delete a corrective and preventive action (CAPA) record.\n\n**Path Parameters:**\n- `correctivePreventiveAction` (integer): Corrective Preventive Action ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage corrective and preventive actions (CAPA) to address identified issues and prevent future occurrences"
+		},
+		{
+			"name": "AI Model Artifacts",
+			"item": [
+				{
+					"name": "List AI Model Artifacts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-artifacts?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-artifacts"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page (1-100, default: 15)"
+								}
+							]
+						},
+						"description": "Retrieve a paginated list of all AI model artifact records.\n\n**Query Parameters:**\n- `per_page` (integer, optional): Number of items per page (1-100, default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create AI Model Artifact",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Artifact file (CSV, XLSX, or XLS format, max 10MB)"
+								},
+								{
+									"key": "artifact_type",
+									"value": "model_binary",
+									"type": "text",
+									"description": "[model_binary, tokenizer, prompt_pack, index, feature_store_export, config, docker_image, sbom]"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-artifacts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-artifacts"
+							]
+						},
+						"description": "Upload a new AI model artifact file.\n\n**Required Fields:**\n- `file` (file): Artifact file - must be CSV, XLSX, or XLS format, maximum size 10MB\n- `artifact_type` (string): Type of artifact being uploaded\n  - `model_binary`: Serialized model weights/parameters\n  - `tokenizer`: Tokenizer configuration and vocabulary\n  - `prompt_pack`: Collection of prompts and templates\n  - `index`: Vector index or search index\n  - `feature_store_export`: Feature definitions and transformations\n  - `config`: Model configuration files\n  - `docker_image`: Container image metadata\n  - `sbom`: Software Bill of Materials\n\n**File Validation:**\n- Allowed formats: CSV, XLSX, XLS\n- Maximum file size: 10MB (10240KB)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Model Artifact Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-artifacts/:aiModelArtifact",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-artifacts",
+								":aiModelArtifact"
+							],
+							"variable": [
+								{
+									"key": "aiModelArtifact",
+									"value": "1",
+									"description": "AI Model Artifact ID"
+								}
+							]
+						},
+						"description": "Retrieve details of a specific AI model artifact record.\n\n**Path Parameters:**\n- `aiModelArtifact` (integer): AI Model Artifact ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete AI Model Artifact",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-model-artifacts/:aiModelArtifact",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-model-artifacts",
+								":aiModelArtifact"
+							],
+							"variable": [
+								{
+									"key": "aiModelArtifact",
+									"value": "1",
+									"description": "AI Model Artifact ID"
+								}
+							]
+						},
+						"description": "Delete an AI model artifact record and associated file.\n\n**Path Parameters:**\n- `aiModelArtifact` (integer): AI Model Artifact ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Upload and manage AI model artifact files including model binaries, tokenizers, prompts, configurations, and documentation"
 		}
 	],
 	"event": [
