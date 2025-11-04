@@ -53,7 +53,7 @@ class StoreUseCaseRequest extends FormRequest
             'estimated_reduction_in_cost' => ['nullable', 'numeric', 'min:0'],
             'estimated_revenue_increase' => ['nullable', 'numeric', 'min:0'],
             'estimated_fte_capacity_saving' => ['nullable', 'integer', 'min:0'],
-            'data_availability_status' => ['nullable', Rule::enum(DataAvailabilityStatus::class)],
+            'data_availability_status' => ['required', Rule::enum(DataAvailabilityStatus::class)],
             'data_readiness' => ['required', Rule::enum(DataReadiness::class)],
         ];
     }
