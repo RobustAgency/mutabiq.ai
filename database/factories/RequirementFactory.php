@@ -20,7 +20,7 @@ class RequirementFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => $this->faker->sentence(3),
-            'code' => strtoupper($this->faker->unique()->bothify('REQ-###??')),
+            'code' => 'REQ-' . strtoupper($this->faker->bothify('###??##')),
             'description' => $this->faker->optional()->paragraph(),
         ];
     }

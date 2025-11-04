@@ -20,7 +20,7 @@ class ControlFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => $this->faker->sentence(6, true),
-            'code' => strtoupper($this->faker->unique()->bothify('CTL-###??')),
+            'code' => 'CTL-' . strtoupper($this->faker->bothify('###??##')),
             'question' => $this->faker->optional()->sentence(10, true),
             'summary' => $this->faker->optional()->paragraph(2, true),
             'description' => $this->faker->optional()->paragraphs(3, true),

@@ -26,7 +26,7 @@ class AiModelVersionFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'ai_model_id' => AiModel::factory(),
-            'version_number' => $this->faker->unique()->numerify('v#.##'),
+            'version_number' => 'v' . $this->faker->numerify('#.##.#'),
             'version_type' => $this->faker->randomElement(array_map(fn($c) => $c->value, VersionType::cases())),
             'version_role' => $this->faker->optional()->randomElement(['production', 'staging', 'development', 'testing', 'backup']),
             'version_source' => $this->faker->optional()->randomElement(['internal', 'vendor', 'open_source', 'partner', 'custom']),

@@ -12,6 +12,7 @@ use App\Enums\OperationalStatus;
 use App\Enums\BusinessStatus;
 use App\Enums\OwnershipType;
 use App\Enums\DevelopmentSource;
+use App\Enums\OrganizationalRole;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AiModel>
@@ -30,7 +31,8 @@ class AiModelFactory extends Factory
             'description' => $this->faker->optional()->paragraph(),
             'organization_id' => Organization::factory(),
             'source_org_stakeholder_id' => Stakeholder::factory(),
-            'owner_stakeholder_id' => $this->faker->optional()->randomElement([null, Stakeholder::factory()]),
+            'owner_stakeholder_id' => Stakeholder::factory(),
+            'organizational_role' => $this->faker->randomElement(array_map(fn($c) => $c->value, OrganizationalRole::cases())),
             'vendor_id' => $this->faker->optional()->randomElement([null, Vendor::factory()]),
             'primary_category' => $this->faker->randomElement(array_map(fn($c) => $c->value, PrimaryCategory::cases())),
             'type' => $this->faker->randomElement(['classification', 'regression', 'generation', 'nlp', 'recommendation', 'computer_vision', 'time_series']),
@@ -42,6 +44,7 @@ class AiModelFactory extends Factory
             'development_source' => $this->faker->randomElement(array_map(fn($c) => $c->value, DevelopmentSource::cases())),
             'created_by' => User::factory(),
             'updated_by' => User::factory(),
+            'creator_email' => $this->faker->safeEmail(),
         ];
     }
 }

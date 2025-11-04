@@ -24,7 +24,7 @@ class TeamInvitationFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'invited_by' => User::factory(),
-            'email' => $this->faker->unique()->safeEmail(),
+            'email' => $this->faker->safeEmail(),
             'role' => UserRole::CONTRIBUTOR,
             'token' => Str::random(16),
             'status' => InvitationStatus::PENDING,
