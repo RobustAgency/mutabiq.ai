@@ -3,10 +3,12 @@
 namespace App\Repositories;
 
 use App\Models\AiModelArtifact;
+use App\Services\AiModelArtifactImportService;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class AiModelArtifactRepository
 {
+    public function __construct(private AiModelArtifactImportService $importService) {}
     /**
      * Retrieve paginated AI model artifacts for a given organization.
      *
@@ -18,13 +20,17 @@ class AiModelArtifactRepository
     {
         $query = AiModelArtifact::query();
         $query->where('organization_id', $organization_id);
-
         return $query->paginate($perPage);
     }
 
-    public function createAiModelArtifact(array $data): AiModelArtifact
+    public function createAiModelArtifact(array $data): array
     {
-        return AiModelArtifact::create($data);
+        return $this->importService->import(
+            $data['file'],
+            $data['organization_id'],
+            $data['artifact_type'],
+            $data['created_by']
+        );
     }
 
     public function updateAiModelArtifact(AiModelArtifact $aiModelArtifact, array $data): bool

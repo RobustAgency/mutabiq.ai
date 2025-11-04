@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAiModelArtifactRequest;
-use App\Http\Requests\UpdateAiModelArtifactRequest;
 use App\Http\Resources\AiModelArtifactResource;
 use App\Models\AiModelArtifact;
 use App\Repositories\AiModelArtifactRepository;
@@ -17,7 +16,7 @@ class AiModelArtifactController extends Controller
      * Create a new controller instance.
      */
     public function __construct(
-        private AiModelArtifactRepository $repository
+        private AiModelArtifactRepository $repository,
     ) {}
 
     /**
@@ -41,13 +40,21 @@ class AiModelArtifactController extends Controller
         $data = $request->validated();
         $data['organization_id'] = Auth::user()->organization_id;
         $data['created_by'] = Auth::user()->id;
-        $data['updated_by'] = Auth::user()->id;
-        $this->repository->createAiModelArtifact($data);
+        try {
+            $result = $this->repository->createAiModelArtifact($data);
+            $statusCode = $result['error'] ? 422 : 200;
 
-        return response()->json([
-            'error' => false,
-            'message' => 'AI Model Artifact created successfully'
-        ], 201);
+            return response()->json([
+                'error' => $result['error'],
+                'message' => $result['message'],
+                'data' => $result['data'],
+            ], $statusCode);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Failed to create AI Model Artifact: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(AiModelArtifact $aiModelArtifact): JsonResponse
@@ -56,18 +63,6 @@ class AiModelArtifactController extends Controller
             'error' => false,
             'data' => new AiModelArtifactResource($aiModelArtifact),
             'message' => 'AI Model Artifact retrieved successfully'
-        ]);
-    }
-
-    public function update(UpdateAiModelArtifactRequest $request, AiModelArtifact $aiModelArtifact): JsonResponse
-    {
-        $data = $request->validated();
-        $data['updated_by'] = Auth::user()->email;
-        $this->repository->updateAiModelArtifact($aiModelArtifact, $data);
-
-        return response()->json([
-            'error' => false,
-            'message' => 'AI Model Artifact updated successfully'
         ]);
     }
 
