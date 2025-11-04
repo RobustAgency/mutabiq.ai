@@ -25,6 +25,7 @@ class IncidentNotificationFactory extends Factory
         $notifiedAt = $this->faker->dateTimeBetween('-30 days', 'now');
 
         return [
+            'organization_id' => \App\Models\Organization::factory(),
             'ai_incident_id' => AiIncident::factory(),
             'audience_type' => $audienceType,
             'channel' => $this->faker->randomElement(Channel::cases())->value,

@@ -140,7 +140,7 @@ class AiModelArtifactControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'error' => false,
-                'message' => 'Import completed successfully',
+                'message' => 'Import completed successfully.',
             ]);
 
         $this->assertDatabaseHas('ai_model_artifacts', [

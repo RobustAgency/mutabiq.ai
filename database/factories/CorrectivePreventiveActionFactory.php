@@ -10,6 +10,7 @@ use App\Enums\CorrectivePreventiveAction\Status;
 use App\Enums\CorrectivePreventiveAction\VerificationResult;
 use App\Models\AiIncident;
 use App\Models\AiModel;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,6 +28,7 @@ class CorrectivePreventiveActionFactory extends Factory
         $incident = AiIncident::factory()->create();
 
         return [
+            'organization_id' => Organization::factory(),
             'source_type' => SourceType::INCIDENT->value,
             'source_id' => $incident->id,
             'ai_model_id' => AiModel::factory(),

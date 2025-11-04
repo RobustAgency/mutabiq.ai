@@ -39,6 +39,7 @@ class VendorFactory extends Factory
         ] : null;
 
         return [
+            'organization_id' => \App\Models\Organization::factory(),
             'vendor_name' => $this->faker->company(),
             'legal_name' => $this->faker->company() . ' ' . $this->faker->randomElement(['Inc.', 'Ltd.', 'LLC', 'Corp.']),
             'hq_country' => $this->faker->randomElement(['US', 'GB', 'DE', 'FR', 'AE', 'SG', 'CA']),

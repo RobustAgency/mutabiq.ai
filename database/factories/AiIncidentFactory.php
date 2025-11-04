@@ -11,6 +11,7 @@ use App\Models\AiIncident;
 use App\Models\AiModel;
 use App\Models\AiModelVersion;
 use App\Models\UseCase;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -41,6 +42,7 @@ class AiIncidentFactory extends Factory
         );
 
         return [
+            'organization_id' => Organization::factory(),
             'title' => $this->faker->sentence(6),
             'summary' => $this->faker->paragraph(3),
             'category' => $this->faker->randomElement(IncidentCategory::cases())->value,

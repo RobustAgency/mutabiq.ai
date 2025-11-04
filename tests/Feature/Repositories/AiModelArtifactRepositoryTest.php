@@ -116,7 +116,7 @@ class AiModelArtifactRepositoryTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertFalse($result['error']);
-        $this->assertEquals('Import completed successfully', $result['message']);
+        $this->assertEquals('Import completed successfully.', $result['message']);
         $this->assertEquals(1, $result['data']['successful']);
         $this->assertEquals(0, $result['data']['failed']);
 

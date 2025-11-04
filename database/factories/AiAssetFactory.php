@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\AiAsset;
 use App\Models\Agreement;
 use App\Models\Vendor;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -41,6 +42,7 @@ class AiAssetFactory extends Factory
         }
 
         return [
+            'organization_id' => Organization::factory(),
             'vendor_id' => $hasVendor ? Vendor::factory() : null,
             'vendor_effective_from' => $vendorEffectiveFrom,
             'vendor_effective_to' => $vendorEffectiveTo,

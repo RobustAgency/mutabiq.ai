@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Agreement;
 use App\Models\Vendor;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -43,6 +44,7 @@ class AgreementFactory extends Factory
         }
 
         return [
+            'organization_id' => Organization::factory(),
             'vendor_id' => Vendor::factory(),
             'agreement_type' => $agreementType,
             'status' => $this->faker->randomElement($statuses),
