@@ -31,7 +31,7 @@ class StoreCorrectivePreventiveActionRequest extends FormRequest
         $rules = [
             'source_type' => ['required', Rule::enum(SourceType::class)],
             'source_id' => ['required', 'string', 'max:255'],
-            'model_id' => ['nullable', 'exists:ai_models,id'],
+            'model_id' => ['nullable', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
             'capa_type' => ['required', Rule::enum(CapaType::class)],
             'priority' => ['required', Rule::enum(Priority::class)],
