@@ -42,7 +42,7 @@ class StoreAiModelVersionRequest extends FormRequest
 
             // Technical characteristics
             'architecture_type' => ['required', 'string', 'max:255'],
-            'model_file_size_gb' => ['required', 'numeric', 'min:0'],
+            'model_file_size_gb' => ['nullable', 'numeric', 'min:0'],
             'training_duration_hours' => ['nullable', 'integer', 'min:0'],
             'complexity_level' => ['required', Rule::in(array_map(fn($c) => $c->value, ComplexityLevel::cases()))],
             'parameter_count' => ['nullable', 'integer', 'min:0'],
