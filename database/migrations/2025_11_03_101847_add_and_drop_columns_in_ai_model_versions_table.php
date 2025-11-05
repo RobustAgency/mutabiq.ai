@@ -37,11 +37,11 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('ai_model_versions', 'created_by')) {
-                $table->foreignIdFor(User::class, 'created_by')->constrained('users')->onDelete('cascade')->after('has_performance_data');
+                $table->string('created_by')->nullable()->after('has_performance_data');
             }
 
             if (!Schema::hasColumn('ai_model_versions', 'updated_by')) {
-                $table->foreignIdFor(User::class, 'updated_by')->constrained('users')->onDelete('cascade')->after('created_by');
+                $table->string('updated_by')->nullable()->after('created_by');
             }
         });
     }
@@ -87,12 +87,11 @@ return new class extends Migration
             }
 
             if (Schema::hasColumn('ai_model_versions', 'created_by')) {
-                $table->dropForeign(['created_by']);
                 $table->dropColumn('created_by');
             }
 
             if (Schema::hasColumn('ai_model_versions', 'updated_by')) {
-                $table->dropForeign(['updated_by']);
+                $table->dropColumn('updated_by');
                 $table->dropColumn('updated_by');
             }
         });
