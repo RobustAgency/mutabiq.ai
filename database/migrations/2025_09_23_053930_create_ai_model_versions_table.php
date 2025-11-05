@@ -25,7 +25,7 @@ return new class extends Migration
             $table->bigInteger('parameter_count')->nullable();
             $table->json('input_modalities')->nullable();
             $table->json('output_modalities')->nullable();
-            $table->string('model_file_size_gb');
+            $table->float('model_file_size_gb', 10, 2)->nullable();
             $table->integer('training_duration_hours')->nullable();
             $table->json('deployment_environments')->nullable();
             $table->string('deployment_status');
