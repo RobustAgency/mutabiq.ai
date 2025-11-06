@@ -16,7 +16,7 @@ class AiModelArtifact extends Model
         'organization_id',
         'ai_model_version_id',
         'artifact_type',
-        'uri',
+        'url',
         'checksum',
         'size_bytes',
         'created_by',

@@ -21,7 +21,6 @@ class StoreDatasetElementMapRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'organization_id' => ['required', 'integer', 'exists:organizations,id'],
             'dataset_id' => ['required', 'integer', 'exists:datasets,id'],
             'data_element_id' => ['required', 'integer', 'exists:data_elements,id'],
             'column_name' => ['required', 'string', 'max:255'],
