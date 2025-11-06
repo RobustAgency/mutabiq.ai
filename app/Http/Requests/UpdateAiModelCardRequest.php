@@ -46,6 +46,8 @@ class UpdateAiModelCardRequest extends FormRequest
             'publication_date' => ['sometimes', 'date', 'nullable'],
             'last_review_date' => ['sometimes', 'date', 'nullable'],
             'next_review_date' => ['sometimes', 'date', 'nullable'],
+            'created_by' => ['sometimes', 'email'],
+            'updated_by' => ['sometimes', 'nullable', 'email'],
         ];
     }
 }

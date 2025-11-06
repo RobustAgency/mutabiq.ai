@@ -26,6 +26,8 @@ class UpdateAiModelUseCaseRequest extends FormRequest
             'use_case_id' => ['sometimes', 'exists:use_cases,id'],
             'ai_model_version_id' => ['sometimes', 'nullable', 'exists:ai_model_versions,id'],
             'relationship_type' => ['sometimes', 'string'],
+            'created_by' => ['sometimes', 'email'],
+            'updated_by' => ['sometimes', 'nullable', 'email'],
         ];
     }
 }

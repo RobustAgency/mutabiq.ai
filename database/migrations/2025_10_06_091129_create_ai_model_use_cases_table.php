@@ -21,8 +21,8 @@ return new class extends Migration
             $table->foreignIdFor(UseCase::class)->constrained()->onDelete('cascade');
             $table->foreignIdFor(AiModelVersion::class)->nullable()->constrained()->onDelete('set null');
             $table->string('relationship_type');
-            $table->foreignIdFor(User::class, 'created_by');
-            $table->foreignIdFor(User::class, 'updated_by')->nullable();
+            $table->string('created_by')->nullable();
+            $table->string('updated_by')->nullable();
             $table->timestamps();
         });
     }

@@ -33,7 +33,7 @@ class AiModelUseCaseController extends Controller
         $user = Auth::user();
         $validated = $request->validated();
         $validated['organization_id'] = $user->organization_id;
-        $this->aiModelUseCaseRepository->createAiModelUseCase($user, $validated);
+        $this->aiModelUseCaseRepository->createAiModelUseCase($validated);
         return response()->json([
             'error' => false,
             'message' => 'AI Model Use Case association created successfully',
@@ -59,9 +59,8 @@ class AiModelUseCaseController extends Controller
 
     public function update(UpdateAiModelUseCaseRequest $request, AiModelUseCase $aiModelUseCase): JsonResponse
     {
-        $user = Auth::user();
         $validated = $request->validated();
-        $this->aiModelUseCaseRepository->updateAiModelUseCase($aiModelUseCase, $user, $validated);
+        $this->aiModelUseCaseRepository->updateAiModelUseCase($aiModelUseCase, $validated);
         return response()->json([
             'error' => false,
             'message' => 'AI Model Use Case association updated successfully',

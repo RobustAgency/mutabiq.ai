@@ -24,15 +24,11 @@ class AiModelArtifactResource extends JsonResource
             'uri' => $this->uri,
             'checksum' => $this->checksum,
             'size_bytes' => $this->size_bytes,
-            'formatted_size' => $this->formatted_size,
             'created_by' => $this->created_by,
             'notes' => $this->notes,
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
-
-            // Relationships
             'ai_model_version' => new AiModelVersionResource($this->whenLoaded('aiModelVersion')),
-            'creator' => new UserResource($this->whenLoaded('creator')),
         ];
     }
 }
