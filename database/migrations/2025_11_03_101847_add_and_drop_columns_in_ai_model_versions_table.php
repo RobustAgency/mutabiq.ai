@@ -92,7 +92,6 @@ return new class extends Migration
 
             if (Schema::hasColumn('ai_model_versions', 'updated_by')) {
                 $table->dropColumn('updated_by');
-                $table->dropColumn('updated_by');
             }
         });
     }
