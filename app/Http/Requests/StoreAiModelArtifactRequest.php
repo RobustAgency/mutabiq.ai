@@ -25,7 +25,7 @@ class StoreAiModelArtifactRequest extends FormRequest
     {
         return [
             'ai_model_version_id' => ['required', 'exists:ai_model_versions,id'],
-            'url' => ['required', 'url', 'max:2048'],
+            'uri' => ['required', 'url', 'max:2048'],
             'checksum' => ['required', 'string', 'max:255'],
             'size_bytes' => ['required', 'integer', 'min:0'],
             'artifact_type' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, ArtifactType::cases()))],
