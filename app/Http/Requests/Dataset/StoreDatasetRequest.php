@@ -37,7 +37,7 @@ class StoreDatasetRequest extends FormRequest
             'controller_role' => ['required', Rule::in(array_map(fn($c) => $c->value, ControllerRole::cases()))],
             'lawful_basis' => ['required', Rule::in(array_map(fn($c) => $c->value, LawfulBasis::cases()))],
             'lawful_basis_detail' => ['nullable', 'string'],
-            'consent_required' => ['required', 'boolean'],
+            'consent_required' => ['required_if:lawful_basis,consent', 'boolean'],
             'consent_coverage_pct' => ['nullable', 'integer', 'min:0', 'max:100'],
             'consent_source_ref' => ['nullable', 'string', 'max:255'],
             'licensing_basis' => ['nullable', 'string', 'max:255'],

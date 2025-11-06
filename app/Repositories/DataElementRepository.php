@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\DataElement;
 use App\Models\DatasetDataElement;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 
 class DataElementRepository
 {
@@ -45,6 +46,7 @@ class DataElementRepository
 
     public function associateDataElementWithDataset(array $data): DatasetDataElement
     {
+        $data['organization_id'] = Auth::user()->organization_id;
         return DatasetDataElement::create($data);
     }
 }

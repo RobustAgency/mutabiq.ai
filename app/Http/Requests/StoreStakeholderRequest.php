@@ -35,7 +35,7 @@ class StoreStakeholderRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'vendor_id' => ['nullable', 'integer', 'exists:vendors,id'],
-            'role_tags' => ['nullable', 'array'],
+            'role_tags' => ['required', 'array'],
             'role_tags.*' => ['string', 'max:100'],
             'timezone' => ['required', 'string', 'timezone'],
             'classification' => ['required', 'string', 'max:255'],
