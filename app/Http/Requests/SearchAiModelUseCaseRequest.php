@@ -22,7 +22,7 @@ class SearchAiModelUseCaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_model_id' => 'required|exists:ai_models,id',
+            'ai_model_id' => 'sometimes|exists:ai_models,id',
             'per_page' => 'sometimes|integer|min:1',
         ];
     }
