@@ -5555,6 +5555,173 @@
 				}
 			],
 			"description": "Upload and manage AI model artifact files including model binaries, tokenizers, prompts, configurations, and documentation"
+		},
+		{
+			"name": "Artifact Access Logs",
+			"item": [
+				{
+					"name": "List Artifact Access Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/artifact-access-logs?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"artifact-access-logs"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page (1-100, default: 15)"
+								},
+								{
+									"key": "artifact_id",
+									"value": "1",
+									"description": "Filter by artifact ID",
+									"disabled": true
+								},
+								{
+									"key": "accessor_stakeholder_id",
+									"value": "1",
+									"description": "Filter by accessor stakeholder ID",
+									"disabled": true
+								},
+								{
+									"key": "action",
+									"value": "read",
+									"description": "Filter by action [read, write, delete]",
+									"disabled": true
+								},
+								{
+									"key": "context",
+									"value": "api",
+									"description": "Filter by context [ci_cd, notebook, console, api]",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Retrieve a paginated list of artifact access logs with optional filtering.\n\n**Query Parameters:**\n- `per_page` (integer, optional): Number of items per page (1-100, default: 15)\n- `artifact_id` (integer, optional): Filter by artifact ID\n- `accessor_stakeholder_id` (integer, optional): Filter by accessor stakeholder ID\n- `action` (string, optional): Filter by action [read, write, delete]\n- `context` (string, optional): Filter by context [ci_cd, notebook, console, api]\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Artifact Access Log",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"artifact_id\": 1,\n  \"accessor_stakeholder_id\": 5,\n  \"action\": \"read\", // [read, write, delete]\n  \"context\": \"api\", // [ci_cd, notebook, console, api]\n  \"ts\": \"2024-01-15T14:30:00Z\",\n  \"ip_or_agent\": \"192.168.1.100 / Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\",\n  \"request_id\": \"req_abc123xyz789\",\n  \"reason\": \"Model deployment validation for production release\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/artifact-access-logs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"artifact-access-logs"
+							]
+						},
+						"description": "Create a new artifact access log entry for audit and compliance tracking.\n\n**Required Fields:**\n- `artifact_id` (integer): ID of the artifact being accessed (must exist in ai_model_artifacts)\n- `accessor_stakeholder_id` (integer): ID of the stakeholder accessing the artifact (must exist in stakeholders)\n- `action` (string): Type of access performed\n  - `read`: Viewing or downloading the artifact\n  - `write`: Modifying or updating the artifact\n  - `delete`: Removing the artifact\n- `context` (string): Context in which the access occurred\n  - `ci_cd`: Continuous integration/deployment pipeline\n  - `notebook`: Jupyter or similar notebook environment\n  - `console`: Command-line or console access\n  - `api`: Programmatic API access\n- `ts` (datetime): Timestamp when the access occurred (UTC)\n\n**Optional Fields:**\n- `ip_or_agent` (string, max 255): IP address and/or User-Agent fingerprint for security tracking\n- `request_id` (string, max 255): Correlation or trace ID for request tracking\n- `reason` (string, max 255): Brief rationale or justification for the access\n\n**Purpose:**\nImmutable audit trail for security, compliance, and accountability. Tracks who accessed which artifact, how, and when.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact Access Log Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/artifact-access-logs/:artifactAccessLog",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"artifact-access-logs",
+								":artifactAccessLog"
+							],
+							"variable": [
+								{
+									"key": "artifactAccessLog",
+									"value": "1",
+									"description": "Artifact Access Log ID"
+								}
+							]
+						},
+						"description": "Retrieve details of a specific artifact access log entry.\n\n**Path Parameters:**\n- `artifactAccessLog` (integer): Artifact Access Log ID\n\n**Response includes:**\n- Access log details\n- Related artifact information\n- Accessor stakeholder information\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Artifact Access Log",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/artifact-access-logs/:artifactAccessLog",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"artifact-access-logs",
+								":artifactAccessLog"
+							],
+							"variable": [
+								{
+									"key": "artifactAccessLog",
+									"value": "1",
+									"description": "Artifact Access Log ID"
+								}
+							]
+						},
+						"description": "Delete an artifact access log entry.\n\n**Path Parameters:**\n- `artifactAccessLog` (integer): Artifact Access Log ID\n\n**Note:** While access logs are intended to be immutable for audit purposes, this endpoint allows deletion for data retention compliance or correction of erroneous entries.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Immutable audit trail of artifact access events for security, compliance, and accountability tracking"
 		}
 	],
 	"event": [

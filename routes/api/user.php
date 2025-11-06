@@ -37,6 +37,7 @@ use App\Http\Controllers\IncidentRootCauseAnalysisController;
 use App\Http\Controllers\IncidentNotificationController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
 use App\Http\Controllers\AiModelArtifactController;
+use App\Http\Controllers\User\ArtifactAccessLogController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -281,5 +282,12 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store');
         Route::get('{aiModelArtifact}', 'show');
         Route::delete('{aiModelArtifact}', 'destroy');
+    });
+
+    Route::prefix('artifact-access-logs')->controller(ArtifactAccessLogController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{artifactAccessLog}', 'show');
+        Route::delete('{artifactAccessLog}', 'destroy');
     });
 });
