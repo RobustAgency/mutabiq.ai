@@ -46,6 +46,16 @@ class StoreAiModelCardRequest extends FormRequest
             'publication_date' => ['nullable', 'date'],
             'last_review_date' => ['nullable', 'date'],
             'next_review_date' => ['nullable', 'date'],
+            'created_by' => ['required', 'email'],
+            'updated_by' => ['nullable', 'email'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'owner_stakeholder_id.required' => 'The model owner is required.',
+            'owner_stakeholder_id.exists' => 'The selected model owner is invalid.',
         ];
     }
 }

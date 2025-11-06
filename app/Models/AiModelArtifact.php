@@ -32,35 +32,4 @@ class AiModelArtifact extends Model
     {
         return $this->belongsTo(AiModelVersion::class);
     }
-
-    /**
-     * Get the user who created this artifact.
-     *
-     * @return BelongsTo<User, $this>
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by', 'email');
-    }
-
-    /**
-     * Get the human-readable size.
-     */
-    public function getFormattedSizeAttribute(): ?string
-    {
-        if (!$this->size_bytes) {
-            return null;
-        }
-
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $bytes = $this->size_bytes;
-        $i = 0;
-
-        while ($bytes >= 1024 && $i < count($units) - 1) {
-            $bytes /= 1024;
-            $i++;
-        }
-
-        return round($bytes, 2) . ' ' . $units[$i];
-    }
 }

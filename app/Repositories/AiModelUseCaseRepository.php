@@ -30,16 +30,13 @@ class AiModelUseCaseRepository
         return $query->paginate($per_page);
     }
 
-    public function createAiModelUseCase(User $user, array $data): AiModelUseCase
+    public function createAiModelUseCase(array $data): AiModelUseCase
     {
-        $data['created_by'] = $user->id;
-        $data['updated_by'] = $user->id;
         return AiModelUseCase::create($data);
     }
 
-    public function updateAiModelUseCase(AiModelUseCase $aiModelUseCase, User $user, array $data): bool
+    public function updateAiModelUseCase(AiModelUseCase $aiModelUseCase, array $data): bool
     {
-        $data['updated_by'] = $user->id;
         return $aiModelUseCase->update($data);
     }
 }

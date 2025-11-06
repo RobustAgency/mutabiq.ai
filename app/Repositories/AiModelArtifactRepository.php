@@ -8,7 +8,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class AiModelArtifactRepository
 {
-    public function __construct(private AiModelArtifactImportService $importService) {}
     /**
      * Retrieve paginated AI model artifacts for a given organization.
      *
@@ -23,14 +22,9 @@ class AiModelArtifactRepository
         return $query->paginate($perPage);
     }
 
-    public function createAiModelArtifact(array $data): array
+    public function createAiModelArtifact(array $data): AiModelArtifact
     {
-        return $this->importService->import(
-            $data['file'],
-            $data['organization_id'],
-            $data['artifact_type'],
-            $data['created_by']
-        );
+        return AiModelArtifact::create($data);
     }
 
     public function updateAiModelArtifact(AiModelArtifact $aiModelArtifact, array $data): bool

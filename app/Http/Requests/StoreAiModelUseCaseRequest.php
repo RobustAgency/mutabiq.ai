@@ -28,6 +28,8 @@ class StoreAiModelUseCaseRequest extends FormRequest
             'use_case_id' => ['required', 'exists:use_cases,id'],
             'ai_model_version_id' => ['nullable', 'exists:ai_model_versions,id'],
             'relationship_type' => ['required', Rule::in(array_map(fn($c) => $c->value, RelationshipType::cases()))],
+            'created_by' => ['required', 'email'],
+            'updated_by' => ['nullable', 'email'],
         ];
     }
 }
