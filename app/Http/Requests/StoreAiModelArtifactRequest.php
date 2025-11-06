@@ -24,7 +24,7 @@ class StoreAiModelArtifactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'version_id' => ['required', 'exists:ai_model_versions,id'],
+            'ai_model_version_id' => ['required', 'exists:ai_model_versions,id'],
             'url' => ['required', 'url', 'max:2048'],
             'checksum' => ['required', 'string', 'max:255'],
             'size_bytes' => ['required', 'integer', 'min:0'],
