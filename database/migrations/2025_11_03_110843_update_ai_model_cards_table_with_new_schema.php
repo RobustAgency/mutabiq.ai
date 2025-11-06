@@ -47,7 +47,7 @@ return new class extends Migration
             $table->json('organizational_context')->nullable()->change();
 
             // Add created_by and updated_by
-            $table->string('created_by')->after('updated_at');
+            $table->string('created_by')->after('next_review_date');
             $table->string('updated_by')->nullable()->after('created_by');
         });
     }
