@@ -25,6 +25,7 @@ class DatasetSnapshot extends Model
         'privacy_transform_evidence_ref',
         'residency_zone',
         'storage_uri',
+        'source_created_at',
     ];
 
     protected function casts(): array
@@ -35,6 +36,7 @@ class DatasetSnapshot extends Model
             'row_count' => 'integer',
             'pii_element_count' => 'integer',
             'special_category_element_count' => 'integer',
+            'source_created_at' => 'datetime',
         ];
     }
 

@@ -22,6 +22,7 @@ class ConsentScope extends Model
         'jurisdiction',
         'effective_from',
         'effective_to',
+        'source_created_at',
     ];
 
     protected function casts(): array
@@ -30,6 +31,7 @@ class ConsentScope extends Model
             'purpose' => 'array',
             'effective_from' => 'date',
             'effective_to' => 'date',
+            'source_created_at' => 'datetime',
         ];
     }
 

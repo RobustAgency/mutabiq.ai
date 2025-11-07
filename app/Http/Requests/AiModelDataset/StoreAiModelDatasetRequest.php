@@ -41,6 +41,7 @@ class StoreAiModelDatasetRequest extends FormRequest
             'privacy_check_ref' => ['nullable', 'string', 'max:255'],
             'eligibility_status' => ['nullable', Rule::enum(EligibilityStatus::class)],
             'notes' => ['nullable', 'string'],
+            'source_created_at' => ['required', 'date'],
         ];
     }
 

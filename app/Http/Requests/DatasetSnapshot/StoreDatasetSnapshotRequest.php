@@ -28,6 +28,7 @@ class StoreDatasetSnapshotRequest extends FormRequest
             'privacy_transform_evidence_ref' => ['nullable', 'string', 'max:255'],
             'residency_zone' => ['required', Rule::in(array_map(fn($zone) => $zone->value, ResidencyZone::cases()))],
             'storage_uri' => ['required', 'string', 'max:500'],
+            'source_created_at' => ['required', 'date'],
         ];
     }
 }

@@ -27,6 +27,7 @@ class UpdateConsentCoverageRequest extends FormRequest
             'subjects_with_valid_consent' => ['sometimes', 'integer', 'min:0', 'lte:subjects_total'],
             'coverage_pct' => ['sometimes', 'numeric', 'min:0', 'max:100'],
             'evidence_ref' => ['sometimes', 'string', 'max:255'],
+            'source_created_at' => ['sometimes', 'date'],
         ];
     }
 
