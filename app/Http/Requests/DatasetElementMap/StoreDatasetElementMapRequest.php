@@ -30,7 +30,7 @@ class StoreDatasetElementMapRequest extends FormRequest
             'transform_applied' => ['nullable', 'string', 'max:255'],
             'quality_rules_applied' => ['nullable', 'string'],
             'cde_in_dataset' => ['required', 'string', Rule::enum(CdeInDataset::class)],
-            'cde_category_in_dataset' => ['nullable', 'string', Rule::enum(CdeCategory::class)],
+            'cde_category_in_dataset' => ['required_if:cde_in_dataset,yes', 'string', Rule::enum(CdeCategory::class)],
             'lineage_source_column' => ['nullable', 'string', 'max:255'],
             'deprecated' => ['sometimes', 'string', Rule::enum(Deprecated::class)],
         ];

@@ -31,7 +31,15 @@ class StoreIncidentNotificationRequest extends FormRequest
             'notice_summary' => ['required', 'string'],
             'notice_link' => ['nullable', 'url', 'max:2048'],
             'notified_at' => ['required', 'date'],
-            'approved_by' => ['nullable', 'string', 'max:255'],
+            'approved_by' => ['nullable', 'string', 'max:255', Rule::requiredIf(function () {
+                $audienceType = $this->input('audience_type');
+                return in_array($audienceType, [
+                    AudienceType::CUSTOMERS->value,
+                    AudienceType::REGULATOR->value,
+                    AudienceType::VENDOR->value,
+                    AudienceType::MEDIA->value,
+                ]);
+            })],
             'approval_ref' => ['nullable', 'string', 'max:255'],
             'follow_up_required' => ['required', 'boolean'],
         ];
