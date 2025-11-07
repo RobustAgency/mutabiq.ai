@@ -31,7 +31,7 @@ class StoreDataElementRequest extends FormRequest
             'personal_data_category' => ['nullable', 'string', Rule::in(array_map(fn(PersonalDataCategory $c) => $c->value, PersonalDataCategory::cases()))],
             'special_category_flag' => ['required', 'string', Rule::in(array_map(fn(SpecialCategoryFlag $c) => $c->value, SpecialCategoryFlag::cases()))],
             'cde_flag' => ['required', 'string', Rule::in(array_map(fn(CdeFlag $c) => $c->value, CdeFlag::cases()))],
-            'cde_category' => ['nullable', 'string', Rule::in(array_map(fn(CdeCategory $c) => $c->value, CdeCategory::cases()))],
+            'cde_category' => ['required_if:cde_flag,true', 'string', Rule::in(array_map(fn(CdeCategory $c) => $c->value, CdeCategory::cases()))],
             'owner_team' => ['nullable', 'string', 'max:255'],
             'quality_rules_ref' => ['nullable', 'string'],
             'catalog_column_id' => ['nullable', 'string', 'max:255'],

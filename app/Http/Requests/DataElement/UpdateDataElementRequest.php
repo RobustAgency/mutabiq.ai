@@ -32,7 +32,7 @@ class UpdateDataElementRequest extends FormRequest
             'personal_data_category' => ['nullable', 'string', Rule::enum(PersonalDataCategory::class)],
             'special_category_flag' => ['sometimes', 'string', Rule::enum(SpecialCategoryFlag::class)],
             'cde_flag' => ['sometimes', 'string', Rule::enum(CdeFlag::class)],
-            'cde_category' => ['nullable', 'string', Rule::enum(CdeCategory::class)],
+            'cde_category' => ['required_if:cde_flag,yes', 'string', Rule::enum(CdeCategory::class)],
             'owner_team' => ['nullable', 'string', 'max:255'],
             'quality_rules_ref' => ['nullable', 'string'],
             'catalog_column_id' => ['nullable', 'string', 'max:255'],

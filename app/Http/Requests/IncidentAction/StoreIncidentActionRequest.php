@@ -33,7 +33,7 @@ class StoreIncidentActionRequest extends FormRequest
             'completed_at' => ['nullable', 'date', 'after_or_equal:started_at'],
             'validation_result' => ['required', Rule::in(array_map(fn($c) => $c->value, ValidationResult::cases()))],
             'validation_notes' => ['nullable', 'string'],
-            'linked_release_id' => ['nullable', 'string', 'max:255'],
+            'linked_release_id' => ['nullable', 'string'],
             'evidence_link' => ['nullable', 'url', 'max:2048'],
         ];
     }
