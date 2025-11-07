@@ -25,6 +25,7 @@ class StoreConsentScopeRequest extends FormRequest
             'jurisdiction' => ['required', Rule::enum(Jurisdiction::class)],
             'effective_from' => ['required', 'date'],
             'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'source_created_at' => ['required', 'date'],
         ];
     }
 }

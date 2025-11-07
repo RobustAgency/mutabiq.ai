@@ -27,6 +27,7 @@ class StoreConsentCoverageRequest extends FormRequest
             'subjects_with_valid_consent' => ['required', 'integer', 'min:0', 'lte:subjects_total'],
             'coverage_pct' => ['required', 'numeric', 'min:0', 'max:100'],
             'evidence_ref' => ['required', 'string', 'max:255'],
+            'source_created_at' => ['required', 'date'],
         ];
     }
 

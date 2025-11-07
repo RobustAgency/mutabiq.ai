@@ -25,6 +25,7 @@ class UpdateConsentScopeRequest extends FormRequest
             'jurisdiction' => ['sometimes', Rule::enum(Jurisdiction::class)],
             'effective_from' => ['sometimes', 'date'],
             'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'source_created_at' => ['sometimes', 'date'],
         ];
     }
 }

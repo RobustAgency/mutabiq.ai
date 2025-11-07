@@ -21,7 +21,8 @@ class ConsentCoverage extends Model
         'subjects_total',
         'subjects_with_valid_consent',
         'coverage_pct',
-        'evidence_ref'
+        'evidence_ref',
+        'source_created_at',
     ];
 
     protected function casts(): array
@@ -32,6 +33,7 @@ class ConsentCoverage extends Model
             'subjects_total' => 'integer',
             'subjects_with_valid_consent' => 'integer',
             'coverage_pct' => 'decimal:2',
+            'source_created_at' => 'datetime',
         ];
     }
 

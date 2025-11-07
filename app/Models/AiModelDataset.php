@@ -28,5 +28,13 @@ class AiModelDataset extends Model
         'privacy_check_ref',
         'eligibility_status',
         'notes',
+        'source_created_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'source_created_at' => 'datetime',
+        ];
+    }
 }
