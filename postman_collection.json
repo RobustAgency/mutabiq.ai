@@ -4651,6 +4651,196 @@
 			"description": "Track alerts and triggers that led to or contributed to AI incidents"
 		},
 		{
+			"name": "AI Risk Register",
+			"item": [
+				{
+					"name": "List AI Risk Register Entries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register?per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (1-100)"
+								}
+							]
+						},
+						"description": "Get paginated list of AI risk register entries for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create AI Risk Register Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Model Bias in Credit Scoring AI\",\n    \"risk_category\": \"bias_fairness\",\n    \"ai_model_id\": 1,\n    \"ai_model_version_id\": 5,\n    \"use_case_id\": 2,\n    \"description\": \"The credit scoring model may exhibit bias against certain demographic groups, potentially leading to unfair lending decisions and regulatory compliance issues. This could result in reputational damage and legal liability.\",\n    \"related_controls\": [\"CTRL-001\", \"CTRL-015\", \"CTRL-023\"],\n    \"method_id\": 1,\n    \"likelihood_code\": \"L3\",\n    \"impact_code\": \"I4\",\n    \"inherent_score\": \"7\",\n    \"residual_score\": \"5\",\n    \"risk_level\": \"high\",\n    \"decision\": \"treat\",\n    \"risk_owner\": 1,\n    \"review_cadence\": \"quarterly\",\n    \"next_review_due\": \"2026-02-15\",\n    \"status\": \"in_treatment\",\n    \"linked_assessment_id\": 123,\n    \"linked_incident_id\": 5,\n    \"linked_capa_id\": 3,\n    \"evidence_link\": \"https://evidence.example.com/risks/bias-analysis-2025-11\",\n    \"likelihood_label_snapshot\": \"Possible\",\n    \"impact_label_snapshot\": \"Major\",\n    \"method_name_snapshot\": \"5x5 Risk Matrix\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register"
+							]
+						},
+						"description": "Create a new AI risk register entry for tracking identified risks.\n\n**Required Fields:**\n- `title` (string, max 255): Short, specific risk statement\n- `risk_category` (string): Risk category\n- `ai_model_id` (integer): Primary affected AI model ID\n- `description` (string): Context, causes, and consequences\n- `likelihood_code` (string, max 255): Likelihood code from risk methodology\n- `impact_code` (string, max 255): Impact code from risk methodology\n- `risk_level` (string): Derived risk level\n- `decision` (string): Risk treatment decision\n- `risk_owner` (integer): Stakeholder ID responsible for the risk\n- `review_cadence` (string): How often to review the risk\n- `next_review_due` (date): Next review date\n- `status` (string): Current risk status\n\n**Risk Category Options:**\n- `safety` - AI safety risks\n- `privacy` - Privacy risks\n- `bias_fairness` - Bias and fairness issues\n- `security` - Security vulnerabilities\n- `robustness` - Model robustness issues\n- `explainability` - Explainability concerns\n- `legal_compliance` - Legal and compliance risks\n- `ethics` - Ethical concerns\n- `availability` - Availability risks\n- `resilience` - Resilience issues\n- `vendor` - Vendor-related risks\n- `cost` - Cost overrun risks\n- `reputation` - Reputational risks\n- `other` - Other categories\n\n**Risk Level Options:**\n- `low` - Low risk\n- `medium` - Medium risk\n- `high` - High risk\n- `critical` - Critical risk\n\n**Decision Options:**\n- `treat` - Treat/Mitigate the risk\n- `accept` - Accept the risk\n- `transfer` - Transfer the risk (e.g., insurance)\n- `avoid` - Avoid the risk\n\n**Review Cadence Options:**\n- `monthly` - Monthly review\n- `quarterly` - Quarterly review\n- `semi_annual` - Semi-annual review\n- `annual` - Annual review\n\n**Status Options:**\n- `identified` - Risk identified\n- `assessed` - Risk assessed\n- `in_treatment` - Treatment in progress\n- `accepted` - Risk accepted\n- `transferred` - Risk transferred\n- `closed` - Risk closed\n\n**Optional Fields:**\n- `ai_model_version_id` (integer): Specific model version in scope\n- `use_case_id` (integer): Specific use case in scope\n- `related_controls` (array): IDs/references to control catalog\n- `method_id` (integer): Risk methodology used\n- `inherent_score` (string, max 255): Score before treatment\n- `residual_score` (string, max 255): Score after treatment\n- `linked_assessment_id` (integer): If raised via an assessment\n- `linked_incident_id` (integer): If discovered during an incident\n- `linked_capa_id` (integer): If CAPA exists\n- `evidence_link` (URL, max 500): Link to risk analysis\n- `likelihood_label_snapshot` (string, max 255): Likelihood label snapshot\n- `impact_label_snapshot` (string, max 255): Impact label snapshot\n- `method_name_snapshot` (string, max 255): Method name snapshot\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Risk Register Entry Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register",
+								":aiRiskRegister"
+							],
+							"variable": [
+								{
+									"key": "aiRiskRegister",
+									"value": "1",
+									"description": "AI Risk Register Entry ID"
+								}
+							]
+						},
+						"description": "Get details of a specific AI risk register entry with all relationships loaded.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update AI Risk Register Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"accepted\",\n    \"decision\": \"accept\",\n    \"residual_score\": \"3\",\n    \"risk_level\": \"medium\",\n    \"next_review_due\": \"2026-05-15\",\n    \"description\": \"Updated: After implementing additional bias detection controls and regular auditing, the residual risk has been reduced to acceptable levels. The organization accepts the remaining risk with ongoing monitoring.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register",
+								":aiRiskRegister"
+							],
+							"variable": [
+								{
+									"key": "aiRiskRegister",
+									"value": "1",
+									"description": "AI Risk Register Entry ID"
+								}
+							]
+						},
+						"description": "Update an existing AI risk register entry.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**All fields are optional and follow the same validation as Create AI Risk Register Entry**\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete AI Risk Register Entry",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register",
+								":aiRiskRegister"
+							],
+							"variable": [
+								{
+									"key": "aiRiskRegister",
+									"value": "1",
+									"description": "AI Risk Register Entry ID"
+								}
+							]
+						},
+						"description": "Delete an AI risk register entry.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Master list of AI risks - canonical record per risk, tied to a model/use case and scored with the current methodology"
+		},
+		{
 			"name": "Incident Actions",
 			"item": [
 				{
