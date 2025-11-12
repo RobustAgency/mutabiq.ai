@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Vendor\ListVendorRequest;
 use App\Http\Requests\Vendor\StoreVendorRequest;
 use App\Http\Requests\Vendor\UpdateVendorRequest;
 use App\Http\Resources\VendorResource;
 use App\Models\Vendor;
 use App\Repositories\VendorRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VendorController extends Controller
 {
@@ -20,11 +21,11 @@ class VendorController extends Controller
     /**
      * Display a paginated listing of vendors.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListVendorRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 15);
-        $organizationID = $request->user()->organization_id;
-        $vendors = $this->repository->getPaginatedVendors($organizationID, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $vendors = $this->repository->getFilteredVendors($validated);
 
         return response()->json([
             'error' => false,
