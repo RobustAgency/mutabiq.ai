@@ -46,6 +46,7 @@ class AiModelVersionController extends Controller
 
     public function show(AiModelVersion $aiModelVersion): JsonResponse
     {
+        $aiModelVersion->load(['aiModel']);
         return response()->json([
             'error' => false,
             'message' => 'AI Model Version retrieved successfully',

@@ -92,177 +92,6 @@ class AiModelArtifactRepositoryTest extends TestCase
         $this->assertEquals(2, $org3Artifacts->total());
     }
 
-    public function test_it_can_create_ai_model_artifact_from_csv(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://bucket/model.bin,checksum1,1024,Test note\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $data = [
-            'file' => $file,
-            'organization_id' => $this->organization->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'created_by' => $this->user->id,
-        ];
-
-        $result = $this->repository->createAiModelArtifact($data);
-
-        $this->assertIsArray($result);
-        $this->assertFalse($result['error']);
-        $this->assertEquals('Import completed successfully.', $result['message']);
-        $this->assertEquals(1, $result['data']['successful']);
-        $this->assertEquals(0, $result['data']['failed']);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'organization_id' => $this->organization->id,
-            'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://bucket/model.bin',
-            'checksum' => 'checksum1',
-            'size_bytes' => 1024,
-            'notes' => 'Test note',
-        ]);
-    }
-
-    public function test_it_can_create_artifact_with_minimal_data(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://bucket/config.yaml,,,\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $data = [
-            'file' => $file,
-            'organization_id' => $this->organization->id,
-            'artifact_type' => ArtifactType::CONFIG->value,
-            'created_by' => $this->user->id,
-        ];
-
-        $result = $this->repository->createAiModelArtifact($data);
-
-        $this->assertIsArray($result);
-        $this->assertFalse($result['error']);
-        $this->assertEquals(1, $result['data']['successful']);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'organization_id' => $this->organization->id,
-            'uri' => 's3://bucket/config.yaml',
-            'checksum' => null,
-            'size_bytes' => null,
-            'notes' => null,
-        ]);
-    }
-
-    public function test_it_can_create_artifacts_with_all_artifact_types(): void
-    {
-        Storage::fake('local');
-
-        foreach (ArtifactType::cases() as $type) {
-            $aiModelVersion = AiModelVersion::factory()->create([
-                'organization_id' => $this->organization->id,
-            ]);
-
-            $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-            $csvContent .= "{$aiModelVersion->id},s3://bucket/path/{$type->value},checksum,1024,Note\n";
-
-            $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-            $data = [
-                'file' => $file,
-                'organization_id' => $this->organization->id,
-                'artifact_type' => $type->value,
-                'created_by' => $this->user->id,
-            ];
-
-            $result = $this->repository->createAiModelArtifact($data);
-
-            $this->assertFalse($result['error'], "Failed to import artifact type: {$type->value}");
-            $this->assertEquals(1, $result['data']['successful']);
-
-            $this->assertDatabaseHas('ai_model_artifacts', [
-                'artifact_type' => $type->value,
-            ]);
-        }
-
-        $this->assertDatabaseCount('ai_model_artifacts', count(ArtifactType::cases()));
-    }
-
-    public function test_it_can_create_docker_image_artifact(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},docker://registry.example.com/ai-models/model-123:v1.0,checksum,1024,Note\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $data = [
-            'file' => $file,
-            'organization_id' => $this->organization->id,
-            'artifact_type' => ArtifactType::DOCKER_IMAGE->value,
-            'created_by' => $this->user->id,
-        ];
-
-        $result = $this->repository->createAiModelArtifact($data);
-
-        $this->assertFalse($result['error']);
-        $this->assertEquals(1, $result['data']['successful']);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'artifact_type' => ArtifactType::DOCKER_IMAGE->value,
-            'uri' => 'docker://registry.example.com/ai-models/model-123:v1.0',
-        ]);
-    }
-
-    public function test_it_can_create_sbom_artifact(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://bucket/sbom/model-123/sbom.json,sha256:abcdef123456,4096,Software Bill of Materials\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $data = [
-            'file' => $file,
-            'organization_id' => $this->organization->id,
-            'artifact_type' => ArtifactType::SBOM->value,
-            'created_by' => $this->user->id,
-        ];
-
-        $result = $this->repository->createAiModelArtifact($data);
-
-        $this->assertFalse($result['error']);
-        $this->assertEquals(1, $result['data']['successful']);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'artifact_type' => ArtifactType::SBOM->value,
-            'checksum' => 'sha256:abcdef123456',
-            'notes' => 'Software Bill of Materials',
-        ]);
-    }
-
     public function test_it_can_update_ai_model_artifact(): void
     {
         $artifact = AiModelArtifact::factory()->create([
@@ -395,6 +224,42 @@ class AiModelArtifactRepositoryTest extends TestCase
         $this->assertTrue($result);
     }
 
+    public function test_create_ai_model_artifact(): void
+    {
+        $aiModelVersion = AiModelVersion::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
+
+        $artifactData = [
+            'organization_id' => $this->organization->id,
+            'ai_model_version_id' => $aiModelVersion->id,
+            'name' => 'Test Artifact',
+            'uri' => 's3://path/to/artifact',
+            'checksum' => 'artifact_checksum_123',
+            'size_bytes' => 4096,
+            'artifact_type' => ArtifactType::DOCKER_IMAGE->value,
+            'notes' => 'This is a test artifact',
+            'created_by' => $this->user->email,
+        ];
+
+        $artifact = $this->repository->createAiModelArtifact($artifactData);
+
+        $this->assertInstanceOf(AiModelArtifact::class, $artifact);
+        $this->assertEquals($aiModelVersion->id, $artifact->ai_model_version_id);
+        $this->assertEquals('Test Artifact', $artifact->name);
+        $this->assertEquals('s3://path/to/artifact', $artifact->uri);
+        $this->assertEquals('artifact_checksum_123', $artifact->checksum);
+        $this->assertEquals(4096, $artifact->size_bytes);
+        $this->assertEquals(ArtifactType::DOCKER_IMAGE->value, $artifact->artifact_type);
+        $this->assertEquals('This is a test artifact', $artifact->notes);
+        $this->assertEquals($this->user->email, $artifact->created_by);
+
+        $this->assertDatabaseHas('ai_model_artifacts', [
+            'id' => $artifact->id,
+            'name' => 'Test Artifact',
+        ]);
+    }
+
     public function test_it_maintains_timestamps_on_update(): void
     {
         $artifact = AiModelArtifact::factory()->create([
@@ -427,70 +292,5 @@ class AiModelArtifactRepositoryTest extends TestCase
         $this->assertEquals(100, $page1->total());
         $this->assertEquals(25, $page1->count());
         $this->assertEquals(4, $page1->lastPage());
-    }
-
-    public function test_it_creates_multiple_artifacts_from_csv(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://bucket/model1.bin,checksum1,1024,Note 1\n";
-        $csvContent .= "{$aiModelVersion->id},s3://bucket/model2.bin,checksum2,2048,Note 2\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $data = [
-            'file' => $file,
-            'organization_id' => $this->organization->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'created_by' => $this->user->id,
-        ];
-
-        $result = $this->repository->createAiModelArtifact($data);
-
-        $this->assertFalse($result['error']);
-        $this->assertEquals(2, $result['data']['successful']);
-        $this->assertEquals(0, $result['data']['failed']);
-
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'uri' => 's3://bucket/model1.bin',
-        ]);
-        $this->assertDatabaseHas('ai_model_artifacts', [
-            'uri' => 's3://bucket/model2.bin',
-        ]);
-    }
-
-    public function test_it_handles_large_batch_imports_via_csv(): void
-    {
-        Storage::fake('local');
-
-        $aiModelVersion = AiModelVersion::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        for ($i = 1; $i <= 50; $i++) {
-            $csvContent .= "{$aiModelVersion->id},s3://bucket/model{$i}.bin,checksum{$i},{$i}000,Note {$i}\n";
-        }
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
-        $data = [
-            'file' => $file,
-            'organization_id' => $this->organization->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'created_by' => $this->user->id,
-        ];
-
-        $result = $this->repository->createAiModelArtifact($data);
-
-        $this->assertFalse($result['error']);
-        $this->assertEquals(50, $result['data']['successful']);
-        $this->assertEquals(0, $result['data']['failed']);
-        $this->assertCount(50, \App\Models\AiModelArtifact::all());
     }
 }

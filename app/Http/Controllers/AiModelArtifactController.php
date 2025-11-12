@@ -38,6 +38,7 @@ class AiModelArtifactController extends Controller
     public function store(StoreAiModelArtifactRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $data['organization_id'] = Auth::user()->organization_id;
         $artifacts = $this->repository->createAiModelArtifact($data);
         return response()->json([
             'error' => false,

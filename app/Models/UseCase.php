@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UseCase extends Model
 {
@@ -52,4 +53,34 @@ class UseCase extends Model
         'risk_assessment' => 'boolean',
         'data_assessment' => 'boolean',
     ];
+
+    /**
+     * Get the organization that owns this use case.
+     * 
+     * @return BelongsTo<Organization, $this>
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * Get the business owner stakeholder.
+     * 
+     * @return BelongsTo<Stakeholder, $this>
+     */
+    public function businessOwner(): BelongsTo
+    {
+        return $this->belongsTo(Stakeholder::class, 'business_owner_id');
+    }
+
+    /**
+     * Get the technical owner stakeholder.
+     * 
+     * @return BelongsTo<Stakeholder, $this>
+     */
+    public function technicalOwner(): BelongsTo
+    {
+        return $this->belongsTo(Stakeholder::class, 'technical_owner_id');
+    }
 }

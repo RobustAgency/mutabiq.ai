@@ -48,6 +48,8 @@ class UseCaseResource extends JsonResource
             'data_readiness' => $this->data_readiness,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'business_owner' => $this->whenLoaded('businessOwner'),
+            'technical_owner' => $this->whenLoaded('technicalOwner'),
         ];
     }
 }

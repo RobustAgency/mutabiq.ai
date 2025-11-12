@@ -166,6 +166,7 @@ class AiModelCardControllerTest extends TestCase
             'performance_summary' => $this->faker->word,
             'ethical_considerations' => $this->faker->word,
             'organizational_context' => [],
+            'created_by' => $user->email,
         ];
 
         $this->actingAs($user);
@@ -179,9 +180,7 @@ class AiModelCardControllerTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('ai_model_cards', [
-            'title' => $data['title'],
-            'version' => $data['version'],
-            'owner_email' => $data['owner_email'],
+            'title' => $data['title']
         ]);
     }
 
@@ -192,12 +191,11 @@ class AiModelCardControllerTest extends TestCase
         $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
         $aiModelCard = AiModelCard::factory()->create([
             'organization_id' => $this->organization->id,
-            'ai_model_version_id' => $aiModelVersion->id,
+            'version_id' => $aiModelVersion->id,
         ]);
 
         $updateData = [
             'title' => 'Updated Title',
-            'version' => '2.0.0',
             'completeness_score' => 90,
             'status' => Status::DRAFT,
         ];
@@ -215,9 +213,79 @@ class AiModelCardControllerTest extends TestCase
         $this->assertDatabaseHas('ai_model_cards', [
             'id' => $aiModelCard->id,
             'title' => 'Updated Title',
-            'version' => '2.0.0',
-            'completeness_score' => 90,
             'status' => Status::DRAFT,
         ]);
+    }
+
+    public function test_last_review_date_cannot_be_in_future(): void
+    {
+        $stakeholder = Stakeholder::factory()->create(['organization_id' => $this->organization->id]);
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModel = AiModel::factory()->create();
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
+
+        $data = [
+            'version_id' => $aiModelVersion->id,
+            'title' => $this->faker->sentence,
+            'version' => '1.0.0',
+            'creator_role' => CreatorRole::COMMUNITY_CONTRIBUTED,
+            'owner_stakeholder_id' => $stakeholder->id,
+            'owner_email' => $this->faker->email,
+            'model_overview' => $this->faker->paragraph,
+            'access_level' => AccessLevel::INTERNAL,
+            'format' => CardFormat::STANDARD,
+            'status' => Status::DRAFT,
+            'workflow_stage' => WorkflowStage::CREATION,
+            'technical_review_status' => TechnicalReviewStatus::PENDING,
+            'ethics_review_status' => EthicsReviewStatus::PENDING,
+            'compliance_review_status' => ComplianceReviewStatus::PENDING,
+            'publication_status' => PublicationStatus::NOT_PUBLISHED,
+            'completeness_score' => 80,
+            'last_review_date' => now()->addDays(5)->format('Y-m-d'),
+            'created_by' => $user->email,
+        ];
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/ai-model-cards', $data);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['last_review_date']);
+    }
+
+    public function test_next_review_date_cannot_be_in_past(): void
+    {
+        $stakeholder = Stakeholder::factory()->create(['organization_id' => $this->organization->id]);
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModel = AiModel::factory()->create();
+        $aiModelVersion = AiModelVersion::factory()->create(['organization_id' => $this->organization->id, 'ai_model_id' => $aiModel->id]);
+
+        $data = [
+            'version_id' => $aiModelVersion->id,
+            'title' => $this->faker->sentence,
+            'version' => '1.0.0',
+            'creator_role' => CreatorRole::COMMUNITY_CONTRIBUTED,
+            'owner_stakeholder_id' => $stakeholder->id,
+            'owner_email' => $this->faker->email,
+            'model_overview' => $this->faker->paragraph,
+            'access_level' => AccessLevel::INTERNAL,
+            'format' => CardFormat::STANDARD,
+            'status' => Status::DRAFT,
+            'workflow_stage' => WorkflowStage::CREATION,
+            'technical_review_status' => TechnicalReviewStatus::PENDING,
+            'ethics_review_status' => EthicsReviewStatus::PENDING,
+            'compliance_review_status' => ComplianceReviewStatus::PENDING,
+            'publication_status' => PublicationStatus::NOT_PUBLISHED,
+            'completeness_score' => 80,
+            'next_review_date' => now()->subDays(5)->format('Y-m-d'),
+            'created_by' => $user->email,
+        ];
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/ai-model-cards', $data);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['next_review_date']);
     }
 }

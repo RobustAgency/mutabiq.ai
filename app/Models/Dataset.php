@@ -48,6 +48,7 @@ class Dataset extends Model
     protected function casts(): array
     {
         return [
+            'purpose' => 'array',
             'source_ids' => 'array',
             'data_subject_categories' => 'array',
             'content_types' => 'array',

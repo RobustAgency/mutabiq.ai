@@ -38,6 +38,7 @@ use App\Http\Controllers\IncidentNotificationController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
 use App\Http\Controllers\AiModelArtifactController;
 use App\Http\Controllers\User\ArtifactAccessLogController;
+use App\Http\Controllers\User\AiRiskRegisterController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -289,5 +290,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store');
         Route::get('{artifactAccessLog}', 'show');
         Route::delete('{artifactAccessLog}', 'destroy');
+    });
+
+    Route::prefix('ai-risk-register')->controller(AiRiskRegisterController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiRiskRegister}', 'show');
+        Route::post('{aiRiskRegister}', 'update');
+        Route::delete('{aiRiskRegister}', 'destroy');
     });
 });

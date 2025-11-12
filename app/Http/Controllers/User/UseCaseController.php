@@ -42,6 +42,7 @@ class UseCaseController extends Controller
 
     public function show(UseCase $useCase): JsonResponse
     {
+        $useCase->load(['businessOwner', 'technicalOwner']);
         return response()->json([
             'data' => new UseCaseResource($useCase),
             'error' => false,
