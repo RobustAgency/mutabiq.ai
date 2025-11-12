@@ -62,8 +62,8 @@ class StoreAiModelVersionRequest extends FormRequest
             // Flags
             'has_performance_data' => ['required', 'boolean'],
 
-            'created_by' => ['required', 'email'],
-            'updated_by' => ['nullable', 'email'],
+            'created_by' => ['nullable', 'integer', 'exists:users,id'],
+            'updated_by' => ['nullable', 'integer', 'exists:users,id'],
         ];
     }
 }
