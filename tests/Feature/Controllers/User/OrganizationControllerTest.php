@@ -88,4 +88,84 @@ class OrganizationControllerTest extends TestCase
 
         return $user;
     }
+
+    public function test_can_store_website_as_plain_domain(): void
+    {
+        $user = User::factory()->create(['role' => UserRole::OWNER]);
+
+        $organizationData = [
+            'name' => $this->faker->company(),
+            'website' => 'home.domain',
+            'phone' => $this->faker->phoneNumber(),
+            'country' => $this->faker->country(),
+            'is_active' => true,
+        ];
+
+        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('organizations', [
+            'website' => 'home.domain',
+        ]);
+    }
+
+    public function test_can_store_website_with_www_prefix(): void
+    {
+        $user = User::factory()->create(['role' => UserRole::OWNER]);
+
+        $organizationData = [
+            'name' => $this->faker->company(),
+            'website' => 'www.home.domain',
+            'phone' => $this->faker->phoneNumber(),
+            'country' => $this->faker->country(),
+            'is_active' => true,
+        ];
+
+        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('organizations', [
+            'website' => 'www.home.domain',
+        ]);
+    }
+
+    public function test_can_store_website_with_http_protocol(): void
+    {
+        $user = User::factory()->create(['role' => UserRole::OWNER]);
+
+        $organizationData = [
+            'name' => $this->faker->company(),
+            'website' => 'http://www.home.domain',
+            'phone' => $this->faker->phoneNumber(),
+            'country' => $this->faker->country(),
+            'is_active' => true,
+        ];
+
+        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('organizations', [
+            'website' => 'http://www.home.domain',
+        ]);
+    }
+
+    public function test_can_store_website_with_https_protocol(): void
+    {
+        $user = User::factory()->create(['role' => UserRole::OWNER]);
+
+        $organizationData = [
+            'name' => $this->faker->company(),
+            'website' => 'https://home.domain',
+            'phone' => $this->faker->phoneNumber(),
+            'country' => $this->faker->country(),
+            'is_active' => true,
+        ];
+
+        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('organizations', [
+            'website' => 'https://home.domain',
+        ]);
+    }
 }

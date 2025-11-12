@@ -23,7 +23,13 @@ class StoreOrganizationRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'website' => ['nullable', 'string', 'max:255', 'url', 'unique:organizations,website'],
+            'website' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?$/',
+                'unique:organizations,website',
+            ],
             'phone' => ['nullable', 'string', 'max:20', 'unique:organizations,phone'],
             'country' => ['nullable', 'string', 'max:500'],
             'is_active' => ['required', 'boolean'],

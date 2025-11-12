@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AiModelVersion extends Model
 {
@@ -45,4 +46,14 @@ class AiModelVersion extends Model
         'has_performance_data' => 'boolean',
         'customizations_applied' => 'array',
     ];
+
+    /**
+     * Get the AI model that this version belongs to.
+     *
+     * @return BelongsTo<AiModel, $this>
+     */
+    public function aiModel(): BelongsTo
+    {
+        return $this->belongsTo(AiModel::class, 'ai_model_id');
+    }
 }
