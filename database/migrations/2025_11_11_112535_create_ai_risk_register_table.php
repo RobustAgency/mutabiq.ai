@@ -1,13 +1,10 @@
 <?php
 
-use App\Models\AiIncident;
 use App\Models\AiModel;
 use App\Models\AiModelVersion;
-use App\Models\CorrectivePreventiveAction;
 use App\Models\Organization;
 use App\Models\Stakeholder;
 use App\Models\UseCase;
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
