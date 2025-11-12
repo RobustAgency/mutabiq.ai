@@ -7,8 +7,6 @@ use Illuminate\Validation\Rule;
 use App\Enums\ComplexityLevel;
 use App\Enums\DeploymentStatus;
 use App\Enums\LifecycleStage;
-use App\Enums\ValidationStatus;
-use App\Enums\ComplianceStatus;
 use App\Enums\VersionType;
 
 class UpdateAiModelVersionRequest extends FormRequest
