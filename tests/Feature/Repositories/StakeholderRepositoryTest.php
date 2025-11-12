@@ -50,121 +50,6 @@ class StakeholderRepositoryTest extends TestCase
         $this->assertCount(8, $result->items());
     }
 
-    public function test_search_by_display_name(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'John Smith']);
-        Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
-        Stakeholder::factory()->create(['display_name' => 'John Johnson']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'John']);
-
-        $this->assertCount(2, $result->items());
-        $displayNames = collect($result->items())->pluck('display_name')->toArray();
-        $this->assertTrue(in_array('John Smith', $displayNames));
-        $this->assertTrue(in_array('John Johnson', $displayNames));
-        $this->assertFalse(in_array('Jane Doe', $displayNames));
-    }
-
-    public function test_search_by_legal_name(): void
-    {
-        Stakeholder::factory()->create([
-            'display_name' => 'Person A',
-            'legal_name' => 'Acme Corporation',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Person B',
-            'legal_name' => 'Beta Industries',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Person C',
-            'legal_name' => 'Acme Solutions',
-        ]);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'Acme']);
-
-        $this->assertCount(2, $result->items());
-        $legalNames = collect($result->items())->pluck('legal_name')->toArray();
-        $this->assertTrue(in_array('Acme Corporation', $legalNames));
-        $this->assertTrue(in_array('Acme Solutions', $legalNames));
-    }
-
-    public function test_search_by_email(): void
-    {
-        Stakeholder::factory()->create(['email' => 'john@example.com']);
-        Stakeholder::factory()->create(['email' => 'jane@example.com']);
-        Stakeholder::factory()->create(['email' => 'admin@company.com']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'example']);
-
-        $this->assertCount(2, $result->items());
-        $emails = collect($result->items())->pluck('email')->toArray();
-        $this->assertTrue(in_array('john@example.com', $emails));
-        $this->assertTrue(in_array('jane@example.com', $emails));
-    }
-
-    public function test_search_is_case_insensitive(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'John Smith']);
-        Stakeholder::factory()->create(['display_name' => 'JANE DOE']);
-        Stakeholder::factory()->create(['display_name' => 'alice johnson']);
-
-        $resultUpperCase = $this->repository->getFilteredStakeholders(['search' => 'JOHN']);
-        $resultLowerCase = $this->repository->getFilteredStakeholders(['search' => 'john']);
-
-        $this->assertCount(2, $resultUpperCase->items());
-        $this->assertCount(2, $resultLowerCase->items());
-    }
-
-    public function test_search_with_partial_match(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'Robert Johnson']);
-        Stakeholder::factory()->create(['display_name' => 'Rob Smith']);
-        Stakeholder::factory()->create(['display_name' => 'Alice Brown']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'Rob']);
-
-        $this->assertCount(2, $result->items());
-        $displayNames = collect($result->items())->pluck('display_name')->toArray();
-        $this->assertTrue(in_array('Robert Johnson', $displayNames));
-        $this->assertTrue(in_array('Rob Smith', $displayNames));
-    }
-
-    public function test_search_returns_empty_when_no_match(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'John Smith']);
-        Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'NonExistentName']);
-
-        $this->assertCount(0, $result->items());
-    }
-
-    public function test_search_across_multiple_fields(): void
-    {
-        Stakeholder::factory()->create([
-            'display_name' => 'John Smith',
-            'legal_name' => 'Different Corp',
-            'email' => 'john@example.com',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Jane Doe',
-            'legal_name' => 'Tech Solutions',
-            'email' => 'jane@tech.com',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Bob Wilson',
-            'legal_name' => 'Other Company',
-            'email' => 'bob@tech.com',
-        ]);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'Tech']);
-
-        $this->assertCount(2, $result->items());
-        $items = collect($result->items());
-        $this->assertTrue($items->contains('display_name', 'Jane Doe'));
-        $this->assertTrue($items->contains('display_name', 'Bob Wilson'));
-    }
-
     public function test_filter_by_type(): void
     {
         Stakeholder::factory()->create(['type' => 'internal']);
@@ -178,32 +63,6 @@ class StakeholderRepositoryTest extends TestCase
         $this->assertEquals(['internal'], $types);
     }
 
-    public function test_filter_by_type_and_search_combined(): void
-    {
-        Stakeholder::factory()->create([
-            'type' => 'internal',
-            'display_name' => 'John Smith',
-        ]);
-        Stakeholder::factory()->create([
-            'type' => 'external',
-            'display_name' => 'John Doe',
-        ]);
-        Stakeholder::factory()->create([
-            'type' => 'internal',
-            'display_name' => 'Alice Johnson',
-        ]);
-
-        $result = $this->repository->getFilteredStakeholders([
-            'type' => 'internal',
-            'search' => 'John',
-        ]);
-
-        $this->assertCount(2, $result->items());
-        $item = $result->items()[0];
-        $this->assertEquals('John Smith', $item->display_name);
-        $this->assertEquals('internal', $item->type);
-    }
-
     public function test_filter_with_empty_type_returns_all(): void
     {
         Stakeholder::factory()->create(['type' => 'internal']);
@@ -212,15 +71,6 @@ class StakeholderRepositoryTest extends TestCase
         $result = $this->repository->getFilteredStakeholders(['type' => '']);
 
         $this->assertCount(2, $result->items());
-    }
-
-    public function test_filter_with_empty_search_returns_all(): void
-    {
-        Stakeholder::factory()->count(3)->create();
-
-        $result = $this->repository->getFilteredStakeholders(['search' => '']);
-
-        $this->assertCount(3, $result->items());
     }
 
     public function test_results_are_sorted_by_latest(): void
@@ -287,87 +137,6 @@ class StakeholderRepositoryTest extends TestCase
         ]);
     }
 
-    public function test_search_with_special_characters(): void
-    {
-        Stakeholder::factory()->create(['display_name' => "O'Brien"]);
-        Stakeholder::factory()->create(['display_name' => 'Smith & Jones']);
-        Stakeholder::factory()->create(['display_name' => 'Regular Name']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => "O'Brien"]);
-
-        $this->assertGreaterThanOrEqual(1, $result->total());
-    }
-
-    public function test_search_with_email_domain(): void
-    {
-        Stakeholder::factory()->create(['email' => 'user1@company.com']);
-        Stakeholder::factory()->create(['email' => 'user2@company.com']);
-        Stakeholder::factory()->create(['email' => 'user3@other.org']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'company.com']);
-
-        $this->assertCount(2, $result->items());
-    }
-
-    public function test_search_with_whitespace_in_name(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'John Smith']);
-        Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'John Smith']);
-
-        $this->assertCount(1, $result->items());
-        $this->assertEquals('John Smith', $result->items()[0]->display_name);
-    }
-
-    public function test_search_matches_beginning_of_fields(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'Alexander']);
-        Stakeholder::factory()->create(['display_name' => 'Alexandra']);
-        Stakeholder::factory()->create(['display_name' => 'Alex']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'Alex']);
-
-        $this->assertCount(3, $result->items());
-    }
-
-    public function test_search_matches_middle_of_fields(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'John Smith']);
-        Stakeholder::factory()->create(['display_name' => 'Jane Johnson']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'ohn']);
-
-        $this->assertCount(2, $result->items());
-    }
-
-    public function test_search_matches_end_of_fields(): void
-    {
-        Stakeholder::factory()->create(['display_name' => 'Smith']);
-        Stakeholder::factory()->create(['display_name' => 'Blacksmith']);
-
-        $result = $this->repository->getFilteredStakeholders(['search' => 'smith']);
-
-        $this->assertCount(2, $result->items());
-    }
-
-    public function test_pagination_works_with_search(): void
-    {
-        for ($i = 1; $i <= 15; $i++) {
-            Stakeholder::factory()->create(['display_name' => "Tech User {$i}"]);
-        }
-        Stakeholder::factory()->create(['display_name' => 'Other User']);
-
-        $result = $this->repository->getFilteredStakeholders([
-            'search' => 'Tech',
-            'per_page' => 5,
-        ]);
-
-        $this->assertCount(5, $result->items());
-        $this->assertEquals(15, $result->total());
-        $this->assertEquals(3, $result->lastPage());
-    }
-
     public function test_pagination_works_with_type_filter(): void
     {
         Stakeholder::factory()->count(12)->create(['type' => 'internal']);
@@ -382,45 +151,190 @@ class StakeholderRepositoryTest extends TestCase
         $this->assertEquals(12, $result->total());
     }
 
-    public function test_complex_filter_scenario(): void
+    public function test_filter_by_display_name(): void
     {
-        // Create internal stakeholders with "Tech" in various fields
+        Stakeholder::factory()->create(['display_name' => 'John Smith']);
+        Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
+        Stakeholder::factory()->create(['display_name' => 'John Williams']);
+
+        $result = $this->repository->getFilteredStakeholders(['name' => 'John']);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $stakeholder) {
+            $this->assertStringContainsString('John', $stakeholder->display_name);
+        }
+    }
+
+    public function test_filter_by_legal_name(): void
+    {
         Stakeholder::factory()->create([
-            'type' => 'internal',
-            'display_name' => 'Tech Lead',
-            'email' => 'lead@internal.com',
+            'display_name' => 'Person A',
+            'legal_name' => 'Tech Corporation',
         ]);
         Stakeholder::factory()->create([
-            'type' => 'internal',
-            'display_name' => 'Other Person',
-            'legal_name' => 'Tech Corp',
+            'display_name' => 'Person B',
+            'legal_name' => 'Finance Solutions',
+        ]);
+        Stakeholder::factory()->create([
+            'display_name' => 'Person C',
+            'legal_name' => 'Tech Innovations',
         ]);
 
-        // Create external stakeholder with "Tech"
+        $result = $this->repository->getFilteredStakeholders(['name' => 'Tech']);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_filter_by_name_searches_both_display_and_legal_names(): void
+    {
         Stakeholder::factory()->create([
+            'display_name' => 'Alpha Solutions',
+            'legal_name' => 'Beta Corp',
+        ]);
+        Stakeholder::factory()->create([
+            'display_name' => 'Beta Innovations',
+            'legal_name' => 'Gamma LLC',
+        ]);
+        Stakeholder::factory()->create([
+            'display_name' => 'Delta Systems',
+            'legal_name' => 'Beta Holdings',
+        ]);
+
+        $result = $this->repository->getFilteredStakeholders(['name' => 'Beta']);
+
+        $this->assertCount(3, $result->items());
+    }
+
+    public function test_filter_by_name_is_case_insensitive(): void
+    {
+        Stakeholder::factory()->create(['display_name' => 'JOHN SMITH']);
+        Stakeholder::factory()->create(['display_name' => 'jane doe']);
+        Stakeholder::factory()->create(['display_name' => 'John Williams']);
+
+        $result = $this->repository->getFilteredStakeholders(['name' => 'john']);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_filter_by_name_with_partial_match(): void
+    {
+        Stakeholder::factory()->create(['display_name' => 'Software Engineer']);
+        Stakeholder::factory()->create(['display_name' => 'Senior Software Developer']);
+        Stakeholder::factory()->create(['display_name' => 'Hardware Technician']);
+
+        $result = $this->repository->getFilteredStakeholders(['name' => 'Software']);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_filter_by_multiple_filters(): void
+    {
+        $organization = Organization::factory()->create();
+
+        Stakeholder::factory()->create([
+            'organization_id' => $organization->id,
+            'type' => 'internal',
+            'display_name' => 'John Smith',
+        ]);
+        Stakeholder::factory()->create([
+            'organization_id' => $organization->id,
             'type' => 'external',
-            'display_name' => 'Tech Consultant',
-            'email' => 'consultant@external.com',
+            'display_name' => 'John Doe',
         ]);
-
-        // Create internal without "Tech"
         Stakeholder::factory()->create([
+            'organization_id' => $organization->id,
             'type' => 'internal',
-            'display_name' => 'Regular Employee',
+            'display_name' => 'Jane Williams',
         ]);
 
         $result = $this->repository->getFilteredStakeholders([
+            'organization_id' => $organization->id,
             'type' => 'internal',
-            'search' => 'Tech',
+            'name' => 'John',
         ]);
 
-        $this->assertCount(2, $result->items());
-        foreach ($result->items() as $item) {
-            $this->assertEquals('internal', $item->type);
-            $hasTech = str_contains(strtolower($item->display_name), 'tech') ||
-                str_contains(strtolower($item->legal_name ?? ''), 'tech') ||
-                str_contains(strtolower($item->email), 'tech');
-            $this->assertTrue($hasTech);
-        }
+        $this->assertCount(1, $result->items());
+        $stakeholder = $result->items()[0];
+        $this->assertEquals($organization->id, $stakeholder->organization_id);
+        $this->assertEquals('internal', $stakeholder->type);
+        $this->assertStringContainsString('John', $stakeholder->display_name);
+    }
+
+    public function test_filter_returns_empty_when_no_matches(): void
+    {
+        Stakeholder::factory()->create(['display_name' => 'John Smith']);
+        Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
+
+        $result = $this->repository->getFilteredStakeholders(['name' => 'NonExistent']);
+
+        $this->assertCount(0, $result->items());
+    }
+
+    public function test_filter_by_organization_with_different_orgs(): void
+    {
+        $org1 = Organization::factory()->create();
+        $org2 = Organization::factory()->create();
+
+        Stakeholder::factory()->count(5)->create(['organization_id' => $org1->id]);
+        Stakeholder::factory()->count(3)->create(['organization_id' => $org2->id]);
+
+        $result1 = $this->repository->getFilteredStakeholders(['organization_id' => $org1->id]);
+        $result2 = $this->repository->getFilteredStakeholders(['organization_id' => $org2->id]);
+
+        $this->assertEquals(5, $result1->total());
+        $this->assertEquals(3, $result2->total());
+    }
+
+    public function test_filter_by_type_with_different_types(): void
+    {
+        Stakeholder::factory()->count(7)->create(['type' => 'internal']);
+        Stakeholder::factory()->count(4)->create(['type' => 'external']);
+        Stakeholder::factory()->count(2)->create(['type' => 'partner']);
+
+        $internalResult = $this->repository->getFilteredStakeholders(['type' => 'internal']);
+        $externalResult = $this->repository->getFilteredStakeholders(['type' => 'external']);
+        $partnerResult = $this->repository->getFilteredStakeholders(['type' => 'partner']);
+
+        $this->assertEquals(7, $internalResult->total());
+        $this->assertEquals(4, $externalResult->total());
+        $this->assertEquals(2, $partnerResult->total());
+    }
+
+    public function test_filter_with_custom_per_page(): void
+    {
+        Stakeholder::factory()->count(25)->create(['type' => 'internal']);
+
+        $result = $this->repository->getFilteredStakeholders([
+            'type' => 'internal',
+            'per_page' => 7,
+        ]);
+
+        $this->assertCount(7, $result->items());
+        $this->assertEquals(25, $result->total());
+        $this->assertEquals(7, $result->perPage());
+        $this->assertEquals(4, $result->lastPage());
+    }
+
+    public function test_filters_maintain_latest_order(): void
+    {
+        $oldest = Stakeholder::factory()->create([
+            'type' => 'internal',
+            'created_at' => now()->subDays(5),
+        ]);
+        $middle = Stakeholder::factory()->create([
+            'type' => 'internal',
+            'created_at' => now()->subDays(3),
+        ]);
+        $newest = Stakeholder::factory()->create([
+            'type' => 'internal',
+            'created_at' => now()->subDay(),
+        ]);
+
+        $result = $this->repository->getFilteredStakeholders(['type' => 'internal']);
+
+        $items = $result->items();
+        $this->assertEquals($newest->id, $items[0]->id);
+        $this->assertEquals($middle->id, $items[1]->id);
+        $this->assertEquals($oldest->id, $items[2]->id);
     }
 }
