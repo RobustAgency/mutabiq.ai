@@ -8,15 +8,37 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class DatasetRepository
 {
     /**
-     * Get paginated datasets for a specific organization.
+     * Get filtered datasets for a specific organization.
      *
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array $filters
      * @return LengthAwarePaginator<int, Dataset>
      */
-    public function getPaginatedDatasets(int $organizationId, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredDatasets(array $filters = []): LengthAwarePaginator
     {
-        $query = Dataset::where('organization_id', $organizationId)->with(['dataElements']);
+        $query = Dataset::query()->with(['dataElements']);
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['name'])) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
+        }
+
+        if (isset($filters['sensitivity'])) {
+            $query->where('sensitivity', $filters['sensitivity']);
+        }
+
+        if (isset($filters['contains_pii'])) {
+            $query->where('contains_pii', $filters['contains_pii']);
+        }
+
+        if (isset($filters['controller_role'])) {
+            $query->where('controller_role', $filters['controller_role']);
+        }
+
+        $perPage = $filters['per_page'] ?? 15;
+
         return $query->paginate($perPage);
     }
 
