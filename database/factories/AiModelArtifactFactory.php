@@ -33,6 +33,7 @@ class AiModelArtifactFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'ai_model_version_id' => AiModelVersion::factory(),
+            'name' => fake()->words(5, true),
             'artifact_type' => $artifactType,
             'uri' => $this->generateUri($artifactType),
             'checksum' => fake()->sha256(),

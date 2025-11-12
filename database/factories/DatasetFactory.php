@@ -39,7 +39,10 @@ class DatasetFactory extends Factory
                 DataSource::pluck('id')->toArray() ?: [1, 2, 3],
                 fake()->numberBetween(1, 3)
             ),
-            'purpose' => fake()->randomElement(Purpose::cases()),
+            'purpose' => fake()->randomElements(
+                array_map(fn($c) => $c->value, Purpose::cases()),
+                fake()->numberBetween(1, 3)
+            ),
             'schema_summary' => fake()->optional()->sentence(),
             'sensitivity' => fake()->randomElement(Sensitivity::cases()),
             'contains_pii' => $containsPii,

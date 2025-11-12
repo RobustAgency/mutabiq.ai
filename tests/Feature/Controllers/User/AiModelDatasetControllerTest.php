@@ -52,6 +52,7 @@ class AiModelDatasetControllerTest extends TestCase
             'privacy_check_ref' => 'PRI-789012',
             'eligibility_status' => EligibilityStatus::ELIGIBLE->value,
             'notes' => 'Test dataset assignment',
+            'source_created_at' => now()->subDays(10)->toDateString(),
         ], $overrides);
     }
 
@@ -104,11 +105,14 @@ class AiModelDatasetControllerTest extends TestCase
     {
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $dataset = Dataset::factory()->create();
 
         $payload = [
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
+            'dataset_id' => $dataset->id,
             'role' => Role::PRETRAIN->value,
+            'source_created_at' => now()->subDays(10)->toDateString(),
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
@@ -232,12 +236,15 @@ class AiModelDatasetControllerTest extends TestCase
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
         $snapshot = DatasetSnapshot::factory()->create();
+        $dataset = Dataset::factory()->create();
 
         foreach (Role::cases() as $role) {
             $payload = [
                 'ai_model_id' => $aiModel->id,
                 'ai_model_version_id' => $aiModelVersion->id,
+                'dataset_id' => $dataset->id,
                 'role' => $role->value,
+                'source_created_at' => now()->subDays(10)->toDateString(),
             ];
 
             // Add snapshot for roles that require it
@@ -338,11 +345,14 @@ class AiModelDatasetControllerTest extends TestCase
     {
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $dataset = Dataset::factory()->create();
 
         $payload = [
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
+            'dataset_id' => $dataset->id,
             'role' => Role::PRETRAIN->value,
+            'source_created_at' => now()->subDays(10)->toDateString(),
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
@@ -357,11 +367,14 @@ class AiModelDatasetControllerTest extends TestCase
     {
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+        $dataset = Dataset::factory()->create();
 
         $payload = [
             'ai_model_id' => $aiModel->id,
             'ai_model_version_id' => $aiModelVersion->id,
+            'dataset_id' => $dataset->id,
             'role' => Role::FINE_TUNE->value,
+            'source_created_at' => now()->subDays(10)->toDateString(),
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
@@ -461,27 +474,6 @@ class AiModelDatasetControllerTest extends TestCase
     }
 
     /**
-     * Test nullable fields can be omitted.
-     */
-    public function test_nullable_fields_can_be_omitted(): void
-    {
-        $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
-        $snapshot = DatasetSnapshot::factory()->create();
-
-        $payload = [
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
-            'dataset_snapshot_id' => $snapshot->id,
-            'role' => Role::TRAIN->value,
-        ];
-
-        $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
-
-        $response->assertStatus(201);
-    }
-
-    /**
      * Test link with eligible_with_conditions status.
      */
     public function test_link_with_eligible_with_conditions_status(): void
@@ -523,14 +515,17 @@ class AiModelDatasetControllerTest extends TestCase
         $aiModel = AiModel::factory()->create();
         $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
         $snapshot = DatasetSnapshot::factory()->create();
+        $dataset = Dataset::factory()->create();
 
         // Create multiple dataset links
         for ($i = 0; $i < 25; $i++) {
             $payload = [
                 'ai_model_id' => $aiModel->id,
                 'ai_model_version_id' => $aiModelVersion->id,
+                'dataset_id' => $dataset->id,
                 'dataset_snapshot_id' => $snapshot->id,
                 'role' => Role::TRAIN->value,
+                'source_created_at' => now()->subDays(10)->toDateString(),
             ];
             $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
         }

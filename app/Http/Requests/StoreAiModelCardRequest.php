@@ -44,8 +44,8 @@ class StoreAiModelCardRequest extends FormRequest
             'status' => ['required', Rule::in(array_map(fn($c) => $c->value, Status::cases()))],
             'publication_status' => ['required', Rule::in(array_map(fn($c) => $c->value, PublicationStatus::cases()))],
             'publication_date' => ['nullable', 'date'],
-            'last_review_date' => ['nullable', 'date'],
-            'next_review_date' => ['nullable', 'date'],
+            'last_review_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'next_review_date' => ['nullable', 'date', 'after_or_equal:today'],
             'created_by' => ['required', 'email'],
             'updated_by' => ['nullable', 'email'],
         ];

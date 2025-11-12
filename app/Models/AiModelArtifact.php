@@ -15,6 +15,7 @@ class AiModelArtifact extends Model
     protected $fillable = [
         'organization_id',
         'ai_model_version_id',
+        'name',
         'artifact_type',
         'uri',
         'checksum',

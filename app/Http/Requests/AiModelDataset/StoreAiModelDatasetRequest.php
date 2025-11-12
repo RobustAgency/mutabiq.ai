@@ -19,7 +19,7 @@ class StoreAiModelDatasetRequest extends FormRequest
         return [
             'ai_model_id' => ['required', 'integer', 'exists:ai_models,id'],
             'ai_model_version_id' => ['required', 'integer', 'exists:ai_model_versions,id'],
-            'dataset_id' => ['nullable', 'integer', 'exists:datasets,id'],
+            'dataset_id' => ['required', 'integer', 'exists:datasets,id'],
             'dataset_snapshot_id' => [
                 'nullable',
                 'integer',

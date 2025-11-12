@@ -16,7 +16,7 @@ class ArtifactAccessLogRepository
     public function getFilteredArtifactAccessLogs(array $filters = []): LengthAwarePaginator
     {
         $query = ArtifactAccessLog::query()
-            ->with(['artifact', 'accessorStakeholder']);
+            ->with(['artifact.aiModelVersion.aiModel', 'accessorStakeholder']);
 
         // Filter by artifact_id
         if (isset($filters['artifact_id'])) {

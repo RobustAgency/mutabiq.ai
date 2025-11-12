@@ -46,7 +46,9 @@ class DatasetControllerTest extends TestCase
             'dataset_id' => 'DS-' . fake()->unique()->numerify('######'),
             'name' => 'Customer Analytics Dataset',
             'source_ids' => $dataSources->pluck('id')->toArray(),
-            'purpose' => $this->enumFirstValue(Purpose::class),
+            'purpose' => [
+                $this->enumFirstValue(Purpose::class),
+            ],
             'schema_summary' => 'Contains customer demographic and transaction data',
             'sensitivity' => $this->enumFirstValue(Sensitivity::class),
             'contains_pii' => $this->enumFirstValue(ContainsPii::class),

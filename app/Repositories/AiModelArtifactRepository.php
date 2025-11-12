@@ -3,9 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\AiModelArtifact;
-use App\Services\AiModelArtifactImportService;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 
 class AiModelArtifactRepository
 {
@@ -25,7 +23,6 @@ class AiModelArtifactRepository
 
     public function createAiModelArtifact(array $data): AiModelArtifact
     {
-        $data['organization_id'] = Auth::user()->organization_id;
         return AiModelArtifact::create($data);
     }
 
