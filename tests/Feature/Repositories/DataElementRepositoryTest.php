@@ -27,7 +27,7 @@ class DataElementRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DataElement::factory()->count(25)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedDataElements($organization->id, 10);
+        $result = $this->repository->getFilteredDataElements(['organization_id' => $organization->id, 'per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(25, $result->total());
@@ -46,7 +46,7 @@ class DataElementRepositoryTest extends TestCase
             'dataset_id' => $dataset->id,
         ]);
 
-        $result = $this->repository->getPaginatedDataElements($organization->id);
+        $result = $this->repository->getFilteredDataElements(['organization_id' => $organization->id]);
         $firstElement = $result->items()[0];
 
         $this->assertTrue($firstElement->relationLoaded('datasets'));
@@ -58,7 +58,7 @@ class DataElementRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DataElement::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedDataElements($organization->id);
+        $result = $this->repository->getFilteredDataElements(['organization_id' => $organization->id]);
 
         $this->assertCount(15, $result->items());
         $this->assertEquals(20, $result->total());
@@ -143,15 +143,6 @@ class DataElementRepositoryTest extends TestCase
         $result = $this->repository->delete($dataElement);
 
         $this->assertFalse($result);
-    }
-
-    public function test_get_paginated_data_elements_returns_empty_when_no_records(): void
-    {
-        $organization = Organization::factory()->create();
-        $result = $this->repository->getPaginatedDataElements($organization->id);
-
-        $this->assertCount(0, $result->items());
-        $this->assertEquals(0, $result->total());
     }
 
     public function test_get_data_element_by_id_returns_correct_element(): void

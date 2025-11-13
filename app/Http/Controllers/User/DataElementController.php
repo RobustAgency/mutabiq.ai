@@ -20,9 +20,9 @@ class DataElementController extends Controller
 
     public function index(ListDataElementRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->validated('per_page', 15);
-        $dataElements = $this->repository->getPaginatedDataElements($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $dataElements = $this->repository->getFilteredDataElements($validated);
 
         return response()->json([
             'error' => false,

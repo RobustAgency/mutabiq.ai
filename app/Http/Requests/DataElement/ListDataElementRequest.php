@@ -15,6 +15,10 @@ class ListDataElementRequest extends FormRequest
     {
         return [
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'data_type' => ['nullable', 'string', 'max:255'],
         ];
     }
 }
