@@ -9,37 +9,30 @@ use App\Models\UseCase;
 use App\Repositories\AiIncidentRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Organization;
 
 class AiIncidentRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     private AiIncidentRepository $repository;
+    private $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new AiIncidentRepository();
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_get_paginated_ai_incidents_returns_paginated_collection(): void
     {
         AiIncident::factory()->count(15)->create();
 
-        $result = $this->repository->getPaginatedAiIncidents(10);
+        $result = $this->repository->getFilteredAiIncident(['per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(15, $result->total());
-    }
-
-    public function test_get_paginated_ai_incidents_with_custom_per_page(): void
-    {
-        AiIncident::factory()->count(20)->create();
-
-        $result = $this->repository->getPaginatedAiIncidents(5);
-
-        $this->assertCount(5, $result->items());
-        $this->assertEquals(20, $result->total());
     }
 
     public function test_get_paginated_ai_incidents_orders_by_created_at_desc(): void
@@ -48,7 +41,7 @@ class AiIncidentRepositoryTest extends TestCase
         $second = AiIncident::factory()->create(['created_at' => now()->subDay()]);
         $third = AiIncident::factory()->create(['created_at' => now()]);
 
-        $result = $this->repository->getPaginatedAiIncidents(10);
+        $result = $this->repository->getFilteredAiIncident(['per_page' => 10]);
 
         $this->assertEquals($third->id, $result->items()[0]->id);
         $this->assertEquals($second->id, $result->items()[1]->id);
@@ -58,6 +51,7 @@ class AiIncidentRepositoryTest extends TestCase
     public function test_create_ai_incident_creates_new_record(): void
     {
         $data = [
+            'organization_id' => $this->organization->id,
             'title' => 'Test Incident',
             'summary' => 'This is a test incident summary.',
             'category' => 'safety',
@@ -91,6 +85,7 @@ class AiIncidentRepositoryTest extends TestCase
         $useCase = UseCase::factory()->create();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'title' => 'Privacy Breach',
             'summary' => 'User data was exposed due to misconfiguration.',
             'category' => 'privacy',
@@ -231,7 +226,7 @@ class AiIncidentRepositoryTest extends TestCase
 
     public function test_get_paginated_ai_incidents_handles_empty_results(): void
     {
-        $result = $this->repository->getPaginatedAiIncidents(10);
+        $result = $this->repository->getFilteredAiIncident(['per_page' => 10]);
 
         $this->assertCount(0, $result->items());
         $this->assertEquals(0, $result->total());
@@ -280,6 +275,7 @@ class AiIncidentRepositoryTest extends TestCase
         $useCase = UseCase::factory()->create();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'title' => 'Model-Related Incident',
             'summary' => 'Incident involving specific model',
             'category' => 'reliability',
@@ -305,6 +301,7 @@ class AiIncidentRepositoryTest extends TestCase
     public function test_create_ai_incident_with_impacted_data_array(): void
     {
         $data = [
+            'organization_id' => $this->organization->id,
             'title' => 'Data Impact Test',
             'summary' => 'Testing multiple data types',
             'category' => 'privacy',
@@ -352,6 +349,7 @@ class AiIncidentRepositoryTest extends TestCase
         $closed = now();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'title' => 'Datetime Test',
             'summary' => 'Testing datetime fields',
             'category' => 'security',
@@ -377,6 +375,7 @@ class AiIncidentRepositoryTest extends TestCase
     public function test_create_ai_incident_with_linked_ids(): void
     {
         $data = [
+            'organization_id' => $this->organization->id,
             'title' => 'Linked Records Test',
             'summary' => 'Testing linked IDs',
             'category' => 'other',
