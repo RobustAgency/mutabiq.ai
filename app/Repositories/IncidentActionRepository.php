@@ -10,11 +10,29 @@ class IncidentActionRepository
     /**
      * @return LengthAwarePaginator<int, IncidentAction>
      */
-    public function getPaginatedIncidentActions(int $organizationID, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredIncidentActions(array $filters = []): LengthAwarePaginator
     {
-        return IncidentAction::with('aiIncident')
-            ->where('organization_id', $organizationID)
-            ->paginate($perPage);
+        $query = IncidentAction::query()->with('aiIncident');
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['action_type'])) {
+            $query->where('action_type', $filters['action_type']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        $perPage = $filters['per_page'] ?? 15;
+
+        return $query->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**
