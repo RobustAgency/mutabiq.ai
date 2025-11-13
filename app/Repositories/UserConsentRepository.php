@@ -2,24 +2,44 @@
 
 namespace App\Repositories;
 
-use App\Enums\UserConsent\ConsentStatus;
 use App\Models\UserConsent;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 class UserConsentRepository
 {
     /**
      * Get paginated user consents for a specific organization.
      *
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array<string, mixed> $filters
      * @return LengthAwarePaginator<int, UserConsent>
      */
-    public function getPaginatedConsents(int $organizationId, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredUserConsents(array $filters = []): LengthAwarePaginator
     {
-        return UserConsent::where('organization_id', $organizationId)
-            ->orderBy('created_at', 'desc')
+        $query = UserConsent::query();
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['consent_status'])) {
+            $query->where('consent_status', $filters['consent_status']);
+        }
+
+        if (isset($filters['legal_basis'])) {
+            $query->where('legal_basis', $filters['legal_basis']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        $perPage = $filters['per_page'] ?? 15;
+
+        return $query->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
