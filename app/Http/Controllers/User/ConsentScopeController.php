@@ -21,9 +21,10 @@ class ConsentScopeController extends Controller
      */
     public function index(ListConsentScopeRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->input('per_page', 15);
-        $consentScopes = $this->consentScopeRepository->getPaginatedConsentScopes($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+
+        $consentScopes = $this->consentScopeRepository->getFilteredConsentScopes($validated);
 
         return response()->json([
             'error' => false,
