@@ -10,13 +10,42 @@ class DataSourceRepository
     /**
      * Get paginated data sources for a specific organization.
      *
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array<string, mixed> $filter
      * @return LengthAwarePaginator<int , DataSource>
      */
-    public function getPaginatedDataSources(int $organizationId, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredDataSources(array $filter = []): LengthAwarePaginator
     {
-        return DataSource::where('organization_id', $organizationId)->paginate($perPage);
+        $query = DataSource::query();
+
+        if (isset($filter['organization_id'])) {
+            $query->where('organization_id', $filter['organization_id']);
+        }
+
+        if (isset($filter['name'])) {
+            $query->where('name', 'like', '%' . $filter['name'] . '%');
+        }
+
+        if (isset($filter['system_type'])) {
+            $query->where('system_type', $filter['system_type']);
+        }
+
+        if (isset($filter['access_method'])) {
+            $query->where('access_method', $filter['access_method']);
+        }
+
+        if (isset($filter['classification'])) {
+            $query->where('classification', $filter['classification']);
+        }
+
+        if (isset($filter['from'])) {
+            $query->whereDate('created_at', '>=', $filter['from']);
+        }
+
+        if (isset($filter['to'])) {
+            $query->whereDate('created_at', '<=', $filter['to']);
+        }
+
+        return $query->paginate($filter['per_page'] ?? 15);
     }
 
     /**
