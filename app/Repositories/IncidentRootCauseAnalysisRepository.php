@@ -10,11 +10,27 @@ class IncidentRootCauseAnalysisRepository
     /**
      * @return LengthAwarePaginator<int, IncidentRootCauseAnalysis>
      */
-    public function getPaginatedIncidentRootCauseAnalyses(int $organizationID, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredIncidentRootCauseAnalyses(array $filters = []): LengthAwarePaginator
     {
-        return IncidentRootCauseAnalysis::with('aiIncident')
-            ->where('organization_id', $organizationID)
-            ->paginate($perPage);
+        $query = IncidentRootCauseAnalysis::query()->with(['aiIncident']);
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['rca_method'])) {
+            $query->where('rca_method', $filters['rca_method']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        return $query->orderBy('created_at', 'desc')->paginate($filters['per_page'] ?? 15);
     }
 
     /**
