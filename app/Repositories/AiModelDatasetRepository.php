@@ -2,9 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\AiModel;
 use App\Models\AiModelDataset;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class AiModelDatasetRepository
@@ -12,13 +10,30 @@ class AiModelDatasetRepository
     /**
      * Get paginated AI model datasets for a specific organization.
      *
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array $filters
      * @return LengthAwarePaginator<int, AiModelDataset>
      */
-    public function getPaginatedAiModelDatasets(int $organizationId, int $perPage): LengthAwarePaginator
+    public function getFilteredAiModelDatasets(array $filters = []): LengthAwarePaginator
     {
-        return AiModelDataset::where('organization_id', $organizationId)->paginate($perPage);
+        $query = AiModelDataset::query();
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['role'])) {
+            $query->where('role', $filters['role']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        return $query->paginate($filters['per_page'] ?? 15);
     }
 
     /**
