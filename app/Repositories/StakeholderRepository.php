@@ -27,8 +27,10 @@ class StakeholderRepository
         }
 
         if (!empty($filters['name'])) {
-            $query->where('display_name', 'like', '%' . $filters['name'] . '%')
-                ->orWhere('legal_name', 'like', '%' . $filters['name'] . '%');
+            $query->where(function (Builder $q) use ($filters) {
+                $q->where('display_name', 'like', '%' . $filters['name'] . '%')
+                    ->orWhere('legal_name', 'like', '%' . $filters['name'] . '%');
+            });
         }
 
         $perPage = $filters['per_page'] ?? 10;
