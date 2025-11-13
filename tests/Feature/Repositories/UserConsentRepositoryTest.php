@@ -33,7 +33,7 @@ class UserConsentRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         UserConsent::factory()->count(5)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents($organization->id);
+        $result = $this->repository->getFilteredUserConsents(['organization_id' => $organization->id]);
 
         $this->assertInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class, $result);
         $this->assertEquals(5, $result->total());
@@ -47,7 +47,10 @@ class UserConsentRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         UserConsent::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents($organization->id, 10);
+        $result = $this->repository->getFilteredUserConsents([
+            'organization_id' => $organization->id,
+            'per_page' => 10,
+        ]);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertCount(10, $result->items());
@@ -62,7 +65,9 @@ class UserConsentRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         UserConsent::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents($organization->id);
+        $result = $this->repository->getFilteredUserConsents([
+            'organization_id' => $organization->id,
+        ]);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -77,7 +82,10 @@ class UserConsentRepositoryTest extends TestCase
         $consent2 = UserConsent::factory()->create(['created_at' => now()->subDays(1), 'organization_id' => $organization->id]);
         $consent3 = UserConsent::factory()->create(['created_at' => now()->subDays(2), 'organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedConsents($organization->id);
+        $result = $this->repository->getFilteredUserConsents([
+            'organization_id' => $organization->id,
+            'per_page' => 10,
+        ]);
 
         $this->assertEquals($consent2->id, $result->items()[0]->id);
         $this->assertEquals($consent3->id, $result->items()[1]->id);
