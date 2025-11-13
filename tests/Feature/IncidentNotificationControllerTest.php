@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AiIncident;
 use App\Models\IncidentNotification;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +18,10 @@ class IncidentNotificationControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $organization->id,
+        ]);
     }
 
     public function test_index_returns_paginated_incident_notifications(): void
