@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IncidentNotification\ListIncidentNotificationRequest;
 use App\Http\Requests\IncidentNotification\StoreIncidentNotificationRequest;
 use App\Http\Requests\IncidentNotification\UpdateIncidentNotificationRequest;
 use App\Http\Resources\IncidentNotificationResource;
@@ -9,6 +10,7 @@ use App\Models\IncidentNotification;
 use App\Repositories\IncidentNotificationRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class IncidentNotificationController extends Controller
 {
@@ -19,12 +21,11 @@ class IncidentNotificationController extends Controller
     /**
      * Display a listing of incident notifications.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListIncidentNotificationRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page') ?? 15;
-        $organizationID = $request->user()->organization_id;
-        $incidentNotifications = $this->incidentNotificationRepository->getPaginatedIncidentNotifications($organizationID, $perPage);
-
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $incidentNotifications = $this->incidentNotificationRepository->getFilteredIncidentNotifications($validated);
         return response()->json([
             'error' => false,
             'message' => 'Incident notifications retrieved successfully',
@@ -38,7 +39,7 @@ class IncidentNotificationController extends Controller
     public function store(StoreIncidentNotificationRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = Auth::user()->organization_id;
         $incidentNotification = $this->incidentNotificationRepository->createIncidentNotification($validated);
 
         return response()->json([

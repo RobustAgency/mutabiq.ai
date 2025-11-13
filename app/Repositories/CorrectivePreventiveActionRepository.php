@@ -10,11 +10,35 @@ class CorrectivePreventiveActionRepository
     /**
      * @return LengthAwarePaginator<int, CorrectivePreventiveAction>
      */
-    public function getPaginatedCorrectivePreventiveActions(int $organizationID, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredCorrectivePreventiveActions(array $filters = []): LengthAwarePaginator
     {
-        return CorrectivePreventiveAction::with('aiModel')
-            ->where('organization_id', $organizationID)
-            ->paginate($perPage);
+        $query = CorrectivePreventiveAction::with('aiModel');
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (isset($filters['source_type'])) {
+            $query->where('source_type', $filters['source_type']);
+        }
+
+        if (isset($filters['priority'])) {
+            $query->where('priority', $filters['priority']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        return $query->paginate($filters['per_page'] ?? 15);
     }
 
     /**

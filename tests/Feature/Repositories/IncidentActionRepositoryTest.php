@@ -4,6 +4,7 @@ namespace Tests\Feature\Repositories;
 
 use App\Models\AiIncident;
 use App\Models\IncidentAction;
+use App\Models\Organization;
 use App\Repositories\IncidentActionRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,18 +14,20 @@ class IncidentActionRepositoryTest extends TestCase
     use RefreshDatabase;
 
     protected IncidentActionRepository $repository;
+    protected Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = app(IncidentActionRepository::class);
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_get_paginated_incident_actions_returns_paginated_results(): void
     {
         IncidentAction::factory()->count(25)->create();
 
-        $result = $this->repository->getPaginatedIncidentActions(10);
+        $result = $this->repository->getFilteredIncidentActions(['per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(25, $result->total());
@@ -35,6 +38,7 @@ class IncidentActionRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'action_type' => 'kill_switch',
             'description' => 'Emergency kill switch activated',
@@ -62,6 +66,7 @@ class IncidentActionRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'action_type' => 'rollback_release',
             'description' => 'Rolled back to previous stable version',
@@ -166,6 +171,7 @@ class IncidentActionRepositoryTest extends TestCase
         $completedAt = now()->subHour();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'action_type' => 'traffic_throttle',
             'description' => 'Throttled traffic to 50%',
@@ -201,6 +207,7 @@ class IncidentActionRepositoryTest extends TestCase
 
         foreach ($actionTypes as $actionType) {
             $data = [
+                'organization_id' => $this->organization->id,
                 'ai_incident_id' => $incident->id,
                 'action_type' => $actionType,
                 'description' => "Test description for {$actionType}",
@@ -222,6 +229,7 @@ class IncidentActionRepositoryTest extends TestCase
 
         foreach ($validationResults as $result) {
             $data = [
+                'organization_id' => $this->organization->id,
                 'ai_incident_id' => $incident->id,
                 'action_type' => 'kill_switch',
                 'description' => "Test description for {$result}",
@@ -240,7 +248,7 @@ class IncidentActionRepositoryTest extends TestCase
     {
         IncidentAction::factory()->count(3)->create();
 
-        $result = $this->repository->getPaginatedIncidentActions();
+        $result = $this->repository->getFilteredIncidentActions();
 
         $this->assertTrue($result->items()[0]->relationLoaded('aiIncident'));
     }
@@ -272,6 +280,7 @@ class IncidentActionRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'action_type' => 'communication',
             'description' => 'Sent notification to stakeholders',
@@ -312,6 +321,7 @@ class IncidentActionRepositoryTest extends TestCase
         $longDescription = str_repeat('This is a very long description. ', 100);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'action_type' => 'policy_change',
             'description' => $longDescription,
@@ -331,6 +341,7 @@ class IncidentActionRepositoryTest extends TestCase
         $longNotes = str_repeat('These are detailed validation notes. ', 50);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'action_type' => 'data_purge',
             'description' => 'Purged compromised data',

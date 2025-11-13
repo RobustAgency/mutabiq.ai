@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IncidentRootCauseAnalysis\ListIncidentRootCauseAnalysisRequest;
 use App\Http\Requests\IncidentRootCauseAnalysis\StoreIncidentRootCauseAnalysisRequest;
 use App\Http\Requests\IncidentRootCauseAnalysis\UpdateIncidentRootCauseAnalysisRequest;
 use App\Http\Resources\IncidentRootCauseAnalysisResource;
@@ -19,11 +20,11 @@ class IncidentRootCauseAnalysisController extends Controller
     /**
      * Display a listing of incident root cause analyses.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListIncidentRootCauseAnalysisRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page') ?? 15;
-        $organizationID = $request->user()->organization_id;
-        $incidentRootCauseAnalyses = $this->incidentRootCauseAnalysisRepository->getPaginatedIncidentRootCauseAnalyses($organizationID, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $incidentRootCauseAnalyses = $this->incidentRootCauseAnalysisRepository->getFilteredIncidentRootCauseAnalyses($validated);
 
         return response()->json([
             'error' => false,
