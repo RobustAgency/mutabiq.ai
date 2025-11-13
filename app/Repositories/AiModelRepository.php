@@ -23,7 +23,8 @@ class AiModelRepository
         }
 
         if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+            $query->where('operational_status', $filters['status'])
+                ->orWhere('business_status', $filters['status']);
         }
 
         if (!empty($filters['ownership_type'])) {

@@ -21,9 +21,10 @@ class UserConsentController extends Controller
      */
     public function index(ListUserConsentRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->input('per_page', 15);
-        $consents = $this->userConsentRepository->getPaginatedConsents($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+
+        $consents = $this->userConsentRepository->getFilteredUserConsents($validated);
 
         return response()->json([
             'error' => false,
@@ -38,7 +39,7 @@ class UserConsentController extends Controller
     public function store(StoreUserConsentRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = Auth::user()->organization_id;
 
         $consent = $this->userConsentRepository->createConsent($validated);
 
