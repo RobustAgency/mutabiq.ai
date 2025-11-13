@@ -10,11 +10,27 @@ class IncidentAlertRepository
     /**
      * @return LengthAwarePaginator<int, IncidentAlert>
      */
-    public function getPaginatedIncidentAlerts(int $organizationID, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredIncidentAlerts(array $filters = []): LengthAwarePaginator
     {
-        return IncidentAlert::with('aiIncident')
-            ->where('organization_id', $organizationID)
-            ->paginate($perPage);
+        $query = IncidentAlert::with('aiIncident');
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['source_type'])) {
+            $query->where('source_type', $filters['source_type']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        return $query->paginate($filters['per_page'] ?? 15);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AiIncident;
 use App\Models\AiModel;
 use App\Models\CorrectivePreventiveAction;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,11 +15,15 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+    protected Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
     }
 
     public function test_index_returns_paginated_corrective_preventive_actions(): void
@@ -74,7 +79,7 @@ class CorrectivePreventiveActionControllerTest extends TestCase
         $data = [
             'source_type' => 'incident',
             'source_id' => (string) $incident->id,
-            'model_id' => $model->id,
+            'model_id' => (string) $model->id,
             'title' => 'Fix data validation issue',
             'capa_type' => 'corrective',
             'priority' => 'high',
@@ -111,7 +116,7 @@ class CorrectivePreventiveActionControllerTest extends TestCase
         $data = [
             'source_type' => 'incident',
             'source_id' => (string) $incident->id,
-            'model_id' => $model->id,
+            'model_id' => (string) $model->id,
             'title' => 'Implement model monitoring',
             'capa_type' => 'preventive',
             'priority' => 'critical',

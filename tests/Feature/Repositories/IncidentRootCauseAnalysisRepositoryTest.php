@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\AiIncident;
 use App\Models\IncidentRootCauseAnalysis;
+use App\Models\Organization;
 use App\Repositories\IncidentRootCauseAnalysisRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,18 +14,20 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
     use RefreshDatabase;
 
     protected IncidentRootCauseAnalysisRepository $repository;
+    protected Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = app(IncidentRootCauseAnalysisRepository::class);
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_get_paginated_incident_root_cause_analyses_returns_paginated_results(): void
     {
         IncidentRootCauseAnalysis::factory()->count(25)->create();
 
-        $result = $this->repository->getPaginatedIncidentRootCauseAnalyses(10);
+        $result = $this->repository->getFilteredIncidentRootCauseAnalyses(['per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(25, $result->total());
@@ -35,6 +38,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'rca_method' => '5_whys',
             'immediate_cause' => 'Model returned incorrect predictions',
@@ -63,6 +67,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'rca_method' => 'fishbone',
             'immediate_cause' => 'API timeout caused model failures',
@@ -173,6 +178,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
         $approvedAt = now()->subDays(2);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'rca_method' => 'fault_tree',
             'immediate_cause' => 'Test cause',
@@ -196,6 +202,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
 
         foreach ($rcaMethods as $method) {
             $data = [
+                'organization_id' => $this->organization->id,
                 'ai_incident_id' => $incident->id,
                 'rca_method' => $method,
                 'immediate_cause' => "Test cause for {$method}",
@@ -216,7 +223,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
     {
         IncidentRootCauseAnalysis::factory()->count(3)->create();
 
-        $result = $this->repository->getPaginatedIncidentRootCauseAnalyses();
+        $result = $this->repository->getFilteredIncidentRootCauseAnalyses(['per_page' => 10]);
 
         $this->assertTrue($result->items()[0]->relationLoaded('aiIncident'));
     }
@@ -248,6 +255,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'rca_method' => 'other',
             'immediate_cause' => 'Test cause',
@@ -272,6 +280,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
         $longText = str_repeat('This is a very long description. ', 100);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'rca_method' => '5_whys',
             'immediate_cause' => $longText,
@@ -316,6 +325,7 @@ class IncidentRootCauseAnalysisRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'rca_method' => 'fishbone',
             'immediate_cause' => 'Model deployment failed during production release',

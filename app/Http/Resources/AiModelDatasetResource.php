@@ -36,7 +36,6 @@ class AiModelDatasetResource extends JsonResource
             'ai_model' => new AiModelResource($this->whenLoaded('aiModel')),
             'ai_model_version' => new AiModelVersionResource($this->whenLoaded('aiModelVersion')),
             'dataset' => new DatasetResource($this->whenLoaded('dataset')),
-            'dataset_snapshot' => new DatasetSnapshotResource($this->whenLoaded('datasetSnapshot')),
         ];
     }
 }
