@@ -19,6 +19,7 @@ class AiModelArtifactResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'name' => $this->name,
             'ai_model_version_id' => $this->ai_model_version_id,
             'artifact_type' => $this->artifact_type,
             'uri' => $this->uri,
