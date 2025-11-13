@@ -35,10 +35,12 @@ class UseCaseRepository
         });
 
         $query->when(! empty($filters['owner']), function ($query) use ($filters) {
-            $query->whereHas('businessOwner', function ($q) use ($filters) {
-                $q->where('display_name', 'like', '%' . $filters['owner'] . '%');
-            })->orWhereHas('technicalOwner', function ($q) use ($filters) {
-                $q->where('display_name', 'like', '%' . $filters['owner'] . '%');
+            $query->where(function ($q) use ($filters) {
+                $q->whereHas('businessOwner', function ($subQuery) use ($filters) {
+                    $subQuery->where('display_name', 'like', '%' . $filters['owner'] . '%');
+                })->orWhereHas('technicalOwner', function ($subQuery) use ($filters) {
+                    $subQuery->where('display_name', 'like', '%' . $filters['owner'] . '%');
+                });
             });
         });
 
