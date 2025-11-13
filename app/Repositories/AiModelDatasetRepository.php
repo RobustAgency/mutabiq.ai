@@ -15,7 +15,7 @@ class AiModelDatasetRepository
      */
     public function getFilteredAiModelDatasets(array $filters = []): LengthAwarePaginator
     {
-        $query = AiModelDataset::query();
+        $query = AiModelDataset::query()->with(['aiModel', 'aiModelVersion', 'dataset']);
 
         if (isset($filters['organization_id'])) {
             $query->where('organization_id', $filters['organization_id']);

@@ -46,7 +46,7 @@ class AiModelDatasetController extends Controller
 
     public function show(AiModelDataset $aiModelDataset): JsonResponse
     {
-
+        $aiModelDataset->load(['aiModel', 'aiModelVersion', 'dataset']);
         return response()->json([
             'error' => false,
             'message' => 'AI model dataset retrieved successfully',
