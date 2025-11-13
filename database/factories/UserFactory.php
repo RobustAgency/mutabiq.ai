@@ -24,9 +24,10 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $uniquePart = substr(Str::uuid(), 0, 8);
         return [
             'name' => fake()->name(),
-            'email' => fake()->safeEmail(),
+            'email' => fake()->userName() . "+{$uniquePart}@" . fake()->safeEmailDomain(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

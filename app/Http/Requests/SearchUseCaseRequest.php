@@ -24,7 +24,14 @@ class SearchUseCaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['sometimes', 'string', 'max:255'],
+            'risk_level' => ['sometimes', 'nullable', 'string'],
+            'business_domain' => ['sometimes', 'nullable', 'string'],
+            'owner' => ['sometimes', 'nullable', 'string'],
+            'roi_assessment' => ['sometimes', 'nullable', 'string'],
+            'risk_assessment' => ['sometimes', 'nullable', 'string'],
+            'data_assessment' => ['sometimes', 'nullable', 'string'],
+            'to' => ['sometimes', 'nullable', 'date'],
+            'from' => ['sometimes', 'nullable', 'date', 'before_or_equal:to'],
             'status' => ['sometimes', 'string', Rule::in(array_map(fn($c) => $c->value, Status::cases()))],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ];

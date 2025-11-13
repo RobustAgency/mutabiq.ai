@@ -45,7 +45,7 @@ class AiModelArtifactRepositoryTest extends TestCase
             'organization_id' => $otherOrg->id,
         ]);
 
-        $artifacts = $this->repository->getPaginatedArtifacts($this->organization->id, 15);
+        $artifacts = $this->repository->getFilteredAiArtifacts(['organization_id' => $this->organization->id, 'per_page' => 15]);
 
         $this->assertCount(10, $artifacts);
         $this->assertEquals(10, $artifacts->total());
@@ -58,7 +58,7 @@ class AiModelArtifactRepositoryTest extends TestCase
             'organization_id' => $this->organization->id,
         ]);
 
-        $artifacts = $this->repository->getPaginatedArtifacts($this->organization->id, 5);
+        $artifacts = $this->repository->getFilteredAiArtifacts(['organization_id' => $this->organization->id, 'per_page' => 5]);
 
         $this->assertCount(5, $artifacts);
         $this->assertEquals(20, $artifacts->total());
@@ -67,7 +67,7 @@ class AiModelArtifactRepositoryTest extends TestCase
 
     public function test_it_returns_empty_collection_when_no_artifacts_exist(): void
     {
-        $artifacts = $this->repository->getPaginatedArtifacts($this->organization->id, 15);
+        $artifacts = $this->repository->getFilteredAiArtifacts(['organization_id' => $this->organization->id, 'per_page' => 15]);
 
         $this->assertCount(0, $artifacts);
         $this->assertEquals(0, $artifacts->total());
@@ -83,9 +83,9 @@ class AiModelArtifactRepositoryTest extends TestCase
         AiModelArtifact::factory()->count(5)->create(['organization_id' => $org2->id]);
         AiModelArtifact::factory()->count(2)->create(['organization_id' => $org3->id]);
 
-        $org1Artifacts = $this->repository->getPaginatedArtifacts($org1->id);
-        $org2Artifacts = $this->repository->getPaginatedArtifacts($org2->id);
-        $org3Artifacts = $this->repository->getPaginatedArtifacts($org3->id);
+        $org1Artifacts = $this->repository->getFilteredAiArtifacts(['organization_id' => $org1->id]);
+        $org2Artifacts = $this->repository->getFilteredAiArtifacts(['organization_id' => $org2->id]);
+        $org3Artifacts = $this->repository->getFilteredAiArtifacts(['organization_id' => $org3->id]);
 
         $this->assertEquals(3, $org1Artifacts->total());
         $this->assertEquals(5, $org2Artifacts->total());
@@ -280,17 +280,187 @@ class AiModelArtifactRepositoryTest extends TestCase
         $this->assertGreaterThan($artifact->created_at->timestamp, $artifact->updated_at->timestamp);
     }
 
-    public function test_pagination_handles_large_datasets(): void
+    public function test_it_filters_by_artifact_type(): void
     {
-        AiModelArtifact::factory()->count(100)->create([
+        AiModelArtifact::factory()->create([
             'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::TOKENIZER->value,
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::CONFIG->value,
         ]);
 
-        $page1 = $this->repository->getPaginatedArtifacts($this->organization->id, 25);
-        $page2 = $this->repository->getPaginatedArtifacts($this->organization->id, 25);
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+        ];
+        $result = $this->repository->getFilteredAiArtifacts($filters);
 
-        $this->assertEquals(100, $page1->total());
-        $this->assertEquals(25, $page1->count());
-        $this->assertEquals(4, $page1->lastPage());
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $artifact) {
+            $this->assertEquals(ArtifactType::MODEL_BINARY->value, $artifact->artifact_type);
+        }
+    }
+
+    public function test_it_filters_by_name(): void
+    {
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Production Model Binary',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Development Tokenizer',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Production Config File',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'name' => 'Production',
+        ];
+        $result = $this->repository->getFilteredAiArtifacts($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $artifact) {
+            $this->assertStringContainsString('Production', $artifact->name);
+        }
+    }
+
+    public function test_it_filters_by_name_case_insensitive(): void
+    {
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'PRODUCTION Model Binary',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'development tokenizer',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Production Config',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'name' => 'production',
+        ];
+        $result = $this->repository->getFilteredAiArtifacts($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_partial_name_match(): void
+    {
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'model-v1.0.0-binary',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'tokenizer-config',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'model-v2.0.0-binary',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'name' => 'v1',
+        ];
+        $result = $this->repository->getFilteredAiArtifacts($filters);
+
+        $this->assertCount(1, $result->items());
+        $this->assertStringContainsString('v1', $result->items()[0]->name);
+    }
+
+    public function test_it_filters_by_multiple_filters(): void
+    {
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+            'name' => 'Production Model Binary v1',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::TOKENIZER->value,
+            'name' => 'Production Tokenizer',
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+            'name' => 'Development Model Binary',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+            'name' => 'Production',
+        ];
+        $result = $this->repository->getFilteredAiArtifacts($filters);
+
+        $this->assertCount(1, $result->items());
+        $artifact = $result->items()[0];
+        $this->assertEquals(ArtifactType::MODEL_BINARY->value, $artifact->artifact_type);
+        $this->assertStringContainsString('Production', $artifact->name);
+    }
+
+    public function test_it_filters_artifacts_by_different_types(): void
+    {
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::DOCKER_IMAGE->value,
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::PROMPT_PACK->value,
+        ]);
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::SBOM->value,
+        ]);
+
+        $dockerFilters = ['organization_id' => $this->organization->id, 'artifact_type' => ArtifactType::DOCKER_IMAGE->value];
+        $promptFilters = ['organization_id' => $this->organization->id, 'artifact_type' => ArtifactType::PROMPT_PACK->value];
+        $sbomFilters = ['organization_id' => $this->organization->id, 'artifact_type' => ArtifactType::SBOM->value];
+
+        $dockerResult = $this->repository->getFilteredAiArtifacts($dockerFilters);
+        $promptResult = $this->repository->getFilteredAiArtifacts($promptFilters);
+        $sbomResult = $this->repository->getFilteredAiArtifacts($sbomFilters);
+
+        $this->assertCount(1, $dockerResult->items());
+        $this->assertCount(1, $promptResult->items());
+        $this->assertCount(1, $sbomResult->items());
+    }
+
+    public function test_it_returns_empty_when_no_artifacts_match_filters(): void
+    {
+        AiModelArtifact::factory()->create([
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+            'name' => 'Test Artifact',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'artifact_type' => ArtifactType::TOKENIZER->value,
+            'name' => 'Nonexistent',
+        ];
+        $result = $this->repository->getFilteredAiArtifacts($filters);
+
+        $this->assertCount(0, $result->items());
     }
 }

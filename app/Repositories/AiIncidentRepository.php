@@ -9,15 +9,48 @@ class AiIncidentRepository
 {
     /**
      * Get paginated AI incidents.
+     * @param array<string, mixed> $filters
      *
      * @return LengthAwarePaginator<int, AiIncident>
      */
-    public function getPaginatedAiIncidents(int $organizationID, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredAiIncident(array $filters = []): LengthAwarePaginator
     {
-        return AiIncident::query()
-            ->where('organization_id', $organizationID)
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+        $query = AiIncident::query();
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['title'])) {
+            $query->where('title', 'like', '%' . $filters['title'] . '%');
+        }
+
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (isset($filters['severity'])) {
+            $query->where('severity', $filters['severity']);
+        }
+
+        if (isset($filters['stage'])) {
+            $query->where('stage', $filters['stage']);
+        }
+
+        if (isset($filters['category'])) {
+            $query->where('category', $filters['category']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->paginate($filters['per_page'] ?? 15);
     }
 
     /**

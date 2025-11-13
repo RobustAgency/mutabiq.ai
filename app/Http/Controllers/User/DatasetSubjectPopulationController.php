@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DatasetSubjectPopulation\ListDatasetSubjectPopulationRequest;
 use App\Http\Requests\DatasetSubjectPopulation\StoreDatasetSubjectPopulationRequest;
 use App\Http\Requests\DatasetSubjectPopulation\UpdateDatasetSubjectPopulationRequest;
 use App\Http\Resources\DatasetSubjectPopulationResource;
 use App\Models\DatasetSubjectPopulation;
 use App\Repositories\DatasetSubjectPopulationRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DatasetSubjectPopulationController extends Controller
@@ -21,11 +21,11 @@ class DatasetSubjectPopulationController extends Controller
     /**
      * Display a paginated listing of dataset subject populations.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListDatasetSubjectPopulationRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->input('per_page', 15);
-        $populations = $this->repository->getPaginatedPopulations($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $populations = $this->repository->getFilteredDatasetSubjectPopulations($validated);
 
         return response()->json([
             'error' => false,

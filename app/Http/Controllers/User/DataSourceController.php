@@ -21,9 +21,9 @@ class DataSourceController extends Controller
      */
     public function index(ListDataSourceRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->input('per_page', 15);
-        $dataSources = $this->dataSourceRepository->getPaginatedDataSources($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $dataSources = $this->dataSourceRepository->getFilteredDataSources($validated);
 
         return response()->json([
             'error' => false,

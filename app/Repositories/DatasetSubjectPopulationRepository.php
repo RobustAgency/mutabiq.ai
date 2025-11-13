@@ -10,16 +10,36 @@ class DatasetSubjectPopulationRepository
     /**
      * Get paginated dataset subject populations for a specific organization.
      * 
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array<string, mixed> $filters
      * @return LengthAwarePaginator<int, DatasetSubjectPopulation>
      */
-    public function getPaginatedPopulations(int $organizationId, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredDatasetSubjectPopulations(array $filters = []): LengthAwarePaginator
     {
-        return DatasetSubjectPopulation::where('organization_id', $organizationId)
-            ->with(['dataset', 'snapshot'])
+        $query = DatasetSubjectPopulation::query();
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['subject_realm'])) {
+            $query->where('subject_realm', $filters['subject_realm']);
+        }
+
+        if (isset($filters['jurisdiction'])) {
+            $query->where('jurisdiction', $filters['jurisdiction']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        return $query->with(['dataset', 'snapshot'])
             ->orderBy('as_of', 'desc')
-            ->paginate($perPage);
+            ->paginate($filters['per_page'] ?? 15);
     }
 
     /**

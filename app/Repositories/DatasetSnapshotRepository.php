@@ -12,13 +12,26 @@ class DatasetSnapshotRepository
     /**
      * Get paginated dataset snapshots for a specific organization.
      *
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array<string, mixed> $filters
      * @return LengthAwarePaginator<int, DatasetSnapshot>
      */
-    public function getPaginatedSnapshots(int $organizationId, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredDatasetSnapshots(array $filters = []): LengthAwarePaginator
     {
-        return DatasetSnapshot::where('organization_id', $organizationId)->with('dataset')->paginate($perPage);
+        $query = DatasetSnapshot::query();
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->where('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->where('created_at', '<=', $filters['to']);
+        }
+
+        return $query->with('dataset')->paginate($filters['per_page'] ?? 15);
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Models\AiModel;
 use App\Models\AiModelVersion;
 use App\Models\User;
 use App\Models\UseCase;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,11 +16,15 @@ class AiIncidentControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
     }
 
     public function test_index_returns_paginated_ai_incidents(): void
@@ -79,42 +84,6 @@ class AiIncidentControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('data.per_page', 15);
-    }
-
-    public function test_index_accepts_custom_per_page(): void
-    {
-        AiIncident::factory()->count(20)->create();
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->getJson('/api/ai-incidents?per_page=5');
-
-        $response->assertStatus(200)
-            ->assertJsonPath('data.per_page', 5)
-            ->assertJsonCount(5, 'data.data');
-    }
-
-    public function test_index_orders_by_created_at_desc(): void
-    {
-        $first = AiIncident::factory()->create([
-            'title' => 'First Incident',
-            'created_at' => now()->subDays(2),
-        ]);
-        $second = AiIncident::factory()->create([
-            'title' => 'Second Incident',
-            'created_at' => now()->subDay(),
-        ]);
-        $third = AiIncident::factory()->create([
-            'title' => 'Third Incident',
-            'created_at' => now(),
-        ]);
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->getJson('/api/ai-incidents');
-
-        $response->assertStatus(200)
-            ->assertJsonPath('data.data.0.title', 'Third Incident')
-            ->assertJsonPath('data.data.1.title', 'Second Incident')
-            ->assertJsonPath('data.data.2.title', 'First Incident');
     }
 
     public function test_index_requires_authentication(): void

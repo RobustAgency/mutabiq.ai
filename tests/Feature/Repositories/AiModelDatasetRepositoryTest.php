@@ -56,7 +56,10 @@ class AiModelDatasetRepositoryTest extends TestCase
             $this->createAiModelDataset();
         }
 
-        $result = $this->repository->getPaginatedAiModelDatasets($this->organization->id, 10);
+        $result = $this->repository->getFilteredAiModelDatasets([
+            'organization_id' => $this->organization->id,
+            'per_page' => 10,
+        ]);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertEquals(25, $result->total());
@@ -69,7 +72,10 @@ class AiModelDatasetRepositoryTest extends TestCase
             $this->createAiModelDataset();
         }
 
-        $result = $this->repository->getPaginatedAiModelDatasets($this->organization->id, 5);
+        $result = $this->repository->getFilteredAiModelDatasets([
+            'organization_id' => $this->organization->id,
+            'per_page' => 5,
+        ]);
 
         $this->assertEquals(5, $result->perPage());
         $this->assertEquals(20, $result->total());

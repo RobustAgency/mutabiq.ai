@@ -10,12 +10,44 @@ class AiModelCardRepository
     /**
      * Get paginated AI Model Cards for a specific AI Model.
      *
-     * @param int $perPage
+     * @param array<string, mixed> $filter
      * @return LengthAwarePaginator<int, AiModelCard>
      */
-    public function getPaginatedAiModelCardsByOrganizationID(int $organizationId, int $perPage): LengthAwarePaginator
+    public function getFilteredAiModelCards(array $filter = []): LengthAwarePaginator
     {
-        return AiModelCard::where('organization_id', $organizationId)->paginate($perPage);
+        $query = AiModelCard::query();
+
+        if (isset($filter['organization_id'])) {
+            $query->where('organization_id', $filter['organization_id']);
+        }
+        if (isset($filter['creator_role'])) {
+            $query->where('creator_role', $filter['creator_role']);
+        }
+        if (isset($filter['status'])) {
+            $query->where('status', $filter['status']);
+        }
+        if (isset($filter['format'])) {
+            $query->where('format', $filter['format']);
+        }
+        if (isset($filter['publication_status'])) {
+            $query->where('publication_status', $filter['publication_status']);
+        }
+
+        if (! empty($filter['owner'])) {
+            $query->whereHas('ownerStakeholder', function ($q) use ($filter) {
+                $q->where('display_name', 'like', '%' . $filter['owner'] . '%');
+            });
+        }
+
+        if (! empty($filter['from'])) {
+            $query->whereDate('created_at', '>=', $filter['from']);
+        }
+        if (! empty($filter['to'])) {
+            $query->whereDate('created_at', '<=', $filter['to']);
+        }
+
+
+        return $query->paginate($filter['per_page'] ?? 15);
     }
 
     public function createAiModelCard(array $data): AiModelCard

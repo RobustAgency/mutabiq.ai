@@ -14,7 +14,11 @@ class ListDatasetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'sensitivity' => ['nullable', 'string', 'max:255'],
+            'contains_pii' => ['nullable', 'boolean'],
+            'controller_role' => ['nullable', 'string', 'max:255'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 }

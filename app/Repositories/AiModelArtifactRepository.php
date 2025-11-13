@@ -10,15 +10,26 @@ class AiModelArtifactRepository
     /**
      * Retrieve paginated AI model artifacts for a given organization.
      *
-     * @param int $organization_id
-     * @param int $perPage
+     * @param array<string, mixed> $filter
      * @return LengthAwarePaginator<int, AiModelArtifact>
      */
-    public function getPaginatedArtifacts(int $organization_id, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredAiArtifacts(array $filter = []): LengthAwarePaginator
     {
         $query = AiModelArtifact::query();
-        $query->where('organization_id', $organization_id);
-        return $query->paginate($perPage);
+
+        if (isset($filter['organization_id'])) {
+            $query->where('organization_id', $filter['organization_id']);
+        }
+
+        if (isset($filter['artifact_type'])) {
+            $query->where('artifact_type', $filter['artifact_type']);
+        }
+
+        if (isset($filter['name'])) {
+            $query->where('name', 'like', '%' . $filter['name'] . '%');
+        }
+
+        return $query->paginate($filter['per_page'] ?? 15);
     }
 
     public function createAiModelArtifact(array $data): AiModelArtifact
