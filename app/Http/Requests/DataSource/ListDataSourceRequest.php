@@ -15,7 +15,12 @@ class ListDataSourceRequest extends FormRequest
     {
         return [
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
-            'page' => ['sometimes', 'integer', 'min:1'],
+            'from' => ['sometimes', 'date'],
+            'to' => ['sometimes', 'date'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'system_type' => ['sometimes', 'string', 'max:255'],
+            'access_method' => ['sometimes', 'string', 'max:255'],
+            'classification' => ['sometimes', 'string', 'max:255'],
         ];
     }
 }

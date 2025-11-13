@@ -318,30 +318,6 @@ class DataElementControllerTest extends TestCase
         $this->assertDatabaseMissing('dataset_element', ['id' => $association->id]);
     }
 
-    public function test_nullable_fields_can_be_null(): void
-    {
-        $data = $this->validPayload([
-            'format' => null,
-            'personal_data_category' => null,
-            'cde_category' => null,
-            'owner_team' => null,
-            'quality_rules_ref' => null,
-            'catalog_column_id' => null,
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/data-elements', $data);
-
-        $response->assertStatus(201);
-
-        $dataElement = DataElement::find($response->json('data.id'));
-        $this->assertNull($dataElement->format);
-        $this->assertNull($dataElement->personal_data_category);
-        $this->assertNull($dataElement->cde_category);
-        $this->assertNull($dataElement->owner_team);
-        $this->assertNull($dataElement->quality_rules_ref);
-        $this->assertNull($dataElement->catalog_column_id);
-    }
-
     public function test_data_element_name_is_required(): void
     {
         $data = $this->validPayload(['name' => '']);

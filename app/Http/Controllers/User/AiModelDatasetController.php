@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AiModelDataset\ListAiModelDatasetRequest;
 use App\Http\Requests\AiModelDataset\StoreAiModelDatasetRequest;
 use App\Http\Requests\AiModelDataset\UpdateAiModelDatasetRequest;
 use App\Http\Resources\AiModelDatasetResource;
@@ -17,11 +18,11 @@ class AiModelDatasetController extends Controller
     public function __construct(private AiModelDatasetRepository $aiModelDatasetRepository) {}
 
 
-    public function index(Request $request): JsonResponse
+    public function index(ListAiModelDatasetRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->input('per_page') ?? 15;
-        $aiModelDatasets = $this->aiModelDatasetRepository->getPaginatedAiModelDatasets($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $aiModelDatasets = $this->aiModelDatasetRepository->getFilteredAiModelDatasets($validated);
 
         return response()->json([
             'error' => false,

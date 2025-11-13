@@ -32,7 +32,7 @@ class DatasetSubjectPopulationRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DatasetSubjectPopulation::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedPopulations($organization->id, 10);
+        $result = $this->repository->getFilteredDatasetSubjectPopulations(['organization_id' => $organization->id, 'per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(20, $result->total());
@@ -47,7 +47,7 @@ class DatasetSubjectPopulationRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DatasetSubjectPopulation::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedPopulations($organization->id);
+        $result = $this->repository->getFilteredDatasetSubjectPopulations(['organization_id' => $organization->id]);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -67,7 +67,7 @@ class DatasetSubjectPopulationRepositoryTest extends TestCase
             'organization_id' => $organization->id,
         ]);
 
-        $result = $this->repository->getPaginatedPopulations($organization->id);
+        $result = $this->repository->getFilteredDatasetSubjectPopulations(['organization_id' => $organization->id]);
 
         $this->assertEquals($newPopulation->id, $result->items()[0]->id);
         $this->assertEquals($oldPopulation->id, $result->items()[1]->id);
@@ -81,7 +81,7 @@ class DatasetSubjectPopulationRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DatasetSubjectPopulation::factory()->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedPopulations($organization->id);
+        $result = $this->repository->getFilteredDatasetSubjectPopulations(['organization_id' => $organization->id]);
 
         $this->assertTrue($result->items()[0]->relationLoaded('dataset'));
         $this->assertTrue($result->items()[0]->relationLoaded('snapshot'));

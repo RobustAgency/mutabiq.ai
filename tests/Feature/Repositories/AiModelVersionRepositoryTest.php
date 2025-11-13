@@ -128,4 +128,313 @@ class AiModelVersionRepositoryTest extends TestCase
             'deployment_status' => 'not_deployed',
         ]);
     }
+
+    public function test_it_filters_by_version_type(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_type' => 'major',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_type' => 'minor',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_type' => 'major',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'version_type' => 'major',
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $version) {
+            $this->assertEquals('major', $version->version_type);
+        }
+    }
+
+    public function test_it_filters_by_deployment_status(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'deployment_status' => 'deployed',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'deployment_status' => 'not_deployed',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'deployment_status' => 'deployed',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'deployment_status' => 'deployed',
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $version) {
+            $this->assertEquals('deployed', $version->deployment_status);
+        }
+    }
+
+    public function test_it_filters_by_lifecycle_stage(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'lifecycle_stage' => 'production',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'lifecycle_stage' => 'development',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'lifecycle_stage' => 'production',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'lifecycle_stage' => 'production',
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $version) {
+            $this->assertEquals('production', $version->lifecycle_stage);
+        }
+    }
+
+    public function test_it_filters_by_version_role(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_role' => 'primary',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_role' => 'secondary',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_role' => 'primary',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'version_role' => 'primary',
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $version) {
+            $this->assertEquals('primary', $version->version_role);
+        }
+    }
+
+    public function test_it_filters_by_version_source(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_source' => 'internal',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_source' => 'external',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_source' => 'internal',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'version_source' => 'internal',
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $version) {
+            $this->assertEquals('internal', $version->version_source);
+        }
+    }
+
+    public function test_it_filters_by_date_range(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'from' => now()->subDays(7)->format('Y-m-d'),
+            'to' => now()->subDays(2)->format('Y-m-d'),
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    public function test_it_filters_by_from_date_only(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'from' => now()->subDays(6)->format('Y-m-d'),
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_to_date_only(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'to' => now()->subDays(6)->format('Y-m-d'),
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    public function test_it_filters_by_multiple_filters(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_type' => 'major',
+            'deployment_status' => 'deployed',
+            'lifecycle_stage' => 'production',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_type' => 'minor',
+            'deployment_status' => 'deployed',
+            'lifecycle_stage' => 'production',
+        ]);
+        AiModelVersion::factory()->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+            'version_type' => 'major',
+            'deployment_status' => 'not_deployed',
+            'lifecycle_stage' => 'development',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'version_type' => 'major',
+            'deployment_status' => 'deployed',
+            'lifecycle_stage' => 'production',
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(1, $result->items());
+        $version = $result->items()[0];
+        $this->assertEquals('major', $version->version_type);
+        $this->assertEquals('deployed', $version->deployment_status);
+        $this->assertEquals('production', $version->lifecycle_stage);
+    }
+
+    public function test_it_respects_per_page_parameter(): void
+    {
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        AiModelVersion::factory()->count(20)->create([
+            'ai_model_id' => $aiModel->id,
+            'organization_id' => $this->organization->id,
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'per_page' => 5,
+        ];
+        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
+
+        $this->assertCount(5, $result->items());
+        $this->assertEquals(20, $result->total());
+        $this->assertEquals(5, $result->perPage());
+    }
 }

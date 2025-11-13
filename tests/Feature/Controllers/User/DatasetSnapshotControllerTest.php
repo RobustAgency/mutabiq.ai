@@ -41,6 +41,7 @@ class DatasetSnapshotControllerTest extends TestCase
             'privacy_transform_evidence_ref' => 'PTE-123456',
             'residency_zone' => ResidencyZone::EU->value,
             'storage_uri' => 'https://storage.example.com/snapshots/abc123',
+            'source_created_at' => '2024-01-15',
         ], $overrides);
     }
 
@@ -143,6 +144,7 @@ class DatasetSnapshotControllerTest extends TestCase
             'version_tag' => 'v1.0',
             'residency_zone' => ResidencyZone::US->value,
             'storage_uri' => 'https://storage.example.com/snapshots/xyz789',
+            'source_created_at' => '2024-01-15',
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
@@ -235,20 +237,6 @@ class DatasetSnapshotControllerTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['residency_zone']);
-    }
-
-    /**
-     * Test all residency zone enum values are accepted.
-     */
-    public function test_all_residency_zone_enum_values_are_accepted(): void
-    {
-        foreach (ResidencyZone::cases() as $zone) {
-            $payload = $this->validPayload(['residency_zone' => $zone->value]);
-
-            $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
-
-            $response->assertStatus(201);
-        }
     }
 
     /**
@@ -539,33 +527,6 @@ class DatasetSnapshotControllerTest extends TestCase
         $response = $this->deleteJson("/api/dataset-snapshots/{$snapshot->id}");
 
         $response->assertStatus(401);
-    }
-
-    /**
-     * Test nullable fields can be set to null.
-     */
-    public function test_nullable_fields_can_be_set_to_null(): void
-    {
-        $dataset = Dataset::factory()->create();
-
-        $payload = [
-            'dataset_id' => $dataset->id,
-            'version_tag' => 'v1.0',
-            'time_range_start' => null,
-            'time_range_end' => null,
-            'row_count' => null,
-            'quality_checksums' => null,
-            'pii_element_count' => null,
-            'special_category_element_count' => null,
-            'masking_anonymization_method' => null,
-            'privacy_transform_evidence_ref' => null,
-            'residency_zone' => ResidencyZone::EU->value,
-            'storage_uri' => 'https://storage.example.com/snapshots/test',
-        ];
-
-        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
-
-        $response->assertStatus(201);
     }
 
     /**

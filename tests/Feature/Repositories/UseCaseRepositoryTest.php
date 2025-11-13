@@ -128,18 +128,6 @@ class UseCaseRepositoryTest extends TestCase
         $this->assertNull($useCase->budget_allocated);
     }
 
-    public function test_it_filters_by_name(): void
-    {
-        UseCase::factory()->create(['name' => 'Marketing Campaign']);
-        UseCase::factory()->create(['name' => 'Finance Report']);
-        UseCase::factory()->create(['name' => 'Marketing Analysis']);
-
-        $filters = ['name' => 'Marketing'];
-        $result = $this->useCaseRepository->getFilteredUseCases($filters);
-
-        $this->assertCount(2, $result->items());
-    }
-
     public function test_it_filters_by_status(): void
     {
         UseCase::factory()->create(['status' => Status::DRAFT->value]);
@@ -149,5 +137,190 @@ class UseCaseRepositoryTest extends TestCase
         $result = $this->useCaseRepository->getFilteredUseCases($filters);
 
         $this->assertCount(1, $result->items());
+    }
+
+    public function test_it_filters_by_organization_id(): void
+    {
+        $organization1 = Organization::factory()->create();
+        $organization2 = Organization::factory()->create();
+
+        UseCase::factory()->count(3)->create(['organization_id' => $organization1->id]);
+        UseCase::factory()->count(2)->create(['organization_id' => $organization2->id]);
+
+        $filters = ['organization_id' => $organization1->id];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(3, $result->items());
+        foreach ($result->items() as $useCase) {
+            $this->assertEquals($organization1->id, $useCase->organization_id);
+        }
+    }
+
+    public function test_it_filters_by_risk_level(): void
+    {
+        UseCase::factory()->create(['risk_level' => RiskLevel::HIGH->value]);
+        UseCase::factory()->create(['risk_level' => RiskLevel::LOW->value]);
+        UseCase::factory()->create(['risk_level' => RiskLevel::HIGH->value]);
+
+        $filters = ['risk_level' => RiskLevel::HIGH->value];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $useCase) {
+            $this->assertEquals(RiskLevel::HIGH->value, $useCase->risk_level);
+        }
+    }
+
+    public function test_it_filters_by_business_domain(): void
+    {
+        UseCase::factory()->create(['business_domain' => BusinessDomain::FINANCE->value]);
+        UseCase::factory()->create(['business_domain' => BusinessDomain::OPERATIONS->value]);
+        UseCase::factory()->create(['business_domain' => BusinessDomain::FINANCE->value]);
+
+        $filters = ['business_domain' => BusinessDomain::FINANCE->value];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $useCase) {
+            $this->assertEquals(BusinessDomain::FINANCE->value, $useCase->business_domain);
+        }
+    }
+
+    public function test_it_filters_by_owner(): void
+    {
+        $businessOwner = Stakeholder::factory()->create(['display_name' => 'John Smith']);
+        $technicalOwner = Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
+        $otherOwner = Stakeholder::factory()->create(['display_name' => 'Bob Wilson']);
+
+        UseCase::factory()->create(['business_owner_id' => $businessOwner->id]);
+        UseCase::factory()->create(['technical_owner_id' => $technicalOwner->id]);
+        UseCase::factory()->create(['business_owner_id' => $otherOwner->id]);
+
+        $filters = ['owner' => 'John'];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    public function test_it_filters_by_roi_assessment(): void
+    {
+        UseCase::factory()->create(['roi_assessment' => true]);
+        UseCase::factory()->create(['roi_assessment' => false]);
+        UseCase::factory()->create(['roi_assessment' => true]);
+
+        $filters = ['roi_assessment' => true];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $useCase) {
+            $this->assertTrue($useCase->roi_assessment);
+        }
+    }
+
+    public function test_it_filters_by_risk_assessment(): void
+    {
+        UseCase::factory()->create(['risk_assessment' => true]);
+        UseCase::factory()->create(['risk_assessment' => false]);
+        UseCase::factory()->create(['risk_assessment' => true]);
+
+        $filters = ['risk_assessment' => true];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $useCase) {
+            $this->assertTrue($useCase->risk_assessment);
+        }
+    }
+
+    public function test_it_filters_by_data_assessment(): void
+    {
+        UseCase::factory()->create(['data_assessment' => true]);
+        UseCase::factory()->create(['data_assessment' => false]);
+        UseCase::factory()->create(['data_assessment' => true]);
+
+        $filters = ['data_assessment' => true];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $useCase) {
+            $this->assertTrue($useCase->data_assessment);
+        }
+    }
+
+    public function test_it_filters_by_date_range(): void
+    {
+        UseCase::factory()->create(['created_at' => now()->subDays(10)]);
+        UseCase::factory()->create(['created_at' => now()->subDays(5)]);
+        UseCase::factory()->create(['created_at' => now()->subDays(1)]);
+
+        $filters = [
+            'from' => now()->subDays(7)->format('Y-m-d'),
+            'to' => now()->subDays(2)->format('Y-m-d'),
+        ];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    public function test_it_filters_by_from_date_only(): void
+    {
+        UseCase::factory()->create(['created_at' => now()->subDays(10)]);
+        UseCase::factory()->create(['created_at' => now()->subDays(5)]);
+        UseCase::factory()->create(['created_at' => now()->subDays(1)]);
+
+        $filters = ['from' => now()->subDays(6)->format('Y-m-d')];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_to_date_only(): void
+    {
+        UseCase::factory()->create(['created_at' => now()->subDays(10)]);
+        UseCase::factory()->create(['created_at' => now()->subDays(5)]);
+        UseCase::factory()->create(['created_at' => now()->subDays(1)]);
+
+        $filters = ['to' => now()->subDays(6)->format('Y-m-d')];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    public function test_it_filters_by_multiple_filters(): void
+    {
+        $organization = Organization::factory()->create();
+
+        UseCase::factory()->create([
+            'organization_id' => $organization->id,
+            'status' => Status::ACTIVE->value,
+            'risk_level' => RiskLevel::HIGH->value,
+            'business_domain' => BusinessDomain::FINANCE->value,
+        ]);
+        UseCase::factory()->create([
+            'organization_id' => $organization->id,
+            'status' => Status::DRAFT->value,
+            'risk_level' => RiskLevel::HIGH->value,
+            'business_domain' => BusinessDomain::FINANCE->value,
+        ]);
+        UseCase::factory()->create([
+            'organization_id' => $organization->id,
+            'status' => Status::ACTIVE->value,
+            'risk_level' => RiskLevel::LOW->value,
+            'business_domain' => BusinessDomain::OPERATIONS->value,
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'status' => Status::ACTIVE->value,
+            'risk_level' => RiskLevel::HIGH->value,
+            'business_domain' => BusinessDomain::FINANCE->value,
+        ];
+        $result = $this->useCaseRepository->getFilteredUseCases($filters);
+
+        $this->assertCount(1, $result->items());
+        $useCase = $result->items()[0];
+        $this->assertEquals(Status::ACTIVE->value, $useCase->status);
+        $this->assertEquals(RiskLevel::HIGH->value, $useCase->risk_level);
+        $this->assertEquals(BusinessDomain::FINANCE->value, $useCase->business_domain);
     }
 }

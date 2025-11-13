@@ -23,6 +23,14 @@ class ListAiModelVersionRequest extends FormRequest
     {
         return [
             'ai_model_id' => ['sometimes', 'integer', 'exists:ai_models,id'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'version_type' => ['nullable', 'string', 'max:50'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'version_source' => ['nullable', 'string', 'max:100'],
+            'lifecycle_stage' => ['nullable', 'string', 'max:50'],
+            'version_role' => ['nullable', 'string', 'max:50'],
+            'deployment_status' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

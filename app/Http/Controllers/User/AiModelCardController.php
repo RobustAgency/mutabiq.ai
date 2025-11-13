@@ -18,9 +18,9 @@ class AiModelCardController extends Controller
 
     public function index(ListAiModelCardRequest $request): JsonResponse
     {
-        $organizationID = Auth::user()->organization_id;
-        $perPage = $request->input('per_page') ?? 15;
-        $aiModelCards = $this->aiModelCardRepository->getPaginatedAiModelCardsByOrganizationID($organizationID, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $aiModelCards = $this->aiModelCardRepository->getFilteredAiModelCards($validated);
         return response()->json([
             'error' => false,
             'data' => $aiModelCards,

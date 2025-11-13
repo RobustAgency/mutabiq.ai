@@ -10,12 +10,34 @@ class VendorRepository
     /**
      * @return LengthAwarePaginator<int, Vendor>
      */
-    public function getPaginatedVendors(int $organizationID, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredVendors(array $filters = []): LengthAwarePaginator
     {
-        return Vendor::with('stakeholder')
-            ->where('organization_id', $organizationID)
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+        $query = Vendor::with('stakeholder');
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+        if (isset($filters['risk_tier'])) {
+            $query->where('risk_tier', $filters['risk_tier']);
+        }
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (isset($filters['owner'])) {
+            $query->whereHas('stakeholder', function ($q) use ($filters) {
+                $q->where('display_name', 'like', '%' . $filters['owner'] . '%');
+            });
+        }
+
+        $query->when(! empty($filters['from']), function ($query) use ($filters) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        });
+
+        $query->when(! empty($filters['to']), function ($query) use ($filters) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        });
+
+        return $query->paginate($filters['per_page'] ?? 15);
     }
 
     /**

@@ -21,9 +21,9 @@ class DatasetSnapshotController extends Controller
      */
     public function index(ListDatasetSnapshotRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->input('per_page', 15);
-        $snapshots = $this->datasetSnapshotRepository->getPaginatedSnapshots($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $snapshots = $this->datasetSnapshotRepository->getFilteredDatasetSnapshots($validated);
 
         return response()->json([
             'error' => false,

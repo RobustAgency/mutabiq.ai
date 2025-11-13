@@ -21,9 +21,9 @@ class DatasetController extends Controller
      */
     public function index(ListDatasetRequest $request): JsonResponse
     {
-        $organizationId = Auth::user()->organization_id;
-        $perPage = $request->input('per_page', 15);
-        $datasets = $this->datasetRepository->getPaginatedDatasets($organizationId, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $datasets = $this->datasetRepository->getFilteredDatasets($validated);
 
         return response()->json([
             'error' => false,

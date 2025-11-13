@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ArtifactType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class ListStakeholderRequest extends FormRequest
+class ListAiModelArtifactRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +24,7 @@ class ListStakeholderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['nullable', 'string'],
+            'artifact_type' => ['nullable', 'string'],
             'name' => ['nullable', 'string', 'max:255'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

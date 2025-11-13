@@ -11,14 +11,34 @@ class DataElementRepository
 {
     /**
      * Get paginated data elements for a specific organization.
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array<string, mixed> $filters
      * @return LengthAwarePaginator<int, DataElement>
      */
-    public function getPaginatedDataElements(int $organizationId, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredDataElements(array $filters = []): LengthAwarePaginator
     {
-        $query = DataElement::where('organization_id', $organizationId)->with('datasets');
-        return $query->paginate($perPage);
+        $query = DataElement::query()->with('datasets');
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['name'])) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
+        }
+
+        if (isset($filters['data_type'])) {
+            $query->where('data_type', $filters['data_type']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
+
+        return $query->paginate($filters['per_page'] ?? 15);
     }
 
     public function createDataElement(array $data): DataElement
