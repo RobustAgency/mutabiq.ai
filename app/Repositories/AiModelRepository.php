@@ -23,8 +23,10 @@ class AiModelRepository
         }
 
         if (!empty($filters['status'])) {
-            $query->where('operational_status', $filters['status'])
-                ->orWhere('business_status', $filters['status']);
+            $query->where(function ($q) use ($filters) {
+                $q->where('operational_status', $filters['status'])
+                    ->orWhere('business_status', $filters['status']);
+            });
         }
 
         if (!empty($filters['ownership_type'])) {
@@ -36,10 +38,12 @@ class AiModelRepository
         }
 
         $query->when(! empty($filters['owner']), function ($query) use ($filters) {
-            $query->whereHas('ownerStakeholder', function ($q) use ($filters) {
-                $q->where('display_name', 'like', '%' . $filters['owner'] . '%');
-            })->orWhereHas('sourceOrgStakeholder', function ($q) use ($filters) {
-                $q->where('display_name', 'like', '%' . $filters['owner'] . '%');
+            $query->where(function ($q) use ($filters) {
+                $q->whereHas('ownerStakeholder', function ($subQuery) use ($filters) {
+                    $subQuery->where('display_name', 'like', '%' . $filters['owner'] . '%');
+                })->orWhereHas('sourceOrgStakeholder', function ($subQuery) use ($filters) {
+                    $subQuery->where('display_name', 'like', '%' . $filters['owner'] . '%');
+                });
             });
         });
 
