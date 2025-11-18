@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Class AiModel
+ *
+ * @property-read string $display_id
+ */
 class AiModel extends Model
 {
     /** @use HasFactory<\Database\Factories\AiModelFactory> */
-    use SoftDeletes, HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -34,9 +39,13 @@ class AiModel extends Model
         'creator_email',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the user that created the AI model.
-     * 
+     *
      * @return BelongsTo<User, $this>
      */
     public function createdBy(): BelongsTo
@@ -46,7 +55,7 @@ class AiModel extends Model
 
     /**
      * Get the user that last updated the AI model.
-     * 
+     *
      * @return BelongsTo<User, $this>
      */
     public function updatedBy(): BelongsTo
@@ -56,7 +65,7 @@ class AiModel extends Model
 
     /**
      * Get the vendor associated with the AI model.
-     * 
+     *
      * @return BelongsTo<Vendor, $this>
      */
     public function vendor(): BelongsTo
@@ -66,7 +75,7 @@ class AiModel extends Model
 
     /**
      * Get the source organization stakeholder.
-     * 
+     *
      * @return BelongsTo<Stakeholder, $this>
      */
     public function sourceOrgStakeholder(): BelongsTo
@@ -76,7 +85,7 @@ class AiModel extends Model
 
     /**
      * Get the owner stakeholder.
-     * 
+     *
      * @return BelongsTo<Stakeholder, $this>
      */
     public function ownerStakeholder(): BelongsTo
@@ -86,11 +95,19 @@ class AiModel extends Model
 
     /**
      * Get the organization that owns this AI model.
-     * 
+     *
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * Get the display ID attribute.
+     */
+    public function getDisplayIdAttribute(): string
+    {
+        return 'AI-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

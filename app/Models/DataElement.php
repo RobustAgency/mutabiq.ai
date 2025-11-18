@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class DataElement extends Model
@@ -28,6 +28,11 @@ class DataElement extends Model
         'catalog_column_id',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     /**
      * @return BelongsToMany<Dataset, $this>
      */
@@ -46,5 +51,10 @@ class DataElement extends Model
                 'lineage_source_column',
                 'deprecated',
             ]);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'DE-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

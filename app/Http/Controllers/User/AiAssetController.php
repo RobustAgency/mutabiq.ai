@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\AiAsset;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\AiAssetResource;
+use App\Repositories\AiAssetRepository;
 use App\Http\Requests\AiAsset\StoreAiAssetRequest;
 use App\Http\Requests\AiAsset\UpdateAiAssetRequest;
-use App\Http\Resources\AiAssetResource;
-use App\Models\AiAsset;
-use App\Repositories\AiAssetRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AiAssetController extends Controller
 {
@@ -22,8 +23,8 @@ class AiAssetController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 15);
-        $organizationID = $request->user()->organization_id;
+        $perPage = (int) $request->query('per_page', 15);
+        $organizationID = (int) Auth::user()->organization_id;
         $aiAssets = $this->repository->getPaginatedAiAssets($organizationID, $perPage);
 
         return response()->json([
@@ -39,7 +40,7 @@ class AiAssetController extends Controller
     public function store(StoreAiAssetRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = (int) Auth::user()->organization_id;
         $aiAsset = $this->repository->createAiAsset($validated);
 
         return response()->json([

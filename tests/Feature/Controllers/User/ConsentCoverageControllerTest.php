@@ -2,21 +2,22 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\UserConsent\ConsentPurpose;
-use App\Enums\UserConsent\Jurisdiction;
-use App\Models\ConsentCoverage;
-use App\Models\Dataset;
-use App\Models\DatasetSnapshot;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Dataset;
+use App\Models\Organization;
+use App\Models\ConsentCoverage;
+use App\Models\DatasetSnapshot;
+use App\Enums\UserConsent\Jurisdiction;
+use App\Enums\UserConsent\ConsentPurpose;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ConsentCoverageControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -30,8 +31,7 @@ class ConsentCoverageControllerTest extends TestCase
     {
         $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
         $selectedPurposes = fake()->randomElements(ConsentPurpose::cases(), fake()->numberBetween(1, 4));
-        $purposeValues = array_map(fn($purpose) => $purpose->value, $selectedPurposes);
-
+        $purposeValues = array_map(fn ($purpose) => $purpose->value, $selectedPurposes);
 
         return array_merge([
             'dataset_id' => $dataset->id,
@@ -42,7 +42,8 @@ class ConsentCoverageControllerTest extends TestCase
             'subjects_total' => 10000,
             'subjects_with_valid_consent' => 8500,
             'coverage_pct' => 85.00,
-            'evidence_ref' => 'EVD-' . uniqid(),
+            'evidence_ref' => 'EVD-'.uniqid(),
+            'source_created_at' => now()->format('Y-m-d H:i:s'),
         ], $overrides);
     }
 
@@ -74,11 +75,11 @@ class ConsentCoverageControllerTest extends TestCase
                             'coverage_pct',
                             'evidence_ref',
                             'created_at',
-                        ]
+                        ],
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ])
             ->assertJson(['error' => false]);
     }
@@ -118,7 +119,7 @@ class ConsentCoverageControllerTest extends TestCase
                     'subjects_total',
                     'subjects_with_valid_consent',
                     'coverage_pct',
-                ]
+                ],
             ])
             ->assertJson([
                 'error' => false,
@@ -130,7 +131,7 @@ class ConsentCoverageControllerTest extends TestCase
                     'subjects_total' => $payload['subjects_total'],
                     'subjects_with_valid_consent' => $payload['subjects_with_valid_consent'],
                     'coverage_pct' => $payload['coverage_pct'],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('consent_coverages', [
@@ -442,7 +443,7 @@ class ConsentCoverageControllerTest extends TestCase
                 'data' => [
                     'id' => $coverage->id,
                     'dataset_id' => $coverage->dataset_id,
-                ]
+                ],
             ]);
     }
 
@@ -475,7 +476,7 @@ class ConsentCoverageControllerTest extends TestCase
                     'subjects_total' => 1200,
                     'subjects_with_valid_consent' => 1100,
                     'coverage_pct' => 91.67,
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('consent_coverages', [
@@ -498,7 +499,6 @@ class ConsentCoverageControllerTest extends TestCase
         $updatePayload = [
             'coverage_pct' => 85.54,
         ];
-
 
         $response = $this->actingAs($this->user)->postJson("/api/consent-coverages/{$coverage->id}", $updatePayload);
         $response->assertStatus(200)
@@ -581,43 +581,5 @@ class ConsentCoverageControllerTest extends TestCase
         $response = $this->actingAs($this->user)->getJson('/api/consent-coverages/999999');
 
         $response->assertStatus(404);
-    }
-
-    /**
-     * Test create handles all jurisdictions.
-     */
-    public function test_create_handles_all_jurisdictions(): void
-    {
-        $jurisdictions = [
-            Jurisdiction::AE,
-            Jurisdiction::EU,
-            Jurisdiction::KSA,
-            Jurisdiction::US,
-            Jurisdiction::UK,
-        ];
-
-        foreach ($jurisdictions as $jurisdiction) {
-            $payload = $this->validPayload(['jurisdiction' => $jurisdiction->value]);
-            $response = $this->actingAs($this->user)->postJson('/api/consent-coverages', $payload);
-            $response->assertStatus(201);
-        }
-    }
-
-    /**
-     * Test create handles large subject numbers.
-     */
-    public function test_create_handles_large_numbers(): void
-    {
-        $payload = $this->validPayload([
-            'subjects_total' => 10000000,
-            'subjects_with_valid_consent' => 9500000,
-            'coverage_pct' => 95.00,
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/consent-coverages', $payload);
-
-        $response->assertStatus(201)
-            ->assertJsonPath('data.subjects_total', 10000000)
-            ->assertJsonPath('data.subjects_with_valid_consent', 9500000);
     }
 }

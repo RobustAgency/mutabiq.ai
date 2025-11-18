@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DatasetSnapshot extends Model
 {
@@ -40,6 +40,10 @@ class DatasetSnapshot extends Model
         ];
     }
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the dataset that owns the snapshot.
      *
@@ -48,5 +52,10 @@ class DatasetSnapshot extends Model
     public function dataset(): BelongsTo
     {
         return $this->belongsTo(Dataset::class);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'DSN-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

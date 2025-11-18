@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Models\Stakeholder;
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\Stakeholder;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class VendorControllerTest extends TestCase
 {
@@ -14,10 +15,16 @@ class VendorControllerTest extends TestCase
 
     private User $user;
 
+    private Organization $organization;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
+
     }
 
     private function validPayload(array $overrides = []): array
@@ -37,13 +44,13 @@ class VendorControllerTest extends TestCase
                     'email' => 'john@testvendor.com',
                     'role' => 'Account Manager',
                     'phone' => '+1-555-0100',
-                    'primary' => true
-                ]
+                    'primary' => true,
+                ],
             ],
             'metadata' => [
                 'website' => 'https://testvendor.com',
                 'sub_processors_url' => 'https://testvendor.com/sub-processors',
-                'residency_options' => ['US', 'EU']
+                'residency_options' => ['US', 'EU'],
             ],
             'notes' => 'Test vendor notes',
         ], $overrides);
@@ -75,11 +82,11 @@ class VendorControllerTest extends TestCase
                             'stakeholder_id',
                             'created_at',
                             'updated_at',
-                        ]
+                        ],
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ])
             ->assertJson(['error' => false]);
     }
@@ -131,7 +138,7 @@ class VendorControllerTest extends TestCase
                     'primary_contacts',
                     'metadata',
                     'notes',
-                ]
+                ],
             ])
             ->assertJson([
                 'error' => false,
@@ -140,7 +147,7 @@ class VendorControllerTest extends TestCase
                     'vendor_name' => $payload['vendor_name'],
                     'legal_name' => $payload['legal_name'],
                     'hq_country' => $payload['hq_country'],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('vendors', [
@@ -171,7 +178,7 @@ class VendorControllerTest extends TestCase
                 'error' => false,
                 'data' => [
                     'vendor_name' => $payload['vendor_name'],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('vendors', [
@@ -378,8 +385,8 @@ class VendorControllerTest extends TestCase
     {
         $payload = $this->validPayload([
             'primary_contacts' => [
-                ['name' => '', 'email' => 'test@test.com'] // missing required name
-            ]
+                ['name' => '', 'email' => 'test@test.com'], // missing required name
+            ],
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/vendors', $payload);
@@ -395,8 +402,8 @@ class VendorControllerTest extends TestCase
     {
         $payload = $this->validPayload([
             'primary_contacts' => [
-                ['name' => 'Test', 'email' => 'invalid-email']
-            ]
+                ['name' => 'Test', 'email' => 'invalid-email'],
+            ],
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/vendors', $payload);
@@ -414,7 +421,7 @@ class VendorControllerTest extends TestCase
             'primary_contacts' => [
                 ['name' => 'Contact 1', 'email' => 'contact1@test.com', 'primary' => true],
                 ['name' => 'Contact 2', 'email' => 'contact2@test.com', 'primary' => false],
-            ]
+            ],
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/vendors', $payload);
@@ -451,7 +458,7 @@ class VendorControllerTest extends TestCase
                     'id' => $vendor->id,
                     'vendor_name' => $vendor->vendor_name,
                     'legal_name' => $vendor->legal_name,
-                ]
+                ],
             ]);
     }
 
@@ -504,7 +511,7 @@ class VendorControllerTest extends TestCase
                     'id' => $vendor->id,
                     'vendor_name' => $updateData['vendor_name'],
                     'legal_name' => $updateData['legal_name'],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('vendors', [
@@ -535,7 +542,7 @@ class VendorControllerTest extends TestCase
                     'vendor_name' => 'Original Name',
                     'legal_name' => 'Original Legal Name',
                     'status' => 'approved',
-                ]
+                ],
             ]);
     }
 
@@ -547,7 +554,7 @@ class VendorControllerTest extends TestCase
         $vendor = Vendor::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/vendors/{$vendor->id}", [
-            'hq_country' => 'USA'
+            'hq_country' => 'USA',
         ]);
 
         $response->assertStatus(422)
@@ -562,7 +569,7 @@ class VendorControllerTest extends TestCase
         $vendor = Vendor::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/vendors/{$vendor->id}", [
-            'risk_tier' => 'invalid_tier'
+            'risk_tier' => 'invalid_tier',
         ]);
 
         $response->assertStatus(422)
@@ -577,7 +584,7 @@ class VendorControllerTest extends TestCase
         $vendor = Vendor::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/vendors/{$vendor->id}", [
-            'status' => 'invalid_status'
+            'status' => 'invalid_status',
         ]);
 
         $response->assertStatus(422)
@@ -592,7 +599,7 @@ class VendorControllerTest extends TestCase
         $vendor = Vendor::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/vendors/{$vendor->id}", [
-            'stakeholder_id' => 99999
+            'stakeholder_id' => 99999,
         ]);
 
         $response->assertStatus(422)
@@ -607,7 +614,7 @@ class VendorControllerTest extends TestCase
         $vendor = Vendor::factory()->create();
 
         $response = $this->postJson("/api/vendors/{$vendor->id}", [
-            'vendor_name' => 'Updated Name'
+            'vendor_name' => 'Updated Name',
         ]);
 
         $response->assertStatus(401);
@@ -682,7 +689,7 @@ class VendorControllerTest extends TestCase
                 'data' => [
                     'primary_contacts' => $contacts,
                     'metadata' => $metadata,
-                ]
+                ],
             ]);
     }
 
@@ -705,7 +712,7 @@ class VendorControllerTest extends TestCase
                     'primary_contacts' => null,
                     'metadata' => null,
                     'notes' => null,
-                ]
+                ],
             ]);
     }
 }

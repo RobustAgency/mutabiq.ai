@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AiModelUseCase extends Model
 {
     /** @use HasFactory<\Database\Factories\AiModelUseCaseFactory> */
     use HasFactory;
+
     protected $fillable = [
         'organization_id',
         'ai_model_id',
@@ -25,9 +26,13 @@ class AiModelUseCase extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the AI model associated with this pivot.
-     * 
+     *
      * @return BelongsTo<AiModel, $this>
      */
     public function aiModel(): BelongsTo
@@ -37,7 +42,7 @@ class AiModelUseCase extends Model
 
     /**
      * Get the use case associated with this pivot.
-     * 
+     *
      * @return BelongsTo<UseCase, $this>
      */
     public function useCase(): BelongsTo
@@ -47,7 +52,7 @@ class AiModelUseCase extends Model
 
     /**
      * Get the AI model version associated with this pivot.
-     * 
+     *
      * @return BelongsTo<AiModelVersion, $this>
      */
     public function aiModelVersion(): BelongsTo
@@ -57,7 +62,7 @@ class AiModelUseCase extends Model
 
     /**
      * Get the user who created this association.
-     * 
+     *
      * @return BelongsTo<User, $this>
      */
     public function createdBy(): BelongsTo
@@ -67,11 +72,16 @@ class AiModelUseCase extends Model
 
     /**
      * Get the user who last updated this association.
-     * 
+     *
      * @return BelongsTo<User, $this>
      */
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'AMUC-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

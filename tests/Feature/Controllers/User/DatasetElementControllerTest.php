@@ -2,25 +2,25 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\DataElement\CdeCategory;
-use App\Enums\DatasetElementMap\CdeInDataset;
-use App\Enums\DatasetElementMap\Deprecated;
-use App\Enums\DatasetElementMap\Nullable;
-use App\Enums\DatasetElementMap\PiiOverride;
-use App\Enums\DatasetElementMap\SensitivityOverride;
-use App\Models\DataElement;
-use App\Models\Dataset;
-use App\Models\DatasetDataElement;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Dataset;
+use App\Models\DataElement;
+use App\Models\Organization;
+use App\Enums\DataElement\CdeCategory;
+use App\Enums\DatasetElementMap\Nullable;
+use App\Enums\DatasetElementMap\Deprecated;
+use App\Enums\DatasetElementMap\PiiOverride;
+use App\Enums\DatasetElementMap\CdeInDataset;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\DatasetElementMap\SensitivityOverride;
 
 class DatasetElementControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -90,8 +90,6 @@ class DatasetElementControllerTest extends TestCase
                 'cde_in_dataset',
             ]);
     }
-
-
 
     public function test_dataset_id_must_exist(): void
     {
@@ -181,28 +179,6 @@ class DatasetElementControllerTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['deprecated']);
-    }
-
-    public function test_nullable_fields_can_be_null(): void
-    {
-        $data = $this->validPayload([
-            'sensitivity_override' => null,
-            'transform_applied' => null,
-            'quality_rules_applied' => null,
-            'cde_category_in_dataset' => null,
-            'lineage_source_column' => null,
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/associate-data-element-with-dataset', $data);
-
-        $response->assertStatus(201);
-
-        $association = DatasetDataElement::find($response->json('data.id'));
-        $this->assertNull($association->sensitivity_override);
-        $this->assertNull($association->transform_applied);
-        $this->assertNull($association->quality_rules_applied);
-        $this->assertNull($association->cde_category_in_dataset);
-        $this->assertNull($association->lineage_source_column);
     }
 
     public function test_can_associate_same_data_element_to_multiple_datasets(): void

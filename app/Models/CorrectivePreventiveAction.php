@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CorrectivePreventiveAction extends Model
 {
@@ -38,11 +38,20 @@ class CorrectivePreventiveAction extends Model
         ];
     }
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * @return BelongsTo<AiModel, $this>
      */
     public function aiModel(): BelongsTo
     {
         return $this->belongsTo(AiModel::class, 'ai_model_id');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'CAPA-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

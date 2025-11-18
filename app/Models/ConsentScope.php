@@ -2,12 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\UserConsent\ConsentPurpose;
-use App\Enums\UserConsent\Jurisdiction;
-use App\Enums\UserConsent\SubjectRealm;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ConsentScope extends Model
 {
@@ -35,11 +32,20 @@ class ConsentScope extends Model
         ];
     }
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * @return BelongsTo<Dataset, $this>
      */
     public function dataset(): BelongsTo
     {
         return $this->belongsTo(Dataset::class);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'CS-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

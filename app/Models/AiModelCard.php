@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AiModelCard extends Model
 {
@@ -43,8 +43,13 @@ class AiModelCard extends Model
         'next_review_date' => 'date',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the AI Model Version that owns the model card.
+     *
      * @return BelongsTo<AiModelVersion, $this>
      */
     public function aiModelVersion(): BelongsTo
@@ -54,10 +59,16 @@ class AiModelCard extends Model
 
     /**
      * Get the Stakeholder that owns the model card.
+     *
      * @return BelongsTo<Stakeholder, $this>
      */
     public function ownerStakeholder(): BelongsTo
     {
         return $this->belongsTo(Stakeholder::class, 'owner_stakeholder_id');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'AMC-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

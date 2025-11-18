@@ -2,21 +2,20 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use App\Enums\PrimaryCategory;
-use App\Enums\OperationalStatus;
-use App\Enums\BusinessStatus;
-use App\Enums\StrategicImportance;
-use App\Enums\OrganizationalRole;
-use App\Enums\OwnershipType;
-use App\Enums\DevelopmentSource;
-use App\Models\Organization;
+use Tests\TestCase;
 use App\Models\User;
+use App\Models\Vendor;
 use App\Models\AiModel;
 use App\Models\Stakeholder;
-use App\Models\Vendor;
-use Tests\TestCase;
+use App\Enums\OwnershipType;
+use App\Models\Organization;
+use App\Enums\BusinessStatus;
+use App\Enums\PrimaryCategory;
+use App\Enums\DevelopmentSource;
+use App\Enums\OperationalStatus;
+use App\Enums\OrganizationalRole;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiModelControllerTest extends TestCase
 {
@@ -60,12 +59,12 @@ class AiModelControllerTest extends TestCase
         $user = User::factory()->create(['organization_id' => null]);
 
         $response = $this->actingAs($user)->getJson($this->baseEndpoint);
-
-        $response->assertStatus(403)
+        $response->assertOk()
             ->assertJson([
-                'error' => 'true',
-                'message' => 'User does not belong to any organization',
+                'error' => 'false',
             ]);
+
+        $this->assertEquals(0, $response->json('data.total'));
     }
 
     public function test_user_can_get_ai_models_for_his_organization(): void
@@ -73,9 +72,8 @@ class AiModelControllerTest extends TestCase
         $org = Organization::factory()->create();
         $user = User::factory()->create(['organization_id' => $org->id]);
 
-        // Models in user's org
         AiModel::factory()->count(3)->create(['organization_id' => $org->id]);
-        // Model in another org (should not appear)
+
         AiModel::factory()->create();
 
         $response = $this->actingAs($user)->getJson($this->baseEndpoint);
@@ -85,9 +83,10 @@ class AiModelControllerTest extends TestCase
                 'error' => 'false',
             ]);
 
-        $data = $response->json('data');
+        $this->assertEquals(3, $response->json('data.total'));
+        $data = $response->json('data.data');
         $this->assertCount(3, $data);
-        $this->assertTrue(collect($data)->every(fn($m) => $m['id'] !== null));
+        $this->assertTrue(collect($data)->every(fn ($m) => $m['id'] !== null));
     }
 
     public function test_store_fails_without_organization(): void
@@ -149,7 +148,7 @@ class AiModelControllerTest extends TestCase
             'updated_by' => $user->email,
         ]);
 
-        $response = $this->actingAs($user)->getJson($this->baseEndpoint . '/' . $model->id);
+        $response = $this->actingAs($user)->getJson($this->baseEndpoint.'/'.$model->id);
 
         $response->assertOk()
             ->assertJson([
