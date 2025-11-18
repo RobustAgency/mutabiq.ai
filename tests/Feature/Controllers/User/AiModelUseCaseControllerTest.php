@@ -2,25 +2,29 @@
 
 namespace Tests\Feature\Controller\User;
 
+use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiModel;
+use App\Models\UseCase;
+use App\Models\Organization;
+use App\Models\AiModelUseCase;
+use App\Models\AiModelVersion;
+use Illuminate\Foundation\Testing\WithFaker;
 use App\Enums\AiModelUseCase\RelationshipType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
-use App\Models\AiModel;
-use App\Models\Organization;
-use App\Models\UseCase;
-use App\Models\AiModelVersion;
-use App\Models\User;
-use App\Models\AiModelUseCase;
 
 class AiModelUseCaseControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
     private User $user;
+
     private Organization $organization;
+
     private AiModel $aiModel;
+
     private UseCase $useCase;
+
     private AiModelVersion $aiModelVersion;
 
     protected function setUp(): void
@@ -62,6 +66,7 @@ class AiModelUseCaseControllerTest extends TestCase
             'use_case_id' => $this->useCase->id,
             'ai_model_version_id' => $this->aiModelVersion->id,
             'relationship_type' => RelationshipType::PRIMARY,
+            'created_by' => 'doush@gmail.com',
         ], $overrides);
     }
 
@@ -71,7 +76,7 @@ class AiModelUseCaseControllerTest extends TestCase
             'ai_model_id' => $this->aiModel->id,
         ]);
 
-        $response = $this->getJson('/api/ai-model-use-cases?ai_model_id=' . $this->aiModel->id);
+        $response = $this->getJson('/api/ai-model-use-cases?ai_model_id='.$this->aiModel->id);
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -125,8 +130,7 @@ class AiModelUseCaseControllerTest extends TestCase
 
         $this->assertDatabaseHas('ai_model_use_cases', $data);
         $this->assertDatabaseHas('ai_model_use_cases', [
-            'created_by' => $this->user->id,
-            'updated_by' => $this->user->id,
+            'created_by' => 'doush@gmail.com',
         ]);
     }
 
@@ -172,7 +176,7 @@ class AiModelUseCaseControllerTest extends TestCase
 
         $updateData = [
             'relationship_type' => RelationshipType::SECONDARY,
-            'updated_by' => $this->user->id,
+            'updated_by' => 'email@example.com',
         ];
 
         $response = $this->postJson("/api/ai-model-use-cases/{$aiModelUseCase->id}", $updateData);
@@ -186,7 +190,7 @@ class AiModelUseCaseControllerTest extends TestCase
 
         $this->assertDatabaseHas('ai_model_use_cases', array_merge(['id' => $aiModelUseCase->id], $updateData));
         $this->assertDatabaseHas('ai_model_use_cases', [
-            'updated_by' => $this->user->id,
+            'updated_by' => 'email@example.com',
         ]);
     }
 

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AiAsset extends Model
 {
@@ -25,9 +25,13 @@ class AiAsset extends Model
         'vendor_effective_to' => 'datetime',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the vendor associated with the AI asset.
-     * 
+     *
      * @return BelongsTo<Vendor, $this>
      */
     public function vendor(): BelongsTo
@@ -37,11 +41,16 @@ class AiAsset extends Model
 
     /**
      * Get the vendor agreement for the AI asset.
-     * 
+     *
      * @return BelongsTo<Agreement, $this>
      */
     public function vendorAgreement(): BelongsTo
     {
         return $this->belongsTo(Agreement::class, 'vendor_agreement_id');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'AA-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

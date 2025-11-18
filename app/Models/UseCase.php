@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UseCase extends Model
 {
@@ -56,7 +56,7 @@ class UseCase extends Model
 
     /**
      * Get the organization that owns this use case.
-     * 
+     *
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
@@ -66,7 +66,7 @@ class UseCase extends Model
 
     /**
      * Get the business owner stakeholder.
-     * 
+     *
      * @return BelongsTo<Stakeholder, $this>
      */
     public function businessOwner(): BelongsTo
@@ -76,11 +76,16 @@ class UseCase extends Model
 
     /**
      * Get the technical owner stakeholder.
-     * 
+     *
      * @return BelongsTo<Stakeholder, $this>
      */
     public function technicalOwner(): BelongsTo
     {
         return $this->belongsTo(Stakeholder::class, 'technical_owner_id');
+    }
+
+    public function displayID(): string
+    {
+        return 'UC-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

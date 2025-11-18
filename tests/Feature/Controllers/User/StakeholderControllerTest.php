@@ -2,17 +2,18 @@
 
 namespace Tests\Feature;
 
-use App\Models\Organization;
-use App\Models\Stakeholder;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Stakeholder;
+use App\Models\Organization;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class StakeholderControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
+
     protected Organization $organization;
 
     protected function setUp(): void
@@ -161,6 +162,7 @@ class StakeholderControllerTest extends TestCase
             'timezone' => $stakeholder->timezone,
             'classification' => $stakeholder->classification,
             'active' => $stakeholder->active,
+            'role_tags' => $stakeholder->role_tags,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')

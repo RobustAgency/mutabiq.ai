@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PdpProcessingRegister extends Model
 {
@@ -36,4 +36,13 @@ class PdpProcessingRegister extends Model
         'effective_from' => 'datetime',
         'effective_to' => 'datetime',
     ];
+
+    protected $appends = [
+        'display_id',
+    ];
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'PDP-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
 }

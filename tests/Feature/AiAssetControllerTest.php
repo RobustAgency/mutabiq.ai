@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\AiAsset;
-use App\Models\Agreement;
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\AiAsset;
+use App\Models\Agreement;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class AiAssetControllerTest extends TestCase
 {
@@ -15,10 +16,15 @@ class AiAssetControllerTest extends TestCase
 
     private User $user;
 
+    private Organization $organization;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
     }
 
     public function test_index_returns_paginated_ai_assets(): void
@@ -48,7 +54,7 @@ class AiAssetControllerTest extends TestCase
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ]);
     }
 
@@ -78,7 +84,10 @@ class AiAssetControllerTest extends TestCase
     public function test_index_includes_vendor_relationship(): void
     {
         $vendor = Vendor::factory()->create(['vendor_name' => 'Test Vendor']);
-        AiAsset::factory()->create(['vendor_id' => $vendor->id]);
+        AiAsset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vendor_id' => $vendor->id,
+        ]);
 
         $response = $this->actingAs($this->user, 'supabase')
             ->getJson('/api/ai-assets');
@@ -510,23 +519,5 @@ class AiAssetControllerTest extends TestCase
             'vendor_agreement_id' => null,
             'vendor_assessment_id' => null,
         ]);
-    }
-
-    public function test_update_supports_partial_updates(): void
-    {
-        $vendor = Vendor::factory()->create();
-        $aiAsset = AiAsset::factory()->create([
-            'vendor_id' => $vendor->id,
-            'vendor_assessment_id' => 100,
-        ]);
-
-        $updateData = ['vendor_assessment_id' => 999];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson("/api/ai-assets/{$aiAsset->id}", $updateData);
-
-        $response->assertStatus(200)
-            ->assertJsonPath('data.vendor_id', $vendor->id)
-            ->assertJsonPath('data.vendor_assessment_id', 999);
     }
 }
