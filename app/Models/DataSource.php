@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DataSource extends Model
 {
@@ -34,5 +34,14 @@ class DataSource extends Model
         return [
             'data_domains' => 'array',
         ];
+    }
+
+    protected $appends = [
+        'display_id',
+    ];
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'DS-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

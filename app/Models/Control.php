@@ -21,6 +21,10 @@ class Control extends Model
         'description',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * The frameworks that belong to the control.
      *
@@ -59,5 +63,10 @@ class Control extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'CTL-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

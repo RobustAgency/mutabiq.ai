@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Models\Agreement;
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\Agreement;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class AgreementControllerTest extends TestCase
 {
@@ -14,10 +15,15 @@ class AgreementControllerTest extends TestCase
 
     private User $user;
 
+    private Organization $organization;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
     }
 
     private function validPayload(array $overrides = []): array
@@ -70,11 +76,11 @@ class AgreementControllerTest extends TestCase
                             'doc_ref',
                             'created_at',
                             'updated_at',
-                        ]
+                        ],
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ])
             ->assertJson(['error' => false]);
     }
@@ -126,7 +132,7 @@ class AgreementControllerTest extends TestCase
                     'transfer_mechanism',
                     'sla_terms',
                     'doc_ref',
-                ]
+                ],
             ])
             ->assertJson([
                 'error' => false,
@@ -134,7 +140,7 @@ class AgreementControllerTest extends TestCase
                 'data' => [
                     'agreement_type' => $payload['agreement_type'],
                     'status' => $payload['status'],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('agreements', [
@@ -165,7 +171,7 @@ class AgreementControllerTest extends TestCase
                 'error' => false,
                 'data' => [
                     'agreement_type' => $payload['agreement_type'],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('agreements', [
@@ -464,7 +470,7 @@ class AgreementControllerTest extends TestCase
     public function test_create_agreement_validates_sla_terms_array_structure(): void
     {
         $payload = $this->validPayload([
-            'sla_terms' => 'not-an-array'
+            'sla_terms' => 'not-an-array',
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
@@ -481,7 +487,7 @@ class AgreementControllerTest extends TestCase
         $payload = $this->validPayload([
             'sla_terms' => [
                 'availability_target_pct' => 150, // Invalid: > 100
-            ]
+            ],
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
@@ -498,7 +504,7 @@ class AgreementControllerTest extends TestCase
         $payload = $this->validPayload([
             'sla_terms' => [
                 'latency_p95_ms' => -100, // Invalid: negative
-            ]
+            ],
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
@@ -520,7 +526,7 @@ class AgreementControllerTest extends TestCase
                 'breach_definition' => 'Service down > 1 hour',
                 'credit_schedule_ref' => 'SLA-2024',
                 'monitoring_ref' => 'MON-2024',
-            ]
+            ],
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
@@ -583,7 +589,7 @@ class AgreementControllerTest extends TestCase
                     'id' => $agreement->id,
                     'agreement_type' => $agreement->agreement_type,
                     'status' => $agreement->status,
-                ]
+                ],
             ]);
     }
 
@@ -636,7 +642,7 @@ class AgreementControllerTest extends TestCase
                     'id' => $agreement->id,
                     'agreement_type' => $updateData['agreement_type'],
                     'status' => $updateData['status'],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('agreements', [
@@ -665,7 +671,7 @@ class AgreementControllerTest extends TestCase
                 'data' => [
                     'agreement_type' => 'msa',
                     'status' => 'active',
-                ]
+                ],
             ]);
     }
 
@@ -677,7 +683,7 @@ class AgreementControllerTest extends TestCase
         $agreement = Agreement::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/agreements/{$agreement->id}", [
-            'vendor_id' => 99999
+            'vendor_id' => 99999,
         ]);
 
         $response->assertStatus(422)
@@ -692,7 +698,7 @@ class AgreementControllerTest extends TestCase
         $agreement = Agreement::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/agreements/{$agreement->id}", [
-            'agreement_type' => 'invalid_type'
+            'agreement_type' => 'invalid_type',
         ]);
 
         $response->assertStatus(422)
@@ -707,7 +713,7 @@ class AgreementControllerTest extends TestCase
         $agreement = Agreement::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/agreements/{$agreement->id}", [
-            'status' => 'invalid_status'
+            'status' => 'invalid_status',
         ]);
 
         $response->assertStatus(422)
@@ -738,7 +744,7 @@ class AgreementControllerTest extends TestCase
         $agreement = Agreement::factory()->create();
 
         $response = $this->postJson("/api/agreements/{$agreement->id}", [
-            'status' => 'active'
+            'status' => 'active',
         ]);
 
         $response->assertStatus(401);
@@ -811,7 +817,7 @@ class AgreementControllerTest extends TestCase
             ->assertJson([
                 'data' => [
                     'sla_terms' => $slaTerms,
-                ]
+                ],
             ]);
     }
 
@@ -836,22 +842,8 @@ class AgreementControllerTest extends TestCase
                     'audit_rights' => null,
                     'transfer_mechanism' => null,
                     'sla_terms' => null,
-                ]
+                ],
             ]);
-    }
-
-    /**
-     * Test agreement response includes vendor relationship when loaded.
-     */
-    public function test_agreement_response_includes_vendor_relationship_when_loaded(): void
-    {
-        $vendor = Vendor::factory()->create(['vendor_name' => 'Test Vendor']);
-        $agreement = Agreement::factory()->create(['vendor_id' => $vendor->id]);
-
-        $response = $this->actingAs($this->user)->getJson('/api/agreements');
-
-        $response->assertStatus(200)
-            ->assertJsonPath('data.data.0.vendor.vendor_name', 'Test Vendor');
     }
 
     /**

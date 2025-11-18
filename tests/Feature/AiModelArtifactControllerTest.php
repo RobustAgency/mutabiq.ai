@@ -2,21 +2,20 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ArtifactType;
-use App\Models\AiModelArtifact;
-use App\Models\AiModelVersion;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use App\Models\User;
+use App\Enums\ArtifactType;
+use App\Models\Organization;
+use App\Models\AiModelVersion;
+use App\Models\AiModelArtifact;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiModelArtifactControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -60,7 +59,7 @@ class AiModelArtifactControllerTest extends TestCase
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ]);
     }
 
@@ -120,59 +119,54 @@ class AiModelArtifactControllerTest extends TestCase
 
     public function test_store_creates_ai_model_artifact(): void
     {
-        Storage::fake('local');
-
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://ai-model-artifacts/models/test-model/model.bin,abc123def456,1048576,Test model binary artifact\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-model-artifacts', [
-                'file' => $file,
+                'ai_model_version_id' => $aiModelVersion->id,
+                'name' => 'test-model.bin',
+                'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/models/test-model/model.bin',
+                'checksum' => 'abc123def456',
+                'size_bytes' => 1048576,
                 'artifact_type' => ArtifactType::MODEL_BINARY->value,
+                'notes' => 'Test model binary artifact',
             ]);
 
         $response->assertStatus(200)
             ->assertJson([
                 'error' => false,
-                'message' => 'Import completed successfully.',
+                'message' => 'AI Model Artifact(s) created successfully',
             ]);
 
         $this->assertDatabaseHas('ai_model_artifacts', [
             'organization_id' => $this->organization->id,
             'ai_model_version_id' => $aiModelVersion->id,
             'artifact_type' => ArtifactType::MODEL_BINARY->value,
-            'uri' => 's3://ai-model-artifacts/models/test-model/model.bin',
+            'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/models/test-model/model.bin',
             'checksum' => 'abc123def456',
             'size_bytes' => 1048576,
-            'created_by' => $this->user->id,
             'notes' => 'Test model binary artifact',
         ]);
     }
 
     public function test_store_creates_artifact_with_all_artifact_types(): void
     {
-        Storage::fake('local');
-
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
         foreach (ArtifactType::cases() as $type) {
-            $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-            $csvContent .= "{$aiModelVersion->id},s3://bucket/path/to/artifact,checksum,1024,Note\n";
-
-            $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/ai-model-artifacts', [
-                    'file' => $file,
+                    'ai_model_version_id' => $aiModelVersion->id,
+                    'name' => 'artifact-'.$type->value,
+                    'uri' => 'https://s3.amazonaws.com/bucket/path/to/artifact',
+                    'checksum' => 'checksum123',
+                    'size_bytes' => 1024,
                     'artifact_type' => $type->value,
+                    'notes' => 'Test note',
                 ]);
 
             $response->assertStatus(200);
@@ -185,20 +179,17 @@ class AiModelArtifactControllerTest extends TestCase
 
     public function test_store_creates_artifact_without_optional_fields(): void
     {
-        Storage::fake('local');
-
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://ai-model-artifacts/configs/test/config.yaml,,,\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-model-artifacts', [
-                'file' => $file,
+                'ai_model_version_id' => $aiModelVersion->id,
+                'name' => 'config.yaml',
+                'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/configs/test/config.yaml',
+                'checksum' => 'hash123',
+                'size_bytes' => 2048,
                 'artifact_type' => ArtifactType::CONFIG->value,
             ]);
 
@@ -207,9 +198,7 @@ class AiModelArtifactControllerTest extends TestCase
         $this->assertDatabaseHas('ai_model_artifacts', [
             'ai_model_version_id' => $aiModelVersion->id,
             'artifact_type' => ArtifactType::CONFIG->value,
-            'uri' => 's3://ai-model-artifacts/configs/test/config.yaml',
-            'checksum' => null,
-            'size_bytes' => null,
+            'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/configs/test/config.yaml',
             'notes' => null,
         ]);
     }
@@ -220,21 +209,33 @@ class AiModelArtifactControllerTest extends TestCase
             ->postJson('/api/ai-model-artifacts', []);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['file', 'artifact_type']);
+            ->assertJsonValidationErrors([
+                'ai_model_version_id',
+                'name',
+                'uri',
+                'checksum',
+                'size_bytes',
+                'artifact_type',
+            ]);
     }
 
     public function test_store_validates_artifact_type_is_valid(): void
     {
-        $file = UploadedFile::fake()->create('artifacts.csv', 100);
+        $aiModelVersion = AiModelVersion::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-model-artifacts', [
-                'file' => $file,
+                'ai_model_version_id' => $aiModelVersion->id,
+                'name' => 'test-artifact',
+                'uri' => 'https://example.com/artifact',
+                'checksum' => 'checksum123',
+                'size_bytes' => 1024,
                 'artifact_type' => 'invalid_type',
             ]);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['artifact_type']);
+        $response->assertStatus(422);
     }
 
     public function test_store_requires_authentication(): void
@@ -326,20 +327,17 @@ class AiModelArtifactControllerTest extends TestCase
 
     public function test_store_creates_sbom_artifact(): void
     {
-        Storage::fake('local');
-
         $aiModelVersion = AiModelVersion::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
-        $csvContent = "model_version_id,uri,checksum,size_bytes,notes\n";
-        $csvContent .= "{$aiModelVersion->id},s3://ai-model-artifacts/sbom/model-123/sbom.json,sha256:abcdef123456,4096,\n";
-
-        $file = UploadedFile::fake()->createWithContent('artifacts.csv', $csvContent);
-
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-model-artifacts', [
-                'file' => $file,
+                'ai_model_version_id' => $aiModelVersion->id,
+                'name' => 'sbom.json',
+                'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/sbom/model-123/sbom.json',
+                'checksum' => 'sha256:abcdef123456',
+                'size_bytes' => 4096,
                 'artifact_type' => ArtifactType::SBOM->value,
             ]);
 

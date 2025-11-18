@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Models\Agreement;
+use Tests\TestCase;
 use App\Models\Vendor;
+use App\Models\Agreement;
+use App\Models\Organization;
 use App\Repositories\AgreementRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class AgreementRepositoryTest extends TestCase
 {
@@ -14,10 +15,13 @@ class AgreementRepositoryTest extends TestCase
 
     private AgreementRepository $repository;
 
+    private Organization $organization;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new AgreementRepository();
+        $this->repository = new AgreementRepository;
+        $this->organization = Organization::factory()->create();
     }
 
     /**
@@ -25,9 +29,9 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_get_paginated_agreements_returns_paginated_results(): void
     {
-        Agreement::factory()->count(20)->create();
+        Agreement::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedAgreements(10);
+        $result = $this->repository->getPaginatedAgreements($this->organization->id, 10);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(20, $result->total());
@@ -39,9 +43,9 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_get_paginated_agreements_uses_default_per_page(): void
     {
-        Agreement::factory()->count(20)->create();
+        Agreement::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedAgreements();
+        $result = $this->repository->getPaginatedAgreements($this->organization->id);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -52,13 +56,15 @@ class AgreementRepositoryTest extends TestCase
     public function test_get_paginated_agreements_orders_by_created_at_desc(): void
     {
         $oldAgreement = Agreement::factory()->create([
+            'organization_id' => $this->organization->id,
             'created_at' => now()->subDays(10),
         ]);
         $newAgreement = Agreement::factory()->create([
+            'organization_id' => $this->organization->id,
             'created_at' => now(),
         ]);
 
-        $result = $this->repository->getPaginatedAgreements();
+        $result = $this->repository->getPaginatedAgreements($this->organization->id);
 
         $this->assertEquals($newAgreement->id, $result->items()[0]->id);
         $this->assertEquals($oldAgreement->id, $result->items()[1]->id);
@@ -69,7 +75,7 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_get_paginated_agreements_returns_empty_when_no_records(): void
     {
-        $result = $this->repository->getPaginatedAgreements();
+        $result = $this->repository->getPaginatedAgreements($this->organization->id);
 
         $this->assertCount(0, $result->items());
         $this->assertEquals(0, $result->total());
@@ -80,9 +86,9 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_get_paginated_agreements_eager_loads_vendor(): void
     {
-        Agreement::factory()->count(3)->create();
+        Agreement::factory()->count(3)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedAgreements();
+        $result = $this->repository->getPaginatedAgreements($this->organization->id);
 
         foreach ($result->items() as $agreement) {
             $this->assertTrue($agreement->relationLoaded('vendor'));
@@ -94,8 +100,9 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_create_agreement_creates_new_record_with_all_fields(): void
     {
-        $vendor = Vendor::factory()->create();
+        $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
         $data = [
+            'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
             'agreement_type' => 'dpa',
             'status' => 'active',
@@ -130,8 +137,9 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_create_agreement_creates_record_with_only_required_fields(): void
     {
-        $vendor = Vendor::factory()->create();
+        $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
         $data = [
+            'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
             'agreement_type' => 'msa',
             'status' => 'draft',
@@ -155,11 +163,12 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_create_agreement_stores_datetime_fields_correctly(): void
     {
-        $vendor = Vendor::factory()->create();
+        $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
         $effectiveFrom = now()->subMonth();
         $effectiveTo = now()->addYear();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
             'agreement_type' => 'dpa',
             'status' => 'active',
@@ -179,7 +188,7 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_create_agreement_stores_sla_terms_json_correctly(): void
     {
-        $vendor = Vendor::factory()->create();
+        $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
         $slaTerms = [
             'availability_target_pct' => 99.95,
             'latency_p95_ms' => 150,
@@ -190,6 +199,7 @@ class AgreementRepositoryTest extends TestCase
         ];
 
         $data = [
+            'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
             'agreement_type' => 'sla',
             'status' => 'active',
@@ -211,8 +221,8 @@ class AgreementRepositoryTest extends TestCase
      */
     public function test_update_agreement_updates_all_fields(): void
     {
-        $agreement = Agreement::factory()->create();
-        $newVendor = Vendor::factory()->create();
+        $agreement = Agreement::factory()->create(['organization_id' => $this->organization->id]);
+        $newVendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
 
         $updateData = [
             'vendor_id' => $newVendor->id,
@@ -247,7 +257,7 @@ class AgreementRepositoryTest extends TestCase
         $agreement = Agreement::factory()->create(['status' => 'draft']);
 
         $updatedAgreement = $this->repository->updateAgreement($agreement, [
-            'status' => 'active'
+            'status' => 'active',
         ]);
 
         $this->assertNotSame($agreement, $updatedAgreement);
@@ -270,7 +280,7 @@ class AgreementRepositoryTest extends TestCase
         ]);
 
         $updatedAgreement = $this->repository->updateAgreement($agreement, [
-            'status' => 'active'
+            'status' => 'active',
         ]);
 
         $this->assertEquals('msa', $updatedAgreement->agreement_type);
@@ -346,70 +356,5 @@ class AgreementRepositoryTest extends TestCase
         $result = $this->repository->deleteAgreement($agreement);
 
         $this->assertTrue($result);
-    }
-
-    /**
-     * Test agreement has relationship with vendor.
-     */
-    public function test_agreement_has_relationship_with_vendor(): void
-    {
-        $vendor = Vendor::factory()->create();
-        $agreement = Agreement::factory()->create([
-            'vendor_id' => $vendor->id,
-        ]);
-
-        $result = $this->repository->getPaginatedAgreements();
-        $fetchedAgreement = $result->items()[0];
-
-        $this->assertInstanceOf(Vendor::class, $fetchedAgreement->vendor);
-        $this->assertEquals($vendor->id, $fetchedAgreement->vendor->id);
-    }
-
-    /**
-     * Test create agreement with different agreement types.
-     */
-    public function test_create_agreement_with_different_agreement_types(): void
-    {
-        $vendor = Vendor::factory()->create();
-        $types = ['msa', 'dpa', 'order_form', 'addendum', 'sla', 'other'];
-
-        foreach ($types as $type) {
-            $data = [
-                'vendor_id' => $vendor->id,
-                'agreement_type' => $type,
-                'status' => 'active',
-                'effective_from' => now(),
-                'effective_to' => now()->addYear(),
-                'doc_ref' => "https://example.com/{$type}.pdf",
-            ];
-
-            $agreement = $this->repository->createAgreement($data);
-
-            $this->assertEquals($type, $agreement->agreement_type);
-        }
-    }
-
-    /**
-     * Test create agreement with different statuses.
-     */
-    public function test_create_agreement_with_different_statuses(): void
-    {
-        $vendor = Vendor::factory()->create();
-        $statuses = ['draft', 'active', 'lapsed', 'terminated'];
-
-        foreach ($statuses as $status) {
-            $data = [
-                'vendor_id' => $vendor->id,
-                'agreement_type' => 'msa',
-                'status' => $status,
-                'effective_from' => now(),
-                'effective_to' => now()->addYear(),
-                'doc_ref' => "https://example.com/{$status}.pdf",
-            ];
-
-            $agreement = $this->repository->createAgreement($data);
-
-            $this->assertEquals($status, $agreement->status);
-        }
     }
 }

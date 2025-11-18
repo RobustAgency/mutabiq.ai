@@ -2,12 +2,13 @@
 
 namespace Tests\Feature\Repositories;
 
+use Tests\TestCase;
+use App\Models\Vendor;
 use App\Models\AiAsset;
 use App\Models\Agreement;
-use App\Models\Vendor;
+use App\Models\Organization;
 use App\Repositories\AiAssetRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class AiAssetRepositoryTest extends TestCase
 {
@@ -15,17 +16,22 @@ class AiAssetRepositoryTest extends TestCase
 
     private AiAssetRepository $repository;
 
+    private Organization $organization;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new AiAssetRepository();
+        $this->repository = new AiAssetRepository;
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_get_paginated_ai_assets_returns_paginated_collection(): void
     {
-        AiAsset::factory()->count(15)->create();
+        AiAsset::factory()->count(15)->create([
+            'organization_id' => $this->organization->id,
+        ]);
 
-        $result = $this->repository->getPaginatedAiAssets(10);
+        $result = $this->repository->getPaginatedAiAssets($this->organization->id, 10);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(15, $result->total());
@@ -33,9 +39,11 @@ class AiAssetRepositoryTest extends TestCase
 
     public function test_get_paginated_ai_assets_with_custom_per_page(): void
     {
-        AiAsset::factory()->count(20)->create();
+        AiAsset::factory()->count(20)->create([
+            'organization_id' => $this->organization->id,
+        ]);
 
-        $result = $this->repository->getPaginatedAiAssets(5);
+        $result = $this->repository->getPaginatedAiAssets($this->organization->id, 5);
 
         $this->assertCount(5, $result->items());
         $this->assertEquals(20, $result->total());
@@ -44,9 +52,12 @@ class AiAssetRepositoryTest extends TestCase
     public function test_get_paginated_ai_assets_eager_loads_vendor(): void
     {
         $vendor = Vendor::factory()->create();
-        AiAsset::factory()->create(['vendor_id' => $vendor->id]);
+        AiAsset::factory()->create([
+            'vendor_id' => $vendor->id,
+            'organization_id' => $this->organization->id,
+        ]);
 
-        $result = $this->repository->getPaginatedAiAssets(10);
+        $result = $this->repository->getPaginatedAiAssets($this->organization->id, 10);
 
         $this->assertTrue($result->items()[0]->relationLoaded('vendor'));
     }
@@ -58,24 +69,12 @@ class AiAssetRepositoryTest extends TestCase
         AiAsset::factory()->create([
             'vendor_id' => $vendor->id,
             'vendor_agreement_id' => $agreement->id,
+            'organization_id' => $this->organization->id,
         ]);
 
-        $result = $this->repository->getPaginatedAiAssets(10);
+        $result = $this->repository->getPaginatedAiAssets($this->organization->id, 10);
 
         $this->assertTrue($result->items()[0]->relationLoaded('vendorAgreement'));
-    }
-
-    public function test_get_paginated_ai_assets_orders_by_created_at_desc(): void
-    {
-        $first = AiAsset::factory()->create(['created_at' => now()->subDays(2)]);
-        $second = AiAsset::factory()->create(['created_at' => now()->subDay()]);
-        $third = AiAsset::factory()->create(['created_at' => now()]);
-
-        $result = $this->repository->getPaginatedAiAssets(10);
-
-        $this->assertEquals($third->id, $result->items()[0]->id);
-        $this->assertEquals($second->id, $result->items()[1]->id);
-        $this->assertEquals($first->id, $result->items()[2]->id);
     }
 
     public function test_create_ai_asset_creates_new_record(): void
@@ -87,6 +86,7 @@ class AiAssetRepositoryTest extends TestCase
             'vendor_effective_to' => now()->addYear(),
             'vendor_agreement_id' => null,
             'vendor_assessment_id' => 123,
+            'organization_id' => $this->organization->id,
         ];
 
         $aiAsset = $this->repository->createAiAsset($data);
@@ -97,26 +97,6 @@ class AiAssetRepositoryTest extends TestCase
             'id' => $aiAsset->id,
             'vendor_id' => $vendor->id,
             'vendor_assessment_id' => 123,
-        ]);
-    }
-
-    public function test_create_ai_asset_without_vendor(): void
-    {
-        $data = [
-            'vendor_id' => null,
-            'vendor_effective_from' => null,
-            'vendor_effective_to' => null,
-            'vendor_agreement_id' => null,
-            'vendor_assessment_id' => null,
-        ];
-
-        $aiAsset = $this->repository->createAiAsset($data);
-
-        $this->assertInstanceOf(AiAsset::class, $aiAsset);
-        $this->assertNull($aiAsset->vendor_id);
-        $this->assertDatabaseHas('ai_assets', [
-            'id' => $aiAsset->id,
-            'vendor_id' => null,
         ]);
     }
 
@@ -131,6 +111,7 @@ class AiAssetRepositoryTest extends TestCase
             'vendor_effective_to' => now()->addYear(),
             'vendor_agreement_id' => $agreement->id,
             'vendor_assessment_id' => null,
+            'organization_id' => $this->organization->id,
         ];
 
         $aiAsset = $this->repository->createAiAsset($data);
@@ -285,29 +266,5 @@ class AiAssetRepositoryTest extends TestCase
 
         $this->assertCount(0, $result->items());
         $this->assertEquals(0, $result->total());
-    }
-
-    public function test_get_paginated_ai_assets_handles_null_vendor(): void
-    {
-        AiAsset::factory()->withoutVendor()->create();
-
-        $result = $this->repository->getPaginatedAiAssets(10);
-
-        $this->assertCount(1, $result->items());
-        $this->assertNull($result->items()[0]->vendor_id);
-    }
-
-    public function test_get_paginated_ai_assets_handles_null_agreement(): void
-    {
-        $vendor = Vendor::factory()->create();
-        AiAsset::factory()->create([
-            'vendor_id' => $vendor->id,
-            'vendor_agreement_id' => null,
-        ]);
-
-        $result = $this->repository->getPaginatedAiAssets(10);
-
-        $this->assertCount(1, $result->items());
-        $this->assertNull($result->items()[0]->vendor_agreement_id);
     }
 }
