@@ -13,9 +13,9 @@ jobs:
       - name: Install laravel envoy
         uses: php-actions/composer@v6
         with:
-          php_version: 8.3
+          php_version: 8.4
           args: --ignore-platform-reqs
-          command: require laravel/envoy:^2.1 --dev
+          command: require laravel/envoy --dev
 
       - name: Adding Staging server key
         run: |
