@@ -54,6 +54,10 @@ class UseCase extends Model
         'data_assessment' => 'boolean',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the organization that owns this use case.
      *
@@ -84,7 +88,7 @@ class UseCase extends Model
         return $this->belongsTo(Stakeholder::class, 'technical_owner_id');
     }
 
-    public function displayID(): string
+    public function getDisplayIdAttribute(): string
     {
         return 'UC-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
