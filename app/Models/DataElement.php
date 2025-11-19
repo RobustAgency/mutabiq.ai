@@ -33,6 +33,10 @@ class DataElement extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * @return BelongsToMany<Dataset, $this>
      */
