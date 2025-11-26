@@ -18,25 +18,23 @@ class AiModel extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'description',
         'organization_id',
-        'source_org_stakeholder_id',
-        'organizational_role',
-        'owner_stakeholder_id',
-        'vendor_id',
-        'current_version_id',
-        'primary_category',
+        'name',
+        'category',
         'type',
-        'domain_specialization',
-        'operational_status',
-        'business_status',
-        'regulatory_risk_classification',
-        'ownership_type',
-        'development_source',
+        'technical_domain',
+        'purpose',
+        'criticality_level',
+        'regulatory_risk_tier',
+        'eu_ai_category',
+        'ownership_category',
+        'responsible_org_role',
+        'business_owner_id',
+        'custodian_id',
+        'business_adoption_status',
+        'current_version_id',
         'created_by',
         'updated_by',
-        'creator_email',
     ];
 
     protected $appends = [
@@ -61,36 +59,6 @@ class AiModel extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    /**
-     * Get the vendor associated with the AI model.
-     *
-     * @return BelongsTo<Vendor, $this>
-     */
-    public function vendor(): BelongsTo
-    {
-        return $this->belongsTo(Vendor::class, 'vendor_id');
-    }
-
-    /**
-     * Get the source organization stakeholder.
-     *
-     * @return BelongsTo<Stakeholder, $this>
-     */
-    public function sourceOrgStakeholder(): BelongsTo
-    {
-        return $this->belongsTo(Stakeholder::class, 'source_org_stakeholder_id');
-    }
-
-    /**
-     * Get the owner stakeholder.
-     *
-     * @return BelongsTo<Stakeholder, $this>
-     */
-    public function ownerStakeholder(): BelongsTo
-    {
-        return $this->belongsTo(Stakeholder::class, 'owner_stakeholder_id');
     }
 
     /**

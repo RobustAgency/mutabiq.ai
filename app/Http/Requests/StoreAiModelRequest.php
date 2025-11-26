@@ -2,14 +2,12 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use App\Enums\PrimaryCategory;
-use App\Enums\OperationalStatus;
-use App\Enums\BusinessStatus;
 use App\Enums\OwnershipType;
-use App\Enums\DevelopmentSource;
+use App\Enums\BusinessStatus;
+use App\Enums\PrimaryCategory;
+use Illuminate\Validation\Rule;
 use App\Enums\OrganizationalRole;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAiModelRequest extends FormRequest
 {
@@ -21,36 +19,19 @@ class StoreAiModelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'source_org_stakeholder_id' => [
-                'required',
-                Rule::exists('stakeholders', 'id'),
-            ],
-            'owner_stakeholder_id' => [
-                'required',
-                Rule::exists('stakeholders', 'id'),
-            ],
-            'vendor_id' => ['nullable', 'exists:vendors,id'],
-            'primary_category' => ['required', Rule::in(array_map(fn($c) => $c->value, PrimaryCategory::cases()))],
+            'name' => ['required', 'string', 'max:255', 'unique:ai_models,name'],
+            'category' => ['required', Rule::in(array_map(fn ($c) => $c->value, PrimaryCategory::cases()))],
             'type' => ['required', 'string', 'max:255'],
-            'domain_specialization' => ['required', 'string', 'max:255'],
-            'operational_status' => ['required', Rule::in(array_map(fn($c) => $c->value, OperationalStatus::cases()))],
-            'business_status' => ['required', Rule::in(array_map(fn($c) => $c->value, BusinessStatus::cases()))],
-            'regulatory_risk_classification' => ['nullable', 'string', 'max:255'],
-            'ownership_type' => ['required', Rule::in(array_map(fn($c) => $c->value, OwnershipType::cases()))],
-            'development_source' => ['required', Rule::in(array_map(fn($c) => $c->value, DevelopmentSource::cases()))],
-            'current_version_id' => ['required_if:operational_status,production', 'exists:ai_model_versions,id'],
-            'organizational_role' => ['required', 'string', Rule::in(array_map(fn($c) => $c->value, OrganizationalRole::cases()))],
-            'creator_email' => ['required', 'email'],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'owner_stakeholder_id.required' => 'The model owner is required.',
-            'owner_stakeholder_id.exists' => 'The selected model owner is invalid.',
+            'ownership_category' => ['required', Rule::in(array_map(fn ($c) => $c->value, OwnershipType::cases()))],
+            'responsible_org_role' => ['required', 'string', Rule::in(array_map(fn ($c) => $c->value, OrganizationalRole::cases()))],
+            'technical_domain' => ['nullable', 'string', 'max:255'],
+            'purpose' => ['nullable', 'string', 'max:1000'],
+            'criticality_level' => ['nullable', 'string', 'max:100'],
+            'regulatory_risk_tier' => ['nullable', 'string', 'max:255'],
+            'eu_ai_category' => ['nullable', 'string', 'max:255'],
+            'business_owner_id' => ['nullable', 'exists:users,id'],
+            'custodian_id' => ['nullable', 'exists:users,id'],
+            'business_adoption_status' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, BusinessStatus::cases()))],
         ];
     }
 }

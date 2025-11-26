@@ -3,16 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\User;
-use App\Models\Organization;
-use App\Models\Stakeholder;
-use App\Models\Vendor;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Enums\PrimaryCategory;
-use App\Enums\OperationalStatus;
-use App\Enums\BusinessStatus;
 use App\Enums\OwnershipType;
-use App\Enums\DevelopmentSource;
+use App\Models\Organization;
+use App\Enums\BusinessStatus;
+use App\Enums\PrimaryCategory;
 use App\Enums\OrganizationalRole;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AiModel>
@@ -28,23 +24,21 @@ class AiModelFactory extends Factory
     {
         return [
             'name' => $this->faker->words(3, true),
-            'description' => $this->faker->optional()->paragraph(),
             'organization_id' => Organization::factory(),
-            'source_org_stakeholder_id' => Stakeholder::factory(),
-            'owner_stakeholder_id' => Stakeholder::factory(),
-            'organizational_role' => $this->faker->randomElement(array_map(fn($c) => $c->value, OrganizationalRole::cases())),
-            'vendor_id' => $this->faker->optional()->randomElement([null, Vendor::factory()]),
-            'primary_category' => $this->faker->randomElement(array_map(fn($c) => $c->value, PrimaryCategory::cases())),
+            'category' => $this->faker->randomElement(array_map(fn ($c) => $c->value, PrimaryCategory::cases())),
             'type' => $this->faker->randomElement(['classification', 'regression', 'generation', 'nlp', 'recommendation', 'computer_vision', 'time_series']),
-            'domain_specialization' => $this->faker->randomElement(['fraud_detection', 'customer_insights', 'risk_scoring', 'content_moderation', 'pricing', 'forecasting']),
-            'operational_status' => $this->faker->randomElement(array_map(fn($c) => $c->value, OperationalStatus::cases())),
-            'business_status' => $this->faker->randomElement(array_map(fn($c) => $c->value, BusinessStatus::cases())),
-            'regulatory_risk_classification' => $this->faker->randomElement(['low', 'moderate', 'high', 'critical']),
-            'ownership_type' => $this->faker->randomElement(array_map(fn($c) => $c->value, OwnershipType::cases())),
-            'development_source' => $this->faker->randomElement(array_map(fn($c) => $c->value, DevelopmentSource::cases())),
+            'technical_domain' => $this->faker->optional()->randomElement(['fraud_detection', 'customer_insights', 'risk_scoring', 'content_moderation', 'pricing', 'forecasting']),
+            'purpose' => $this->faker->optional()->sentence(),
+            'criticality_level' => $this->faker->optional()->randomElement(['low', 'medium', 'high', 'critical']),
+            'business_adoption_status' => $this->faker->optional()->randomElement(array_map(fn ($c) => $c->value, BusinessStatus::cases())),
+            'regulatory_risk_tier' => $this->faker->optional()->randomElement(['low', 'moderate', 'high', 'critical']),
+            'eu_ai_category' => $this->faker->optional()->randomElement(['minimal', 'limited', 'high', 'unacceptable']),
+            'ownership_category' => $this->faker->randomElement(array_map(fn ($c) => $c->value, OwnershipType::cases())),
+            'responsible_org_role' => $this->faker->randomElement(array_map(fn ($c) => $c->value, OrganizationalRole::cases())),
+            'business_owner_id' => $this->faker->optional()->randomElement([null, User::factory()]),
+            'custodian_id' => $this->faker->optional()->randomElement([null, User::factory()]),
             'created_by' => User::factory(),
             'updated_by' => User::factory(),
-            'creator_email' => $this->faker->safeEmail(),
         ];
     }
 }
