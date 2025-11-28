@@ -5,12 +5,11 @@ namespace App\Enums\UseCase;
 enum Status: string
 {
     case DRAFT = 'draft';
+    case STAGING = 'staging';
     case UNDER_REVIEW = 'under_review';
     case APPROVED = 'approved';
-    case IN_DEVELOPMENT = 'in_development';
-    case TESTING = 'testing';
-    case STAGING = 'staging';
-    case ACTIVE = 'active';
-    case SUSPENDED = 'suspended';
-    case DEPRECATED = 'deprecated';
+    case REJECTED = 'rejected';
+    case ON_HOLD = 'on_hold';
+    case IN_PRODUCTION = 'in_production';
+    case RETIRED = 'retired';
 }

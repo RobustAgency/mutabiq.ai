@@ -2,16 +2,17 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\UseCase\BusinessDomain;
-use App\Enums\UseCase\DataAvailabilityStatus;
-use App\Enums\UseCase\DataReadiness;
-use App\Enums\UseCase\DataSensitivity;
-use App\Enums\UseCase\Priority;
-use App\Enums\UseCase\RiskLevel;
-use App\Enums\UseCase\ROIClassification;
 use App\Enums\UseCase\Status;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\UseCase\Priority;
 use Illuminate\Validation\Rule;
+use App\Enums\UseCase\RiskLevel;
+use App\Enums\UseCase\DataReadiness;
+use App\Enums\UseCase\BusinessDomain;
+use App\Enums\UseCase\HumanOversight;
+use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\ROIClassification;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\UseCase\DataAvailabilityStatus;
 
 class StoreUseCaseRequest extends FormRequest
 {
@@ -32,31 +33,33 @@ class StoreUseCaseRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:5', 'max:255'],
-            'description' => ['required', 'string', 'min:100', 'max:5000'],
-            'business_objective' => ['required', 'string', 'min:50', 'max:2000'],
+            'description' => ['nullable', 'string', 'min:100', 'max:5000'],
+            'problem_statement' => ['required', 'string', 'min:50', 'max:2000'],
+            'expected_business_value' => ['required', 'string', 'min:50', 'max:2000'],
+            'stakeholder_ids' => ['required', 'array'],
+            'stakeholder_ids.*' => ['integer', 'exists:stakeholders,id'],
+            'status' => ['nullable', Rule::enum(Status::class)],
+            'business_domain' => ['nullable', Rule::enum(BusinessDomain::class)],
+            'roi_classification' => ['nullable', Rule::enum(ROIClassification::class)],
+            'priority' => ['nullable', Rule::enum(Priority::class)],
+            'data_sensitivity' => ['required', Rule::enum(DataSensitivity::class)],
+            'expected_roi' => ['required', 'numeric', 'min:0', 'max:999.99'],
+            'estimated_time_savings' => ['required', 'numeric', 'min:0'],
+            'estimated_cost_savings' => ['required', 'numeric', 'min:0'],
+            'estimated_revenue_impact' => ['required', 'numeric', 'min:0'],
+            'success_metrics' => ['required', 'string', 'min:50', 'max:2000'],
+            'preliminary_risk_level' => ['required', Rule::enum(RiskLevel::class)],
+            'regulatory_impact' => ['required', 'in:yes,no'],
+            'potential_harm' => ['required', 'string', 'min:50', 'max:2000'],
+            'human_oversight_mode' => ['required', Rule::enum(HumanOversight::class)],
+            'dependencies' => ['required', 'string', 'min:0', 'max:2000'],
+            'budget_allocated' => ['nullable', 'numeric', 'min:0'],
+            'target_deployment_date' => ['nullable', 'date'],
+            'estimated_fte_saving' => ['required', 'integer', 'min:0'],
+            'data_availability_status' => ['required', Rule::enum(DataAvailabilityStatus::class)],
+            'data_readiness' => ['nullable', Rule::enum(DataReadiness::class)],
             'business_owner_id' => ['nullable', 'integer', 'exists:stakeholders,id'],
             'technical_owner_id' => ['nullable', 'integer', 'exists:stakeholders,id'],
-            'business_domain' => ['required', Rule::enum(BusinessDomain::class)],
-            'roi_classification' => ['nullable', Rule::enum(ROIClassification::class)],
-            'created_by' => ['required', 'email'],
-            'updated_by' => ['nullable', 'email'],
-            'priority' => ['nullable', Rule::enum(Priority::class)],
-            'risk_level' => ['required', Rule::enum(RiskLevel::class)],
-            'data_sensitivity' => ['required', Rule::enum(DataSensitivity::class)],
-            'expected_roi_percentage' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
-            'budget_allocated' => ['nullable', 'numeric', 'min:0'],
-            'target_go_live_date' => ['nullable', 'date'],
-            'status' => ['required', Rule::enum(Status::class)],
-            'roi_assessment' => ['nullable', 'boolean'],
-            'risk_assessment' => ['nullable', 'boolean'],
-            'data_assessment' => ['nullable', 'boolean'],
-            'estimated_implementation_cost' => ['nullable', 'numeric', 'min:0'],
-            'estimated_reduction_in_time' => ['nullable', 'numeric', 'min:0'],
-            'estimated_reduction_in_cost' => ['nullable', 'numeric', 'min:0'],
-            'estimated_revenue_increase' => ['nullable', 'numeric', 'min:0'],
-            'estimated_fte_capacity_saving' => ['nullable', 'integer', 'min:0'],
-            'data_availability_status' => ['nullable', Rule::enum(DataAvailabilityStatus::class)],
-            'data_readiness' => ['nullable', Rule::enum(DataReadiness::class)],
         ];
     }
 }

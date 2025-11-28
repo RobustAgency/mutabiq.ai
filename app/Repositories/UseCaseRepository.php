@@ -7,11 +7,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class UseCaseRepository
 {
-
     /**
      * Get filtered use cases with optional filters.
      *
-     * @param array $filters
      * @return LengthAwarePaginator<int, UseCase>
      */
     public function getFilteredUseCases(array $filters = []): LengthAwarePaginator
@@ -22,8 +20,8 @@ class UseCaseRepository
             $query->where('organization_id', $filters['organization_id']);
         });
 
-        $query->when(! empty($filters['risk_level']), function ($query) use ($filters) {
-            $query->where('risk_level', $filters['risk_level']);
+        $query->when(! empty($filters['preliminary_risk_level']), function ($query) use ($filters) {
+            $query->where('preliminary_risk_level', $filters['preliminary_risk_level']);
         });
 
         $query->when(! empty($filters['status']), function ($query) use ($filters) {
@@ -37,23 +35,11 @@ class UseCaseRepository
         $query->when(! empty($filters['owner']), function ($query) use ($filters) {
             $query->where(function ($q) use ($filters) {
                 $q->whereHas('businessOwner', function ($subQuery) use ($filters) {
-                    $subQuery->where('display_name', 'like', '%' . $filters['owner'] . '%');
+                    $subQuery->where('display_name', 'like', '%'.$filters['owner'].'%');
                 })->orWhereHas('technicalOwner', function ($subQuery) use ($filters) {
-                    $subQuery->where('display_name', 'like', '%' . $filters['owner'] . '%');
+                    $subQuery->where('display_name', 'like', '%'.$filters['owner'].'%');
                 });
             });
-        });
-
-        $query->when(! empty($filters['roi_assessment']), function ($query) use ($filters) {
-            $query->where('roi_assessment', $filters['roi_assessment']);
-        });
-
-        $query->when(! empty($filters['risk_assessment']), function ($query) use ($filters) {
-            $query->where('risk_assessment', $filters['risk_assessment']);
-        });
-
-        $query->when(! empty($filters['data_assessment']), function ($query) use ($filters) {
-            $query->where('data_assessment', $filters['data_assessment']);
         });
 
         $query->when(! empty($filters['from']), function ($query) use ($filters) {
@@ -71,6 +57,13 @@ class UseCaseRepository
 
     public function createUseCase(array $data): UseCase
     {
-        return UseCase::create($data);
+        $stakeholderIds = $data['stakeholder_ids'] ?? [];
+        unset($data['stakeholder_ids']);
+
+        $useCase = UseCase::create($data);
+
+        $useCase->stakeholders()->attach($stakeholderIds);
+
+        return $useCase;
     }
 }
