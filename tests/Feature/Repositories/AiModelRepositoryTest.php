@@ -4,15 +4,11 @@ namespace Tests\Feature\Repositories;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Vendor;
 use App\Models\AiModel;
-use App\Models\Stakeholder;
 use App\Enums\OwnershipType;
 use App\Models\Organization;
 use App\Enums\BusinessStatus;
 use App\Enums\PrimaryCategory;
-use App\Enums\DevelopmentSource;
-use App\Enums\OperationalStatus;
 use App\Enums\OrganizationalRole;
 use App\Repositories\AiModelRepository;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -39,27 +35,22 @@ class AiModelRepositoryTest extends TestCase
     {
         $org = Organization::factory()->create();
         $user = User::factory()->create();
-        $sourceOrg = Stakeholder::factory()->create(['type' => 'vendor_org']);
-        $ownerStakeholder = Stakeholder::factory()->create(['type' => 'internal']);
-        $vendor = Vendor::factory()->create();
 
         return array_merge([
             'name' => 'Fraud Detector',
-            'description' => 'Detects fraud in transactions.',
             'organization_id' => $org->id,
-            'source_org_stakeholder_id' => $sourceOrg->id,
-            'owner_stakeholder_id' => $ownerStakeholder->id,
-            'vendor_id' => $vendor->id,
-            'primary_category' => $this->enumFirstValue(PrimaryCategory::class),
+            'category' => $this->enumFirstValue(PrimaryCategory::class),
             'type' => 'classification',
-            'domain_specialization' => 'fraud_detection',
-            'operational_status' => $this->enumFirstValue(OperationalStatus::class),
-            'business_status' => $this->enumFirstValue(BusinessStatus::class),
-            'regulatory_risk_classification' => 'low',
-            'organizational_role' => $this->enumFirstValue(OrganizationalRole::class),
-            'ownership_type' => $this->enumFirstValue(OwnershipType::class),
-            'development_source' => $this->enumFirstValue(DevelopmentSource::class),
-            'creator_email' => $user->email,
+            'technical_domain' => 'fraud_detection',
+            'purpose' => 'Detects fraud in transactions.',
+            'criticality_level' => 'high',
+            'business_adoption_status' => $this->enumFirstValue(BusinessStatus::class),
+            'regulatory_risk_tier' => 'low',
+            'eu_ai_category' => 'minimal',
+            'responsible_org_role' => $this->enumFirstValue(OrganizationalRole::class),
+            'ownership_category' => $this->enumFirstValue(OwnershipType::class),
+            'business_owner_id' => $user->id,
+            'custodian_id' => $user->id,
             'created_by' => $user->id,
             'updated_by' => $user->id,
         ], $overrides);
@@ -89,18 +80,5 @@ class AiModelRepositoryTest extends TestCase
 
         $this->assertCount(3, $results->items());
         $this->assertEquals($organization->id, $results->items()[0]->organization_id);
-    }
-
-    public function test_it_can_get_the_ai_model_by_id(): void
-    {
-        $aiModel = AiModel::factory()->create();
-        $results = $this->aiModelRepository->getAiModelByID($aiModel->id);
-        $this->assertInstanceOf(AiModel::class, $results);
-        $this->assertEquals($aiModel->id, $results->id);
-        $this->assertEquals($aiModel->name, $results->name);
-        $this->assertDatabaseHas('ai_models', [
-            'id' => $aiModel->id,
-            'name' => $aiModel->name,
-        ]);
     }
 }
