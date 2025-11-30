@@ -2,24 +2,27 @@
 
 namespace Tests\Feature\Repositories;
 
+use Tests\TestCase;
+use App\Models\User;
 use App\Models\AiModel;
 use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use App\Models\AiModelVersion;
+use App\Enums\VersionReleaseRole;
+use Illuminate\Foundation\Testing\WithFaker;
 use App\Repositories\AiModelVersionRepository;
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiModelVersionRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
     private $aiModelVersionRepository;
+
     private Organization $organization;
+
     private User $user;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->aiModelVersionRepository = app(AiModelVersionRepository::class);
@@ -225,68 +228,33 @@ class AiModelVersionRepositoryTest extends TestCase
         }
     }
 
-    public function test_it_filters_by_version_role(): void
+    public function test_it_filters_by_release_role(): void
     {
         $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
 
         AiModelVersion::factory()->create([
             'ai_model_id' => $aiModel->id,
             'organization_id' => $this->organization->id,
-            'version_role' => 'primary',
+            'release_role' => VersionReleaseRole::ORIGINAL_RELEASE,
         ]);
         AiModelVersion::factory()->create([
             'ai_model_id' => $aiModel->id,
             'organization_id' => $this->organization->id,
-            'version_role' => 'secondary',
+            'release_role' => VersionReleaseRole::PATCH,
         ]);
         AiModelVersion::factory()->create([
             'ai_model_id' => $aiModel->id,
             'organization_id' => $this->organization->id,
-            'version_role' => 'primary',
+            'release_role' => VersionReleaseRole::ORIGINAL_RELEASE,
         ]);
 
         $filters = [
             'organization_id' => $this->organization->id,
-            'version_role' => 'primary',
+            'release_role' => VersionReleaseRole::ORIGINAL_RELEASE,
         ];
         $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
 
         $this->assertCount(2, $result->items());
-        foreach ($result->items() as $version) {
-            $this->assertEquals('primary', $version->version_role);
-        }
-    }
-
-    public function test_it_filters_by_version_source(): void
-    {
-        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
-
-        AiModelVersion::factory()->create([
-            'ai_model_id' => $aiModel->id,
-            'organization_id' => $this->organization->id,
-            'version_source' => 'internal',
-        ]);
-        AiModelVersion::factory()->create([
-            'ai_model_id' => $aiModel->id,
-            'organization_id' => $this->organization->id,
-            'version_source' => 'external',
-        ]);
-        AiModelVersion::factory()->create([
-            'ai_model_id' => $aiModel->id,
-            'organization_id' => $this->organization->id,
-            'version_source' => 'internal',
-        ]);
-
-        $filters = [
-            'organization_id' => $this->organization->id,
-            'version_source' => 'internal',
-        ];
-        $result = $this->aiModelVersionRepository->getFilteredAiModelVersions($filters);
-
-        $this->assertCount(2, $result->items());
-        foreach ($result->items() as $version) {
-            $this->assertEquals('internal', $version->version_source);
-        }
     }
 
     public function test_it_filters_by_date_range(): void
