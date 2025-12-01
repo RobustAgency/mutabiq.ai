@@ -4,15 +4,11 @@ namespace Tests\Feature\Controllers\User;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Vendor;
 use App\Models\AiModel;
-use App\Models\Stakeholder;
 use App\Enums\OwnershipType;
 use App\Models\Organization;
 use App\Enums\BusinessStatus;
 use App\Enums\PrimaryCategory;
-use App\Enums\DevelopmentSource;
-use App\Enums\OperationalStatus;
 use App\Enums\OrganizationalRole;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,27 +26,29 @@ class AiModelControllerTest extends TestCase
 
     protected function validPayload(array $overrides = []): array
     {
-        $sourceOrg = Stakeholder::factory()->create(['type' => 'vendor_org']);
-        $custodian = Stakeholder::factory()->create(['type' => 'person']);
-        $vendor = Vendor::factory()->create();
+        $org = Organization::factory()->create();
+        $businessOwner = User::factory()->create();
+        $custodian = User::factory()->create();
+        $createdBy = User::factory()->create();
+        $updatedBy = User::factory()->create();
 
         return array_merge([
             'name' => 'Fraud Detector',
-            'description' => 'Detects fraudulent patterns',
-            'source_org_stakeholder_id' => $sourceOrg->id,
-            'owner_stakeholder_id' => $custodian->id,
-            'vendor_id' => $vendor->id,
-            'organizational_role' => OrganizationalRole::cases()[0]->value,
-            'primary_category' => PrimaryCategory::cases()[0]->value,
+            'organization_id' => $org->id,
+            'category' => PrimaryCategory::cases()[0]->value,
             'type' => 'classification',
-            'domain_specialization' => 'fraud_detection',
-            'operational_status' => OperationalStatus::cases()[0]->value,
-            'business_status' => BusinessStatus::cases()[0]->value,
-            'regulatory_risk_classification' => 'low',
-            'ownership_type' => OwnershipType::cases()[0]->value,
-            'development_source' => DevelopmentSource::cases()[0]->value,
-            'current_owner' => 'ml.owner',
-            'creator_email' => 'ml.creator@example.com',
+            'technical_domain' => 'fraud_detection',
+            'purpose' => 'Detects fraudulent patterns',
+            'criticality_level' => 'high',
+            'business_adoption_status' => BusinessStatus::cases()[0]->value,
+            'regulatory_risk_tier' => 'low',
+            'eu_ai_category' => 'minimal',
+            'ownership_category' => OwnershipType::cases()[0]->value,
+            'responsible_org_role' => OrganizationalRole::cases()[0]->value,
+            'business_owner_id' => $businessOwner->id,
+            'custodian_id' => $custodian->id,
+            'created_by' => $createdBy->id,
+            'updated_by' => $updatedBy->id,
         ], $overrides);
     }
 
@@ -104,7 +102,7 @@ class AiModelControllerTest extends TestCase
         $org = Organization::factory()->create();
         $user = User::factory()->create(['organization_id' => $org->id]);
 
-        $payload = $this->validPayload();
+        $payload = $this->validPayload(['organization_id' => $org->id]);
 
         $response = $this->actingAs($user)->postJson($this->baseEndpoint, $payload);
 
@@ -117,6 +115,8 @@ class AiModelControllerTest extends TestCase
         $this->assertDatabaseHas('ai_models', [
             'name' => $payload['name'],
             'organization_id' => $org->id,
+            'category' => $payload['category'],
+            'type' => $payload['type'],
         ]);
     }
 
@@ -128,13 +128,13 @@ class AiModelControllerTest extends TestCase
         // Remove required fields
         $payload = $this->validPayload([
             'name' => '',
-            'primary_category' => 'invalid_enum_value',
+            'category' => 'invalid_enum_value',
         ]);
 
         $response = $this->actingAs($user)->postJson($this->baseEndpoint, $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'primary_category']);
+            ->assertJsonValidationErrors(['name', 'category']);
     }
 
     public function test_user_can_get_ai_model_resource(): void
@@ -144,8 +144,8 @@ class AiModelControllerTest extends TestCase
 
         $model = AiModel::factory()->create([
             'organization_id' => $org->id,
-            'created_by' => $user->email,
-            'updated_by' => $user->email,
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
         ]);
 
         $response = $this->actingAs($user)->getJson($this->baseEndpoint.'/'.$model->id);
@@ -156,6 +156,8 @@ class AiModelControllerTest extends TestCase
                 'data' => [
                     'id' => $model->id,
                     'name' => $model->name,
+                    'category' => $model->category,
+                    'type' => $model->type,
                 ],
             ]);
     }

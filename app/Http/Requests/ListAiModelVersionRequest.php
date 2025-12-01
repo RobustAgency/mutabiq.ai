@@ -27,9 +27,9 @@ class ListAiModelVersionRequest extends FormRequest
             'version_type' => ['nullable', 'string', 'max:50'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
-            'version_source' => ['nullable', 'string', 'max:100'],
+            'source_type' => ['nullable', 'string', 'max:100'],
             'lifecycle_stage' => ['nullable', 'string', 'max:50'],
-            'version_role' => ['nullable', 'string', 'max:50'],
+            'release_role' => ['nullable', 'string', 'max:50'],
             'deployment_status' => ['nullable', 'string', 'max:50'],
         ];
     }

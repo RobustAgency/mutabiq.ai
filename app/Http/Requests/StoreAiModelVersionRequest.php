@@ -2,14 +2,18 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\VersionType;
+use App\Enums\LifecycleStage;
 use App\Enums\ComplexityLevel;
 use App\Enums\DeploymentStatus;
-use App\Enums\LifecycleStage;
-use App\Enums\ValidationStatus;
-use App\Enums\ComplianceStatus;
-use App\Enums\VersionType;
 use Illuminate\Validation\Rule;
+use App\Enums\VersionSourceType;
+use App\Enums\VersionReleaseRole;
+use App\Enums\VersionApprovalStatus;
+use App\Enums\VersionOrgInvolvement;
+use App\Enums\VersionArchitectureType;
+use App\Enums\VersionDeploymentEnvironment;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAiModelVersionRequest extends FormRequest
 {
@@ -31,20 +35,20 @@ class StoreAiModelVersionRequest extends FormRequest
         return [
             // Core identifiers
             'version_number' => ['required', 'string', 'max:255'],
-            'version_type' => ['required', Rule::in(array_map(fn($c) => $c->value, VersionType::cases()))],
+            'version_type' => ['required', Rule::in(array_map(fn ($c) => $c->value, VersionType::cases()))],
             'ai_model_id' => ['required', 'exists:ai_models,id'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'version_role' => ['nullable', 'string', 'max:255'],
-            'version_source' => ['nullable', 'string', 'max:255'],
-            'our_involvement' => ['nullable', 'string', 'max:255'],
+            'org_involvement' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, VersionOrgInvolvement::cases()))],
             'release_date' => ['nullable', 'date'],
             'release_notes' => ['nullable', 'string'],
+            'release_role' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, VersionReleaseRole::cases()))],
+            'source_type' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, VersionSourceType::cases()))],
 
             // Technical characteristics
-            'architecture_type' => ['required', 'string', 'max:255'],
+            'architecture_type' => ['required', Rule::in(array_map(fn ($c) => $c->value, VersionArchitectureType::cases()))],
             'model_file_size_gb' => ['nullable', 'numeric', 'min:0'],
             'training_duration_hours' => ['nullable', 'integer', 'min:0'],
-            'complexity_level' => ['required', Rule::in(array_map(fn($c) => $c->value, ComplexityLevel::cases()))],
+            'complexity_level' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, ComplexityLevel::cases()))],
             'parameter_count' => ['nullable', 'integer', 'min:0'],
 
             // Modalities (stored as JSON)
@@ -54,16 +58,13 @@ class StoreAiModelVersionRequest extends FormRequest
             'output_modalities.*' => ['string', Rule::in(['text', 'image', 'audio', 'classification', 'regression', 'embedding', 'structured_data'])],
 
             // Deployment / lifecycle / compliance
-            'deployment_status' => ['required', Rule::in(array_map(fn($c) => $c->value, DeploymentStatus::cases()))],
-            'lifecycle_stage' => ['required', Rule::in(array_map(fn($c) => $c->value, LifecycleStage::cases()))],
+            'deployment_status' => ['required', Rule::in(array_map(fn ($c) => $c->value, DeploymentStatus::cases()))],
+            'lifecycle_stage' => ['required', Rule::in(array_map(fn ($c) => $c->value, LifecycleStage::cases()))],
             'deployment_environments' => ['nullable', 'array'],
-            'deployment_environments.*' => ['string', 'max:100'],
-
-            // Flags
-            'has_performance_data' => ['required', 'boolean'],
-
-            'created_by' => ['nullable', 'integer', 'exists:users,id'],
-            'updated_by' => ['nullable', 'integer', 'exists:users,id'],
+            'deployment_environments.*' => ['string', Rule::in(array_map(fn ($c) => $c->value, VersionDeploymentEnvironment::cases()))],
+            'customizations_applied' => ['nullable', 'array'],
+            'customizations_applied.*' => ['string'],
+            'approval_status' => ['required_unless:deployment_status,'.DeploymentStatus::PRODUCTION->value, Rule::in(array_map(fn ($c) => $c->value, VersionApprovalStatus::cases()))],
         ];
     }
 }

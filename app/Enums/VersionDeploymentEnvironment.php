@@ -2,11 +2,11 @@
 
 namespace App\Enums;
 
-enum DeploymentStatus: string
+enum VersionDeploymentEnvironment: string
 {
-    case NOT_DEPLOYED = 'not_deployed';
+    case DEVELOPMENT = 'development';
     case TESTING = 'testing';
     case STAGING = 'staging';
     case PRODUCTION = 'production';
-    case RETIRED = 'retired';
+
 }

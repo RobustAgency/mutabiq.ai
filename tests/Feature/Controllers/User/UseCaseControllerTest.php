@@ -2,21 +2,22 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\UseCase\BusinessDomain;
-use App\Enums\UseCase\DataAvailabilityStatus;
-use App\Enums\UseCase\DataReadiness;
-use App\Enums\UseCase\DataSensitivity;
-use App\Enums\UseCase\Priority;
-use App\Enums\UseCase\RiskLevel;
-use App\Enums\UseCase\ROIClassification;
-use App\Enums\UseCase\Status;
-use App\Models\Organization;
-use App\Models\Stakeholder;
-use App\Models\UseCase;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\UseCase;
+use App\Models\Stakeholder;
+use App\Models\Organization;
+use App\Enums\UseCase\Status;
+use App\Enums\UseCase\RiskLevel;
+use App\Enums\UseCase\DataReadiness;
+use App\Enums\UseCase\BusinessDomain;
+use App\Enums\UseCase\HumanOversight;
+use App\Enums\UseCase\DataSensitivity;
+use App\Enums\UseCase\ROIClassification;
+use Illuminate\Foundation\Testing\WithFaker;
+use App\Enums\UseCase\DataAvailabilityStatus;
+use App\Enums\CorrectivePreventiveAction\Priority;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UseCaseControllerTest extends TestCase
 {
@@ -45,6 +46,7 @@ class UseCaseControllerTest extends TestCase
     public function test_user_can_create_use_case(): void
     {
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $stakeholder = Stakeholder::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
         $businessOwner = Stakeholder::factory()->create(['organization_id' => $this->organization->id]);
@@ -52,31 +54,32 @@ class UseCaseControllerTest extends TestCase
 
         $data = [
             'name' => 'New AI Use Case',
-            'description' => 'This is a detailed description of the new AI use case. It provides comprehensive information about what the use case aims to achieve and how it will be implemented in the organization.',
-            'business_objective' => 'To improve operational efficiency and reduce costs by automating repetitive tasks.',
-            'business_owner_id' => $businessOwner->id,
-            'technical_owner_id' => $technicalOwner->id,
+            'description' => 'This is a detailed description of the new AI use case. This is a detailed description of the new AI use case.',
+            'problem_statement' => 'The current process is inefficient and error-prone. This is a detailed description of the new AI use case.',
+            'expected_business_value' => 'Significant cost savings and efficiency improvements. This is a detailed description of the new AI use case.',
+            'stakeholder_ids' => [$stakeholder->id],
+            'status' => Status::STAGING->value,
             'business_domain' => BusinessDomain::OPERATIONS->value,
             'roi_classification' => ROIClassification::HIGH->value,
             'priority' => Priority::HIGH->value,
-            'risk_level' => RiskLevel::MEDIUM->value,
             'data_sensitivity' => DataSensitivity::CONFIDENTIAL->value,
-            'expected_roi_percentage' => 25.50,
-            'budget_allocated' => 100000.00,
-            'target_go_live_date' => now()->addMonth()->format('Y-m-d'),
-            'status' => Status::IN_DEVELOPMENT->value,
-            'created_by' => 'creator@example.com',
-            'updated_by' => 'updater@example.com',
-            'roi_assessment' => true,
-            'risk_assessment' => true,
-            'data_assessment' => false,
-            'estimated_implementation_cost' => 75000.00,
-            'estimated_reduction_in_time' => 30.00,
-            'estimated_reduction_in_cost' => 50000.00,
-            'estimated_revenue_increase' => 150000.00,
-            'estimated_fte_capacity_saving' => 5,
+            'expected_roi' => 150.00,
+            'estimated_time_savings' => 120.50,
+            'estimated_cost_savings' => 100.00,
+            'estimated_revenue_impact' => 200.00,
+            'success_metrics' => 'Increased efficiency and reduced costs. This is a detailed description of the new AI use case. This is a detailed description of the new AI use case.',
+            'preliminary_risk_level' => RiskLevel::MEDIUM->value,
+            'regulatory_impact' => 'yes',
+            'potential_harm' => 'Minimal. Increased efficiency and reduced costs. This is a detailed description of the new AI use case.',
+            'human_oversight_mode' => HumanOversight::HUMAN_IN_THE_LOOP->value,
+            'dependencies' => 'None',
+            'budget_allocated' => 50000,
+            'target_deployment_date' => '2023-12-31',
+            'estimated_fte_saving' => 2,
             'data_availability_status' => DataAvailabilityStatus::AVAILABLE->value,
-            'data_readiness' => DataReadiness::D3->value,
+            'data_readiness' => DataReadiness::READY_FOR_USE->value,
+            'business_owner_id' => $businessOwner->id,
+            'technical_owner_id' => $technicalOwner->id,
         ];
 
         $response = $this->postJson('/api/use-cases', $data);
@@ -89,8 +92,12 @@ class UseCaseControllerTest extends TestCase
 
         $this->assertDatabaseHas('use_cases', [
             'name' => 'New AI Use Case',
-            'status' => Status::IN_DEVELOPMENT->value,
+            'status' => Status::STAGING->value,
             'business_domain' => BusinessDomain::OPERATIONS->value,
+        ]);
+
+        $this->assertDatabaseHas('stakeholder_use_case', [
+            'stakeholder_id' => $stakeholder->id,
         ]);
     }
 
@@ -102,7 +109,7 @@ class UseCaseControllerTest extends TestCase
         $useCase = UseCase::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Specific Use Case',
-            'status' => Status::ACTIVE->value,
+            'status' => Status::IN_PRODUCTION->value,
         ]);
 
         $response = $this->getJson("/api/use-cases/{$useCase->id}");
@@ -110,7 +117,7 @@ class UseCaseControllerTest extends TestCase
         $response->assertJsonFragment([
             'id' => $useCase->id,
             'name' => 'Specific Use Case',
-            'status' => Status::ACTIVE->value,
+            'status' => Status::IN_PRODUCTION->value,
             'error' => false,
             'message' => 'Use Case retrieved successfully',
         ]);
@@ -228,11 +235,11 @@ class UseCaseControllerTest extends TestCase
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user);
 
-        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::ACTIVE->value]);
-        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::DRAFT->value]);
-        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::ACTIVE->value]);
+        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::IN_PRODUCTION->value]);
+        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::STAGING->value]);
+        UseCase::factory()->create(['organization_id' => $this->organization->id, 'status' => Status::IN_PRODUCTION->value]);
 
-        $response = $this->getJson('/api/use-cases?status=' . Status::ACTIVE->value);
+        $response = $this->getJson('/api/use-cases?status='.Status::IN_PRODUCTION->value);
         $response->assertOk();
         $response->assertJsonCount(2, 'data.data');
     }

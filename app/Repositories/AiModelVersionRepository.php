@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Models\AiModelVersion;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class AiModelVersionRepository
@@ -11,7 +10,6 @@ class AiModelVersionRepository
     /**
      * Retrieve all AI model versions, optionally filtered by AI model ID and organization.
      *
-     * @param array $filters
      * @return LengthAwarePaginator<int, AiModelVersion>
      */
     public function getFilteredAiModelVersions(array $filters = []): LengthAwarePaginator
@@ -35,11 +33,11 @@ class AiModelVersionRepository
         if (isset($filters['lifecycle_stage'])) {
             $query->where('lifecycle_stage', $filters['lifecycle_stage']);
         }
-        if (isset($filters['version_role'])) {
-            $query->where('version_role', $filters['version_role']);
+        if (isset($filters['release_role'])) {
+            $query->where('release_role', $filters['release_role']);
         }
-        if (isset($filters['version_source'])) {
-            $query->where('version_source', $filters['version_source']);
+        if (isset($filters['source_type'])) {
+            $query->where('source_type', $filters['source_type']);
         }
 
         $query->when(! empty($filters['from']), function ($query) use ($filters) {
@@ -58,8 +56,7 @@ class AiModelVersionRepository
     /**
      * Create a new AI model version.
      *
-     * @param array<string, mixed> $data
-     * @return AiModelVersion
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): AiModelVersion
     {
