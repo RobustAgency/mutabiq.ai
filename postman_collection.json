@@ -5600,6 +5600,421 @@
 				}
 			],
 			"description": "Upload and manage AI model artifact files including model binaries, tokenizers, prompts, configurations, and documentation"
+		},
+		{
+			"name": "AI Risk Register",
+			"item": [
+				{
+					"name": "List AI Risk Register Entries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register?ai_model_id=&risk_category=&risk_level=&status=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register"
+							],
+							"query": [
+								{
+									"key": "ai_model_id",
+									"value": "",
+									"description": "Filter by AI Model ID"
+								},
+								{
+									"key": "risk_category",
+									"value": "",
+									"description": "Filter by risk category"
+								},
+								{
+									"key": "risk_level",
+									"value": "",
+									"description": "Filter by risk level"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by risk status"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page"
+								}
+							]
+						},
+						"description": "Get all AI risk register entries for the user's organization with optional filtering.\n\n**Optional Query Parameters:**\n- `ai_model_id` (integer): Filter by AI Model ID\n- `risk_category` (string): Filter by risk category\n- `risk_level` (string): Filter by risk level\n- `status` (string): Filter by risk status\n- `per_page` (integer): Results per page\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create AI Risk Register Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"AI Model Bias Risk\", // string, max 255, required\n  \"risk_category\": \"bias_fairness\", // enum: safety, privacy, bias_fairness, security, robustness, explainability, legal_compliance, ethics, availability, resilience, vendor, cost, reputation, other\n  \"ai_model_id\": 1, // integer, required, must exist in ai_models\n  \"ai_model_version_id\": 1, // integer, nullable, must exist in ai_model_versions\n  \"use_case_id\": 1, // integer, nullable, must exist in use_cases\n  \"description\": \"Risk of demographic bias in model predictions affecting fairness\", // string, required\n  \"related_controls\": [\"bias_monitoring\", \"fairness_testing\"], // array, nullable\n  \"likelihood_code\": \"3\", // string, max 255, required\n  \"impact_code\": \"4\", // string, max 255, required\n  \"inherent_score\": \"12\", // string, max 255, nullable\n  \"residual_score\": \"6\", // string, max 255, nullable\n  \"risk_level\": \"medium\", // enum: low, medium, high, critical\n  \"decision\": \"treat\", // enum: treat, accept, transfer, avoid\n  \"risk_owner\": 1, // integer, required, must exist in stakeholders\n  \"review_cadence\": \"quarterly\", // enum: monthly, quarterly, semi_annual, annual\n  \"next_review_due\": \"2025-03-01\", // date, required\n  \"status\": \"identified\", // enum: identified, assessed, in_treatment, accepted, transferred, closed\n  \"linked_assessment_id\": 1, // integer, nullable\n  \"linked_incident_id\": 1, // integer, nullable, must exist in ai_incidents\n  \"linked_capa_id\": 1, // integer, nullable, must exist in corrective_preventive_actions\n  \"evidence_link\": \"https://example.com/evidence\", // string, max 500, nullable\n  \"likelihood_label_snapshot\": \"Possible\", // string, max 255, nullable\n  \"impact_label_snapshot\": \"Major\", // string, max 255, nullable\n  \"method_name_snapshot\": \"Risk Matrix v2.1\", // string, max 255, nullable\n  \"created_by\": \"user@example.com\" // email, required\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register"
+							]
+						},
+						"description": "Create a new AI risk register entry.\n\n**Required Fields:**\n- `title` (string, max 255): Risk title\n- `risk_category` (enum): Category of risk\n- `ai_model_id` (integer): AI Model ID (must exist)\n- `description` (string): Risk description\n- `likelihood_code` (string, max 255): Likelihood code from methodology\n- `impact_code` (string, max 255): Impact code from methodology\n- `risk_level` (enum): Overall risk level\n- `decision` (enum): Risk treatment decision\n- `risk_owner` (integer): Stakeholder ID responsible for risk\n- `review_cadence` (enum): How often risk should be reviewed\n- `next_review_due` (date): Next review date\n- `status` (enum): Current risk status\n- `created_by` (email): Email of risk creator\n\n**Risk Category Options:**\n- `safety`, `privacy`, `bias_fairness`, `security`, `robustness`, `explainability`, `legal_compliance`, `ethics`, `availability`, `resilience`, `vendor`, `cost`, `reputation`, `other`\n\n**Risk Level Options:**\n- `low`, `medium`, `high`, `critical`\n\n**Decision Options:**\n- `treat`, `accept`, `transfer`, `avoid`\n\n**Review Cadence Options:**\n- `monthly`, `quarterly`, `semi_annual`, `annual`\n\n**Status Options:**\n- `identified`, `assessed`, `in_treatment`, `accepted`, `transferred`, `closed`\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Risk Register Entry Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register",
+								":aiRiskRegister"
+							],
+							"variable": [
+								{
+									"key": "aiRiskRegister",
+									"value": "1",
+									"description": "AI Risk Register Entry ID"
+								}
+							]
+						},
+						"description": "Get details of a specific AI risk register entry.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update AI Risk Register Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated AI Model Bias Risk\", // string, max 255\n  \"risk_level\": \"high\", // enum: low, medium, high, critical\n  \"status\": \"in_treatment\", // enum: identified, assessed, in_treatment, accepted, transferred, closed\n  \"next_review_due\": \"2025-06-01\", // date\n  \"residual_score\": \"4\" // string, max 255\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register",
+								":aiRiskRegister"
+							],
+							"variable": [
+								{
+									"key": "aiRiskRegister",
+									"value": "1",
+									"description": "AI Risk Register Entry ID"
+								}
+							]
+						},
+						"description": "Update an existing AI risk register entry. All fields are optional for updates.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete AI Risk Register Entry",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-register",
+								":aiRiskRegister"
+							],
+							"variable": [
+								{
+									"key": "aiRiskRegister",
+									"value": "1",
+									"description": "AI Risk Register Entry ID"
+								}
+							]
+						},
+						"description": "Delete an AI risk register entry.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage AI risk register entries for tracking and monitoring AI model risks throughout their lifecycle"
+		},
+		{
+			"name": "Risk Methodologies",
+			"item": [
+				{
+					"name": "List Risk Methodologies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/risk-methodologies?name=&effective_from=&effective_to=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"risk-methodologies"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Filter by methodology name"
+								},
+								{
+									"key": "effective_from",
+									"value": "",
+									"description": "Filter by effective from date (YYYY-MM-DD)"
+								},
+								{
+									"key": "effective_to",
+									"value": "",
+									"description": "Filter by effective to date (YYYY-MM-DD)"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page"
+								}
+							]
+						},
+						"description": "Get all risk methodologies for the user's organization with optional filtering.\n\n**Optional Query Parameters:**\n- `name` (string): Filter by methodology name\n- `effective_from` (date): Filter by effective from date\n- `effective_to` (date): Filter by effective to date\n- `per_page` (integer): Results per page\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Risk Methodology",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"AI Risk Assessment Framework v2.0\", // string, max 255, required\n  \"likelihood_scale\": [\"rare\", \"unlikely\", \"possible\", \"likely\", \"almost_certain\"], // array, required\n  \"impact_scale\": [\"negligible\", \"minor\", \"moderate\", \"major\", \"catastrophic\"], // array, required\n  \"matrix_rule\": {\n    \"rare\": {\n      \"negligible\": \"low\",\n      \"minor\": \"low\",\n      \"moderate\": \"low\",\n      \"major\": \"medium\",\n      \"catastrophic\": \"medium\"\n    },\n    \"unlikely\": {\n      \"negligible\": \"low\",\n      \"minor\": \"low\",\n      \"moderate\": \"medium\",\n      \"major\": \"medium\",\n      \"catastrophic\": \"high\"\n    },\n    \"possible\": {\n      \"negligible\": \"low\",\n      \"minor\": \"medium\",\n      \"moderate\": \"medium\",\n      \"major\": \"high\",\n      \"catastrophic\": \"high\"\n    },\n    \"likely\": {\n      \"negligible\": \"medium\",\n      \"minor\": \"medium\",\n      \"moderate\": \"high\",\n      \"major\": \"high\",\n      \"catastrophic\": \"critical\"\n    },\n    \"almost_certain\": {\n      \"negligible\": \"medium\",\n      \"minor\": \"high\",\n      \"moderate\": \"high\",\n      \"major\": \"critical\",\n      \"catastrophic\": \"critical\"\n    }\n  }, // object, required - defines risk level matrix\n  \"acceptance_thresholds\": \"Low risk: Accept, Medium risk: Review quarterly, High risk: Immediate action required\", // string, required\n  \"aggregation_logic\": \"maximum\", // string, nullable - how multiple risks are combined\n  \"review_policy\": \"All high and critical risks must be reviewed monthly. Medium risks quarterly.\", // string, required\n  \"effective_from\": \"2025-01-01\", // date, nullable\n  \"effective_to\": \"2025-12-31\", // date, nullable, must be after effective_from\n  \"owner_team\": \"AI Risk Management Team\", // string, max 255, required\n  \"source_created_at\": \"2024-12-01\" // date, required\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/risk-methodologies",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"risk-methodologies"
+							]
+						},
+						"description": "Create a new risk methodology for the organization.\n\n**Required Fields:**\n- `name` (string, max 255): Methodology name\n- `likelihood_scale` (array): Scale for likelihood assessment\n- `impact_scale` (array): Scale for impact assessment\n- `matrix_rule` (object): Risk level calculation matrix\n- `acceptance_thresholds` (string): Risk acceptance criteria\n- `review_policy` (string): Policy for risk reviews\n- `owner_team` (string, max 255): Team responsible for methodology\n- `source_created_at` (date): Original creation date\n\n**Optional Fields:**\n- `aggregation_logic` (string): How to combine multiple risks\n- `effective_from` (date): When methodology becomes active\n- `effective_to` (date): When methodology expires\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Risk Methodology Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/risk-methodologies/:riskMethodology",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"risk-methodologies",
+								":riskMethodology"
+							],
+							"variable": [
+								{
+									"key": "riskMethodology",
+									"value": "1",
+									"description": "Risk Methodology ID"
+								}
+							]
+						},
+						"description": "Get details of a specific risk methodology including its organization relationship.\n\n**Path Parameters:**\n- `riskMethodology` (integer): Risk Methodology ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Risk Methodology",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated AI Risk Assessment Framework v2.1\", // string, max 255\n  \"review_policy\": \"Updated policy: All critical risks require immediate escalation\", // string\n  \"effective_to\": \"2026-12-31\", // date\n  \"acceptance_thresholds\": \"Updated thresholds with stricter criteria for high-risk AI models\" // string\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/risk-methodologies/:riskMethodology",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"risk-methodologies",
+								":riskMethodology"
+							],
+							"variable": [
+								{
+									"key": "riskMethodology",
+									"value": "1",
+									"description": "Risk Methodology ID"
+								}
+							]
+						},
+						"description": "Update an existing risk methodology. All fields are optional for updates.\n\n**Path Parameters:**\n- `riskMethodology` (integer): Risk Methodology ID\n\n**Updatable Fields:**\n- All fields from creation are updatable\n- `effective_to` must be after `effective_from` if both are provided\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Risk Methodology",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/risk-methodologies/:riskMethodology",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"risk-methodologies",
+								":riskMethodology"
+							],
+							"variable": [
+								{
+									"key": "riskMethodology",
+									"value": "1",
+									"description": "Risk Methodology ID"
+								}
+							]
+						},
+						"description": "Delete a risk methodology. Note: This may affect existing risk assessments that reference this methodology.\n\n**Path Parameters:**\n- `riskMethodology` (integer): Risk Methodology ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage risk assessment methodologies including likelihood scales, impact scales, and risk calculation matrices"
 		}
 	],
 	"auth": {
