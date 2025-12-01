@@ -2,24 +2,25 @@
 
 namespace Tests\Feature;
 
-use App\Enums\AiRiskRegister\ReviewCadence;
-use App\Enums\AiRiskRegister\RiskCategory;
-use App\Enums\AiRiskRegister\RiskDecision;
+use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiModel;
+use App\Models\Stakeholder;
+use App\Models\Organization;
+use App\Models\AiRiskRegister;
 use App\Enums\AiRiskRegister\RiskLevel;
 use App\Enums\AiRiskRegister\RiskStatus;
-use App\Models\AiModel;
-use App\Models\AiRiskRegister;
-use App\Models\Organization;
-use App\Models\Stakeholder;
-use App\Models\User;
+use App\Enums\AiRiskRegister\RiskCategory;
+use App\Enums\AiRiskRegister\RiskDecision;
+use App\Enums\AiRiskRegister\ReviewCadence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class AiRiskRegisterControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -62,7 +63,7 @@ class AiRiskRegisterControllerTest extends TestCase
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ]);
     }
 
@@ -167,7 +168,7 @@ class AiRiskRegisterControllerTest extends TestCase
             ->assertJsonPath('data.risk_category', RiskCategory::BIAS_FAIRNESS->value)
             ->assertJsonPath('data.risk_level', RiskLevel::HIGH->value);
 
-        $this->assertDatabaseHas('ai_risk_register', [
+        $this->assertDatabaseHas('ai_risk_registers', [
             'title' => 'Model Bias Risk',
             'risk_category' => RiskCategory::BIAS_FAIRNESS->value,
             'organization_id' => $this->organization->id,
@@ -259,7 +260,7 @@ class AiRiskRegisterControllerTest extends TestCase
                 'data' => [
                     'ai_model',
                     'risk_owner_details',
-                ]
+                ],
             ]);
     }
 
@@ -299,7 +300,7 @@ class AiRiskRegisterControllerTest extends TestCase
             ->assertJsonPath('data.risk_level', RiskLevel::HIGH->value)
             ->assertJsonPath('data.status', RiskStatus::IN_TREATMENT->value);
 
-        $this->assertDatabaseHas('ai_risk_register', [
+        $this->assertDatabaseHas('ai_risk_registers', [
             'id' => $aiRiskRegister->id,
             'title' => 'Updated Title',
             'risk_level' => RiskLevel::HIGH->value,
@@ -353,7 +354,7 @@ class AiRiskRegisterControllerTest extends TestCase
             ->assertJsonPath('message', 'AI risk register entry deleted successfully')
             ->assertJsonPath('data', null);
 
-        $this->assertDatabaseMissing('ai_risk_register', [
+        $this->assertDatabaseMissing('ai_risk_registers', [
             'id' => $aiRiskRegister->id,
         ]);
     }
