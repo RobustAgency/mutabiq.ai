@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RiskMethodology extends Model
 {
+    /** @use HasFactory<\Database\Factories\RiskMethodologyFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'organization_id',
         'name',
@@ -33,7 +37,7 @@ class RiskMethodology extends Model
 
     /**
      * Get the organization that owns this risk methodology.
-     * 
+     *
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo

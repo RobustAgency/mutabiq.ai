@@ -34,6 +34,7 @@ use App\Http\Controllers\User\DatasetElementController;
 use App\Http\Controllers\IncidentNotificationController;
 use App\Http\Controllers\User\ConsentCoverageController;
 use App\Http\Controllers\User\DatasetSnapshotController;
+use App\Http\Controllers\User\RiskMethodologyController;
 use App\Http\Controllers\User\ArtifactAccessLogController;
 use App\Http\Controllers\IncidentRootCauseAnalysisController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
@@ -299,4 +300,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('{aiRiskRegister}', 'update');
         Route::delete('{aiRiskRegister}', 'destroy');
     });
+
+    Route::prefix('risk-methodologies')->controller(RiskMethodologyController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{riskMethodology}', 'show');
+        Route::post('{riskMethodology}', 'update');
+        Route::delete('{riskMethodology}', 'destroy');
+    });
+
 });

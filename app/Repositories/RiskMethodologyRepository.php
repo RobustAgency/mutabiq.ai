@@ -12,18 +12,32 @@ class RiskMethodologyRepository
      *
      * @return LengthAwarePaginator<int, RiskMethodology>
      */
-    public function getPaginatedRiskMethodologies(int $organizationID, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredRiskMethodologies(array $filters = []): LengthAwarePaginator
     {
-        return RiskMethodology::query()
-            ->where('organization_id', $organizationID)
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+        $query = RiskMethodology::query();
+
+        $query->where('organization_id', $filters['organization_id']);
+
+        if (! empty($filters['effective_from'])) {
+            $query->where('effective_from', '>=', $filters['effective_from']);
+        }
+
+        if (! empty($filters['effective_to'])) {
+            $query->where('effective_to', '<=', $filters['effective_to']);
+        }
+
+        if (! empty($filters['name'])) {
+            $query->where('name', 'like', '%'.$filters['name'].'%');
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->paginate($filters['per_page'] ?? 15);
     }
 
     /**
      * Create a new risk methodology.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function createRiskMethodology(array $data): RiskMethodology
     {
@@ -33,11 +47,12 @@ class RiskMethodologyRepository
     /**
      * Update an existing risk methodology.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function updateRiskMethodology(RiskMethodology $riskMethodology, array $data): RiskMethodology
     {
         $riskMethodology->update($data);
+
         return $riskMethodology->fresh();
     }
 
@@ -50,9 +65,9 @@ class RiskMethodologyRepository
     }
 
     /**
-     * Get a risk methodology by ID.
+     * Get a risk methodology.
      */
-    public function getRiskMethodologyByID(RiskMethodology $riskMethodology): ?RiskMethodology
+    public function getRiskMethodology(RiskMethodology $riskMethodology): ?RiskMethodology
     {
         return $riskMethodology->load('organization');
     }
