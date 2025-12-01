@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ListAiModelArtifactRequest;
 use App\Http\Requests\StoreAiModelArtifactRequest;
 use App\Http\Resources\AiModelArtifactResource;
 use App\Models\AiModelArtifact;
@@ -22,11 +23,11 @@ class AiModelArtifactController extends Controller
     /**
      * Display a listing of the artifacts.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListAiModelArtifactRequest $request): JsonResponse
     {
-        $per_page = $request->input('per_page') ?? 15;
-        $organizationID = Auth::user()->organization_id;
-        $artifacts = $this->repository->getPaginatedArtifacts($organizationID, $per_page);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $artifacts = $this->repository->getFilteredAiArtifacts($validated);
 
         return response()->json([
             'error' => false,
@@ -38,6 +39,7 @@ class AiModelArtifactController extends Controller
     public function store(StoreAiModelArtifactRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $data['organization_id'] = Auth::user()->organization_id;
         $artifacts = $this->repository->createAiModelArtifact($data);
         return response()->json([
             'error' => false,

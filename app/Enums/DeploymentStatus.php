@@ -5,8 +5,8 @@ namespace App\Enums;
 enum DeploymentStatus: string
 {
     case NOT_DEPLOYED = 'not_deployed';
-    case DEPLOYING = 'deploying';
-    case DEPLOYED = 'deployed';
-    case FAILED = 'failed';
-    case ROLLBACK = 'rollback';
+    case TESTING = 'testing';
+    case STAGING = 'staging';
+    case PRODUCTION = 'production';
+    case RETIRED = 'retired';
 }

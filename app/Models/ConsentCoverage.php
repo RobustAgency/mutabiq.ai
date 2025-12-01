@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ConsentCoverage extends Model
 {
@@ -37,6 +37,10 @@ class ConsentCoverage extends Model
         ];
     }
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * @return BelongsTo<Dataset, $this>
      */
@@ -51,5 +55,10 @@ class ConsentCoverage extends Model
     public function snapshot(): BelongsTo
     {
         return $this->belongsTo(DatasetSnapshot::class, 'snapshot_id');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'CC-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

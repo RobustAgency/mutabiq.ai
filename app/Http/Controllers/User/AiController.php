@@ -2,32 +2,29 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreAiModelRequest;
-use App\Http\Resources\AiModelResource;
 use App\Models\AiModel;
-use App\Repositories\AiModelRepository;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\AiModelResource;
+use App\Repositories\AiModelRepository;
+use App\Http\Requests\ListAiModelRequest;
+use App\Http\Requests\StoreAiModelRequest;
 
 class AiController extends Controller
 {
     public function __construct(private AiModelRepository $aiModelRepository) {}
 
-    public function index(): JsonResponse
+    public function index(ListAiModelRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $user = Auth::user();
-        if (! $user->organization_id) {
-            return response()->json([
-                'error' => 'true',
-                'message' => 'User does not belong to any organization'
-            ], 403);
-        }
-        $aiModels = $this->aiModelRepository->getAllAiModelsByOrganizationID($user->organization_id);
+        $validated['organization_id'] = $user->organization_id;
+        $aiModels = $this->aiModelRepository->getFilteredAiModels($validated);
 
         return response()->json([
             'error' => 'false',
-            'data' => $aiModels
+            'data' => $aiModels,
         ], 200);
     }
 
@@ -37,7 +34,7 @@ class AiController extends Controller
         if (! $user->organization_id) {
             return response()->json([
                 'error' => 'true',
-                'message' => 'User does not belong to any organization'
+                'message' => 'User does not belong to any organization',
             ], 403);
         }
 
@@ -50,15 +47,12 @@ class AiController extends Controller
 
         return response()->json([
             'error' => 'false',
-            'message' => 'AI Model created successfully'
+            'message' => 'AI Model created successfully',
         ], 201);
     }
 
     public function show(AiModel $aiModel): JsonResponse
     {
-        $aiModelID = $aiModel->id;
-        $aiModel = $this->aiModelRepository->getAiModelByID($aiModelID);
-
         return response()->json([
             'error' => 'false',
             'data' => new AiModelResource($aiModel),

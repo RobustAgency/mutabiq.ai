@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DatasetDataElement extends Model
 {
@@ -29,6 +29,10 @@ class DatasetDataElement extends Model
         'deprecated',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * @return BelongsTo<Dataset, $this>
      */
@@ -43,5 +47,10 @@ class DatasetDataElement extends Model
     public function dataElement(): BelongsTo
     {
         return $this->belongsTo(DataElement::class);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'DDE-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

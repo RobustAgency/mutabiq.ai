@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\Vendor\RiskTier;
-use App\Enums\Vendor\VendorStatus;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Vendor extends Model
 {
@@ -31,11 +29,20 @@ class Vendor extends Model
         'metadata' => 'array',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * @return BelongsTo<Stakeholder, $this>
      */
     public function stakeholder(): BelongsTo
     {
         return $this->belongsTo(Stakeholder::class, 'stakeholder_id');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'VND-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

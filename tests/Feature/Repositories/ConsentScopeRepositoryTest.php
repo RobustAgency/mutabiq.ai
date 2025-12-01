@@ -33,7 +33,7 @@ class ConsentScopeRepositoryTest extends TestCase
     {
         ConsentScope::factory()->count(5)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
+        $result = $this->repository->getFilteredConsentScopes(['organization_id' => $this->organization->id]);
 
         $this->assertInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class, $result);
         $this->assertEquals(5, $result->total());
@@ -47,7 +47,7 @@ class ConsentScopeRepositoryTest extends TestCase
         $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
         ConsentScope::factory()->for($dataset)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
+        $result = $this->repository->getFilteredConsentScopes(['organization_id' => $this->organization->id]);
 
         /** @var ConsentScope $consentScope */
         $consentScope = $result->items()[0];
@@ -62,7 +62,10 @@ class ConsentScopeRepositoryTest extends TestCase
     {
         ConsentScope::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes($this->organization->id, 10);
+        $result = $this->repository->getFilteredConsentScopes([
+            'organization_id' => $this->organization->id,
+            'per_page' => 10,
+        ]);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertCount(10, $result->items());
@@ -76,7 +79,9 @@ class ConsentScopeRepositoryTest extends TestCase
     {
         ConsentScope::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
-        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
+        $result = $this->repository->getFilteredConsentScopes([
+            'organization_id' => $this->organization->id,
+        ]);
 
         $this->assertEquals(15, $result->perPage());
     }
@@ -99,7 +104,10 @@ class ConsentScopeRepositoryTest extends TestCase
             'organization_id' => $this->organization->id,
         ]);
 
-        $result = $this->repository->getPaginatedConsentScopes($this->organization->id);
+        $result = $this->repository->getFilteredConsentScopes([
+            'organization_id' => $this->organization->id,
+            'per_page' => 10,
+        ]);
 
         $this->assertEquals($scope2->id, $result->items()[0]->id);
         $this->assertEquals($scope3->id, $result->items()[1]->id);

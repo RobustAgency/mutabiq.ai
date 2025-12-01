@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AiIncident\ListAiIncidentRequest;
 use App\Http\Requests\AiIncident\StoreAiIncidentRequest;
 use App\Http\Requests\AiIncident\UpdateAiIncidentRequest;
 use App\Http\Resources\AiIncidentResource;
@@ -10,6 +11,7 @@ use App\Models\AiIncident;
 use App\Repositories\AiIncidentRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AiIncidentController extends Controller
 {
@@ -20,11 +22,11 @@ class AiIncidentController extends Controller
     /**
      * Display a paginated listing of AI incidents.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListAiIncidentRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 15);
-        $organizationID = $request->user()->organization_id;
-        $aiIncidents = $this->repository->getPaginatedAiIncidents($organizationID, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $aiIncidents = $this->repository->getFilteredAiIncident($validated);
 
         return response()->json([
             'error' => false,
@@ -39,7 +41,7 @@ class AiIncidentController extends Controller
     public function store(StoreAiIncidentRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = Auth::user()->organization_id;
         $aiIncident = $this->repository->createAiIncident($validated);
 
         return response()->json([

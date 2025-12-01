@@ -15,6 +15,10 @@ class ListUserConsentRequest extends FormRequest
     {
         return [
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'consent_status' => ['nullable', 'string', 'max:50'],
+            'legal_basis' => ['nullable', 'string', 'max:50'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
         ];
     }
 }

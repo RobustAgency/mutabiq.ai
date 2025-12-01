@@ -15,14 +15,36 @@ class ConsentScopeRepository
     /**
      * Get paginated consent scopes for a specific organization.
      *
-     * @param int $organizationId
-     * @param int $perPage
+     * @param array<string, mixed> $filters
      * @return LengthAwarePaginator<int, ConsentScope>
      */
-    public function getPaginatedConsentScopes(int $organizationId, int $perPage = 15): LengthAwarePaginator
+    public function getFilteredConsentScopes(array $filters = []): LengthAwarePaginator
     {
-        return ConsentScope::where('organization_id', $organizationId)
-            ->with('dataset')
+        $query = ConsentScope::query();
+
+        if (isset($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        if (isset($filters['subject_realm'])) {
+            $query->where('subject_realm', $filters['subject_realm']);
+        }
+
+        if (isset($filters['jurisdiction'])) {
+            $query->where('jurisdiction', $filters['jurisdiction']);
+        }
+
+        if (isset($filters['from'])) {
+            $query->where('created_at', '>=', $filters['from']);
+        }
+
+        if (isset($filters['to'])) {
+            $query->where('created_at', '<=', $filters['to']);
+        }
+
+        $perPage = $filters['per_page'] ?? 15;
+
+        return $query->with('dataset')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

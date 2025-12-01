@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\ArtifactType;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AiModelArtifact extends Model
 {
@@ -15,12 +14,21 @@ class AiModelArtifact extends Model
     protected $fillable = [
         'organization_id',
         'ai_model_version_id',
+        'name',
         'artifact_type',
         'uri',
-        'checksum',
+        'checksum_algorithm',
+        'checksum_value',
+        'file',
+        'environment',
+        'file_format',
         'size_bytes',
         'created_by',
         'notes',
+    ];
+
+    protected $appends = [
+        'display_id',
     ];
 
     /**
@@ -31,5 +39,10 @@ class AiModelArtifact extends Model
     public function aiModelVersion(): BelongsTo
     {
         return $this->belongsTo(AiModelVersion::class);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'AMA-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

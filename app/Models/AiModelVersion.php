@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AiModelVersion extends Model
 {
@@ -15,9 +16,10 @@ class AiModelVersion extends Model
         'ai_model_id',
         'version_number',
         'version_type',
-        'version_role',
-        'version_source',
-        'our_involvement',
+        'release_role',
+        'source_type',
+        'approval_status',
+        'org_involvement',
         'description',
         'release_date',
         'release_notes',
@@ -31,10 +33,13 @@ class AiModelVersion extends Model
         'deployment_status',
         'lifecycle_stage',
         'deployment_environments',
-        'has_performance_data',
         'customizations_applied',
         'created_by',
         'updated_by',
+    ];
+
+    protected $appends = [
+        'display_id',
     ];
 
     protected $casts = [
@@ -45,4 +50,19 @@ class AiModelVersion extends Model
         'has_performance_data' => 'boolean',
         'customizations_applied' => 'array',
     ];
+
+    /**
+     * Get the AI model that this version belongs to.
+     *
+     * @return BelongsTo<AiModel, $this>
+     */
+    public function aiModel(): BelongsTo
+    {
+        return $this->belongsTo(AiModel::class, 'ai_model_id');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'AMV-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
 }

@@ -22,7 +22,14 @@ class ListAiModelCardRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'status' => ['nullable', 'string'],
+            'publication_status' => ['nullable', 'string'],
+            'owner' => ['nullable', 'string'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'creator_role' => ['nullable', 'string'],
+            'format' => ['nullable', 'string'],
         ];
     }
 }

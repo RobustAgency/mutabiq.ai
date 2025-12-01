@@ -2,28 +2,29 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Models\AiModel;
-use App\Models\AiModelUseCase;
-use App\Models\UseCase;
-use App\Models\AiModelVersion;
-use App\Models\Organization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Repositories\AiModelUseCaseRepository;
-use App\Models\User;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiModel;
+use App\Models\UseCase;
+use App\Models\Organization;
+use App\Models\AiModelUseCase;
+use App\Models\AiModelVersion;
+use App\Repositories\AiModelUseCaseRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiModelUseCaseRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     private AiModelUseCaseRepository $aiModelUseCaseRepository;
+
     private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->aiModelUseCaseRepository = new AiModelUseCaseRepository();
+        $this->aiModelUseCaseRepository = new AiModelUseCaseRepository;
         $this->organization = Organization::factory()->create();
     }
 
@@ -95,9 +96,11 @@ class AiModelUseCaseRepositoryTest extends TestCase
             'use_case_id' => $useCase->id,
             'ai_model_version_id' => $aiModelVersion->id,
             'relationship_type' => 'primary',
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
         ];
 
-        $aiModelUseCase = $this->aiModelUseCaseRepository->createAiModelUseCase($user, $data);
+        $aiModelUseCase = $this->aiModelUseCaseRepository->createAiModelUseCase($data);
 
         $this->assertInstanceOf(AiModelUseCase::class, $aiModelUseCase);
         foreach ($data as $key => $value) {
@@ -125,9 +128,10 @@ class AiModelUseCaseRepositoryTest extends TestCase
         $newUser = User::factory()->create();
         $updateData = [
             'relationship_type' => 'secondary',
+            'updated_by' => $newUser->id,
         ];
 
-        $result = $this->aiModelUseCaseRepository->updateAiModelUseCase($aiModelUseCase, $newUser, $updateData);
+        $result = $this->aiModelUseCaseRepository->updateAiModelUseCase($aiModelUseCase, $updateData);
 
         $this->assertTrue($result);
         $aiModelUseCase->refresh();

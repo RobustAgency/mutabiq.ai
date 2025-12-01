@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AiIncident;
 use App\Models\IncidentAlert;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,11 +14,15 @@ class IncidentAlertControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+    protected Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $this->organization->id,
+        ]);
     }
 
     public function test_index_returns_paginated_incident_alerts(): void

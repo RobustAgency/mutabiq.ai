@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use App\Enums\ArtifactAccessLog\AccessAction;
 use App\Enums\ArtifactAccessLog\AccessContext;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ArtifactAccessLog extends Model
 {
@@ -35,8 +35,13 @@ class ArtifactAccessLog extends Model
         'ts' => 'datetime',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the artifact that was accessed
+     *
      * @return BelongsTo<AiModelArtifact, $this>
      */
     public function artifact(): BelongsTo
@@ -46,10 +51,16 @@ class ArtifactAccessLog extends Model
 
     /**
      * Get the stakeholder who accessed the artifact
+     *
      * @return BelongsTo<Stakeholder, $this>
      */
     public function accessorStakeholder(): BelongsTo
     {
         return $this->belongsTo(Stakeholder::class, 'accessor_stakeholder_id');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'AAL-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

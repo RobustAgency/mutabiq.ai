@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Dataset extends Model
 {
@@ -48,6 +48,7 @@ class Dataset extends Model
     protected function casts(): array
     {
         return [
+            'purpose' => 'array',
             'source_ids' => 'array',
             'data_subject_categories' => 'array',
             'content_types' => 'array',
@@ -55,6 +56,10 @@ class Dataset extends Model
             'consent_coverage_pct' => 'integer',
         ];
     }
+
+    protected $appends = [
+        'display_id',
+    ];
 
     /**
      * @return BelongsToMany<DataElement, $this>
@@ -85,5 +90,10 @@ class Dataset extends Model
     public function snapshots(): HasMany
     {
         return $this->hasMany(DatasetSnapshot::class);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'DS-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

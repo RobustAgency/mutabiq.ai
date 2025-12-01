@@ -8,7 +8,8 @@ use App\Http\Resources\CorrectivePreventiveActionResource;
 use App\Models\CorrectivePreventiveAction;
 use App\Repositories\CorrectivePreventiveActionRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Requests\CorrectivePreventiveAction\ListCorrectivePreventiveActionRequest;
+use Illuminate\Support\Facades\Auth;
 
 class CorrectivePreventiveActionController extends Controller
 {
@@ -19,12 +20,11 @@ class CorrectivePreventiveActionController extends Controller
     /**
      * Display a listing of corrective preventive actions.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListCorrectivePreventiveActionRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page') ?? 15;
-        $organizationID = $request->user()->organization_id;
-        $correctivePreventiveActions = $this->repository->getPaginatedCorrectivePreventiveActions($organizationID, $perPage);
-
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $correctivePreventiveActions = $this->repository->getFilteredCorrectivePreventiveActions($validated);
         return response()->json([
             'error' => false,
             'message' => 'Corrective preventive actions retrieved successfully',
@@ -38,7 +38,7 @@ class CorrectivePreventiveActionController extends Controller
     public function store(StoreCorrectivePreventiveActionRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = Auth::user()->organization_id;
         $correctivePreventiveAction = $this->repository->createCorrectivePreventiveAction($validated);
 
         return response()->json([

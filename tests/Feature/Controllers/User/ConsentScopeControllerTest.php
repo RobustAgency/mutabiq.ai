@@ -39,6 +39,7 @@ class ConsentScopeControllerTest extends TestCase
             'jurisdiction' => Jurisdiction::EU->value,
             'effective_from' => now()->format('Y-m-d'),
             'effective_to' => now()->addYear()->format('Y-m-d'),
+            'source_created_at' => now()->subDays(5)->format('Y-m-d H:i:s'),
         ], $overrides);
     }
 

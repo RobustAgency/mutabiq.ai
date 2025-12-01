@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class IncidentAction extends Model
 {
@@ -33,13 +33,22 @@ class IncidentAction extends Model
         ];
     }
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the AI incident that owns the action.
-     * 
+     *
      * @return BelongsTo<AiIncident, $this>
      */
     public function aiIncident(): BelongsTo
     {
         return $this->belongsTo(AiIncident::class);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'IA-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

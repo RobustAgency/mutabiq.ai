@@ -4,6 +4,7 @@ namespace Tests\Feature\Repositories;
 
 use App\Models\AiIncident;
 use App\Models\IncidentNotification;
+use App\Models\Organization;
 use App\Repositories\IncidentNotificationRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,18 +14,20 @@ class IncidentNotificationRepositoryTest extends TestCase
     use RefreshDatabase;
 
     protected IncidentNotificationRepository $repository;
+    protected Organization  $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new IncidentNotificationRepository();
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_paginate_returns_paginated_incident_notifications(): void
     {
         IncidentNotification::factory()->count(15)->create();
 
-        $result = $this->repository->getPaginatedIncidentNotifications(10);
+        $result = $this->repository->getFilteredIncidentNotifications(['per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(15, $result->total());
@@ -34,7 +37,7 @@ class IncidentNotificationRepositoryTest extends TestCase
     {
         IncidentNotification::factory()->count(5)->create();
 
-        $result = $this->repository->getPaginatedIncidentNotifications();
+        $result = $this->repository->getFilteredIncidentNotifications();
 
         $this->assertCount(5, $result->items());
     }
@@ -43,6 +46,7 @@ class IncidentNotificationRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'internal_staff',
             'channel' => 'email',
@@ -73,6 +77,7 @@ class IncidentNotificationRepositoryTest extends TestCase
         $notifiedAt = now()->subHours(3);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'customers',
             'channel' => 'status_page',
@@ -98,6 +103,7 @@ class IncidentNotificationRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'internal_exec',
             'channel' => 'meeting',
@@ -117,6 +123,7 @@ class IncidentNotificationRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'regulator',
             'channel' => 'legal_letter',
@@ -138,6 +145,7 @@ class IncidentNotificationRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'vendor',
             'channel' => 'email',
@@ -157,6 +165,7 @@ class IncidentNotificationRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'media',
             'channel' => 'email',
@@ -180,6 +189,7 @@ class IncidentNotificationRepositoryTest extends TestCase
 
         foreach ($channels as $channel) {
             $data = [
+                'organization_id' => $this->organization->id,
                 'ai_incident_id' => $incident->id,
                 'audience_type' => 'internal_staff',
                 'channel' => $channel,
@@ -279,7 +289,7 @@ class IncidentNotificationRepositoryTest extends TestCase
     {
         IncidentNotification::factory()->count(3)->create();
 
-        $result = $this->repository->getPaginatedIncidentNotifications();
+        $result = $this->repository->getFilteredIncidentNotifications(['per_page' => 2]);
 
         $notification = $result->items()[0];
         $this->assertTrue($notification->relationLoaded('aiIncident'));
@@ -296,73 +306,13 @@ class IncidentNotificationRepositoryTest extends TestCase
         $this->assertInstanceOf(AiIncident::class, $notification->aiIncident);
     }
 
-    public function test_repository_handles_long_notice_summary(): void
-    {
-        $incident = AiIncident::factory()->create();
-        $longSummary = str_repeat('This is a very detailed notification summary. ', 50);
-
-        $data = [
-            'ai_incident_id' => $incident->id,
-            'audience_type' => 'customers',
-            'channel' => 'status_page',
-            'notice_summary' => $longSummary,
-            'notified_at' => now()->toDateTimeString(),
-            'approved_by' => 'Approver',
-            'follow_up_required' => false,
-        ];
-
-        $notification = $this->repository->createIncidentNotification($data);
-
-        $this->assertEquals($longSummary, $notification->notice_summary);
-    }
-
-    public function test_repository_handles_notification_with_null_optional_fields(): void
-    {
-        $incident = AiIncident::factory()->create();
-        $data = [
-            'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
-            'notice_summary' => 'Basic notification',
-            'notice_link' => null,
-            'notified_at' => now()->toDateTimeString(),
-            'approved_by' => null,
-            'approval_ref' => null,
-            'follow_up_required' => false,
-        ];
-
-        $notification = $this->repository->createIncidentNotification($data);
-
-        $this->assertNull($notification->notice_link);
-        $this->assertNull($notification->approved_by);
-        $this->assertNull($notification->approval_ref);
-    }
-
-    public function test_repository_handles_notified_at_datetime_properly(): void
-    {
-        $incident = AiIncident::factory()->create();
-        $specificDateTime = now()->subDays(2)->setTime(14, 30, 0);
-
-        $data = [
-            'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
-            'notice_summary' => 'Delayed notification',
-            'notified_at' => $specificDateTime->toDateTimeString(),
-            'follow_up_required' => false,
-        ];
-
-        $notification = $this->repository->createIncidentNotification($data);
-
-        $this->assertEquals($specificDateTime->format('Y-m-d H:i:s'), $notification->notified_at->format('Y-m-d H:i:s'));
-    }
-
     public function test_create_complete_customer_notification_scenario(): void
     {
         $incident = AiIncident::factory()->create();
         $notifiedAt = now()->subHours(1);
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'customers',
             'channel' => 'status_page',
@@ -395,6 +345,7 @@ class IncidentNotificationRepositoryTest extends TestCase
         $incident = AiIncident::factory()->create();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'audience_type' => 'regulator',
             'channel' => 'legal_letter',

@@ -30,7 +30,7 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DatasetSnapshot::factory()->count(5)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots($organization->id);
+        $result = $this->repository->getFilteredDatasetSnapshots(['organization_id' => $organization->id]);
 
         $this->assertInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class, $result);
         $this->assertEquals(5, $result->total());
@@ -45,7 +45,7 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $dataset = Dataset::factory()->create();
         DatasetSnapshot::factory()->for($dataset)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots($organization->id);
+        $result = $this->repository->getFilteredDatasetSnapshots(['organization_id' => $organization->id]);
 
         /** @var DatasetSnapshot $snapshot */
         $snapshot = $result->items()[0];
@@ -61,7 +61,7 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DatasetSnapshot::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots($organization->id, 10);
+        $result = $this->repository->getFilteredDatasetSnapshots(['organization_id' => $organization->id, 'per_page' => 10]);
 
         $this->assertEquals(10, $result->perPage());
         $this->assertCount(10, $result->items());
@@ -76,7 +76,7 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $organization = Organization::factory()->create();
         DatasetSnapshot::factory()->count(20)->create(['organization_id' => $organization->id]);
 
-        $result = $this->repository->getPaginatedSnapshots($organization->id);
+        $result = $this->repository->getFilteredDatasetSnapshots(['organization_id' => $organization->id]);
 
         $this->assertEquals(15, $result->perPage());
     }

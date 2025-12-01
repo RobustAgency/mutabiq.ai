@@ -24,7 +24,14 @@ class UpdateOrganizationRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'website' => ['sometimes', 'string', 'max:255', 'url', 'unique:organizations,website'],
+            'website' => [
+                'sometimes',
+                'string',
+                'max:255',
+                'regex:/^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?$/',
+                'unique:organizations,website',
+            ],
+
             'phone' => [
                 'nullable',
                 'string',

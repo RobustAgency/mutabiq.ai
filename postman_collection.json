@@ -1,20 +1,11 @@
 {
 	"info": {
-		"_postman_id": "mutabiq-api-collection",
+		"_postman_id": "8e96e401-bf29-460e-9d5a-f4e03d879a58",
 		"name": "Mutabiq.AI API Collection",
 		"description": "Comprehensive API collection for Mutabiq.AI platform covering all endpoints including authentication, organizations, projects, AI models, compliance, and more.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "mutabiq-ai"
-	},
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{access_token}}",
-				"type": "string"
-			}
-		]
+		"_exporter_id": "18376010",
+		"_collection_link": "https://codexteam100.postman.co/workspace/Team-Workspace~ca88f11e-aeec-47a7-8e14-5e0bcea25e7a/collection/18376010-8e96e401-bf29-460e-9d5a-f4e03d879a58?action=share&source=collection_link&creator=18376010"
 	},
 	"item": [
 		{
@@ -34,7 +25,9 @@
 									"    }",
 									"}"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -57,7 +50,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}",
+							"raw": "{\n    \"email\": \"ayianqaisar20@gmail.com\",\n    \"password\": \"12345678\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -130,6 +123,16 @@
 				{
 					"name": "Get Profile",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -842,6 +845,16 @@
 				{
 					"name": "List AI Models",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -867,6 +880,16 @@
 				{
 					"name": "Create AI Model",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -882,7 +905,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Customer Sentiment Analysis Model\",\n    \"description\": \"ML model for analyzing customer feedback sentiment\",\n    \"source_org_stakeholder_id\": 1,\n    \"owner_stakeholder_id\": 2,\n    \"vendor_id\": null,\n    \"primary_category\": \"traditional_ml\", // [traditional_ml, deep_learning, generative_ai, ai_agents, specialized_ai, foundation_models, multimodal_ai]\n    \"type\": \"Classification\",\n    \"domain_specialization\": \"Natural Language Processing\",\n    \"operational_status\": \"production\", // [not_deployed, development, testing, production]\n    \"business_status\": \"active\", // [planned, active, deprecated, retired]\n    \"regulatory_risk_classification\": \"Low Risk\",\n    \"ownership_type\": \"internal\", // [internal, external, joint, licensed, open_source, saas]\n    \"development_source\": \"internal_development\" // [internal_development, external_vendor, open_source_community, cloud_provider, partnership]\n}",
+							"raw": "{\n    \"name\": \"Example AI Model\",\n    \"category\": \"traditional_ml\", // PrimaryCategory: traditional_ml, statistical_classical_model, rule_based_expert_system, hybrid_rules_ml, generative_ai_foundation_llm, generative_ai_fine_tuned_domain_model, generative_ai_multimodal, agentic_ai_agent, autonomous_decision_system, other\n    \"type\": \"classification\",\n    \"ownership_category\": \"internal\", // OwnershipType: internal, external, joint, open_source\n    \"responsible_org_role\": \"developer\", // OrganizationalRole: developer, importer, deployer, integrator, provider\n    \"technical_domain\": \"fraud_detection\",\n    \"purpose\": \"Detect fraudulent transactions\",\n    \"criticality_level\": \"high\",\n    \"regulatory_risk_tier\": \"moderate\",\n    \"eu_ai_category\": \"limited\",\n    \"business_owner_id\": 1,\n    \"custodian_id\": 2,\n    \"business_adoption_status\": \"planned\" // BusinessStatus: planned, active, deprecated, retired\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -945,6 +968,16 @@
 				{
 					"name": "List AI Model Versions",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -992,6 +1025,16 @@
 				{
 					"name": "Create AI Model Version",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1007,7 +1050,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"version_number\": \"2.1.0\",\n    \"version_type\": \"minor\", // [major, minor, patch, experimental]\n    \"ai_model_id\": 1,\n    \"description\": \"Enhanced sentiment analysis with improved accuracy\",\n    \"version_role\": \"Production Release\",\n    \"version_source\": \"Internal Development\",\n    \"our_involvement\": \"Full Development\",\n    \"release_date\": \"2025-11-04\",\n    \"release_notes\": \"Improved accuracy by 15%, added support for multilingual sentiment analysis\",\n    \"architecture_type\": \"Transformer-based Neural Network\",\n    \"model_file_size_gb\": 2.5,\n    \"training_duration_hours\": 48,\n    \"complexity_level\": \"moderate\", // [simple, moderate, complex, massive]\n    \"parameter_count\": 350000000,\n    \"input_modalities\": [\"text\"], // Options: [text, image, audio, video, structured_data, time_series]\n    \"output_modalities\": [\"classification\"], // Options: [text, image, audio, classification, regression, embedding, structured_data]\n    \"deployment_status\": \"deployed\", // [not_deployed, deploying, deployed, failed, rollback]\n    \"lifecycle_stage\": \"production\", // [development, testing, staging, production, deprecated, retired]\n    \"deployment_environments\": [\"Production\", \"Staging\"],\n    \"has_performance_data\": true\n}",
+							"raw": "{\n  \"version_number\": \"2.1.0\", // string, max 255\n  \"version_type\": \"minor\", // enum: major, minor, patch, experimental\n  \"ai_model_id\": 1, // integer, must exist in ai_models table\n  \"description\": \"Enhanced sentiment analysis with improved accuracy\", // string, max 1000\n  \"org_involvement\": \"full_development\", // enum: full_development, fine_tuning, configuration_only, integration_only\n  \"release_date\": \"2025-12-01\", // date, YYYY-MM-DD\n  \"release_notes\": \"Improved accuracy by 15%, added support for multilingual sentiment analysis\", // string\n  \"release_role\": \"original_release\", // enum: original_release, patch, hotfix, experimental_ab_test\n  \"source_type\": \"internal_development\", // enum: internal_development, vendor_model, open_source, foundation_model\n  \"architecture_type\": \"transformer\", // enum: transformer, cnn, rnn_lstm_gru, gradient_boosting, random_forest, logistic_regression, linear_regression, other\n  \"model_file_size_gb\": 2.5, // number, min 0\n  \"training_duration_hours\": 48, // integer, min 0\n  \"complexity_level\": \"moderate\", // enum: low, moderate, high, very_high\n  \"parameter_count\": 350000000, // integer, min 0\n  \"input_modalities\": [\"text\", \"image\"], // array, options: text, image, audio, video, structured_data, time_series\n  \"output_modalities\": [\"text\", \"classification\"], // array, options: text, image, audio, classification, regression, embedding, structured_data\n  \"deployment_status\": \"production\", // enum: not_deployed, testing, staging, production, retired\n  \"lifecycle_stage\": \"deployment\", // enum: development, design, validation, deployment, monitoring, retired\n  \"deployment_environments\": [\"production\", \"staging\"], // array, options: development, testing, staging, production\n  \"customizations_applied\": [\"language support\", \"performance tuning\"], // array of strings\n  \"approval_status\": \"approved_for_production\" // enum: pending_review, approved_for_pilot, approved_for_production, rejected, rolled_back\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1079,7 +1122,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"version_number\": \"2.1.1\",\n    \"description\": \"Bug fixes and performance improvements\",\n    \"deployment_status\": \"deployed\", // [not_deployed, deploying, deployed, failed, rollback]\n    \"lifecycle_stage\": \"production\", // [development, testing, staging, production, deprecated, retired]\n    \"release_notes\": \"Fixed memory leak issue, improved response time by 20%\",\n    \"has_performance_data\": true\n}",
+							"raw": "{\n  \"version_number\": \"2.1.0\", // string, max 255\n  \"version_type\": \"minor\", // enum: major, minor, patch, experimental\n  \"ai_model_id\": 1, // integer, must exist in ai_models table\n  \"description\": \"Enhanced sentiment analysis with improved accuracy\", // string, max 1000\n  \"org_involvement\": \"full_development\", // enum: full_development, fine_tuning, configuration_only, integration_only\n  \"release_date\": \"2025-12-01\", // date, YYYY-MM-DD\n  \"release_notes\": \"Improved accuracy by 15%, added support for multilingual sentiment analysis\", // string\n  \"release_role\": \"original_release\", // enum: original_release, patch, hotfix, experimental_ab_test\n  \"source_type\": \"internal_development\", // enum: internal_development, vendor_model, open_source, foundation_model\n  \"architecture_type\": \"transformer\", // enum: transformer, cnn, rnn_lstm_gru, gradient_boosting, random_forest, logistic_regression, linear_regression, other\n  \"model_file_size_gb\": 2.5, // number, min 0\n  \"training_duration_hours\": 48, // integer, min 0\n  \"complexity_level\": \"moderate\", // enum: low, moderate, high, very_high\n  \"parameter_count\": 350000000, // integer, min 0\n  \"input_modalities\": [\"text\", \"image\"], // array, options: text, image, audio, video, structured_data, time_series\n  \"output_modalities\": [\"text\", \"classification\"], // array, options: text, image, audio, classification, regression, embedding, structured_data\n  \"deployment_status\": \"production\", // enum: not_deployed, testing, staging, production, retired\n  \"lifecycle_stage\": \"deployment\", // enum: development, design, validation, deployment, monitoring, retired\n  \"deployment_environments\": [\"production\", \"staging\"], // array, options: development, testing, staging, production\n  \"customizations_applied\": [\"language support\", \"performance tuning\"], // array of strings\n  \"approval_status\": \"approved_for_production\" // enum: pending_review, approved_for_pilot, approved_for_production, rejected, rolled_back\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1331,7 +1374,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Customer Churn Prediction\",\n    \"description\": \"This use case involves developing an AI model to predict customer churn by analyzing customer behavior, transaction history, and engagement patterns. The goal is to identify at-risk customers early and enable proactive retention strategies.\",\n    \"business_objective\": \"Reduce customer churn rate by 25% through early identification of at-risk customers and implementation of targeted retention campaigns.\",\n    \"business_owner_id\": 1,\n    \"technical_owner_id\": 2,\n    \"business_domain\": \"customer_service\", // [customer_service, fraud_detection, marketing, operations, risk_management, hr, finance, legal, product_development, supply_chain]\n    \"roi_classification\": \"High\", // [High, Medium, Low]\n    \"priority\": \"High\", // [High, Medium, Low]\n    \"risk_level\": \"medium\", // [low, medium, high, critical]\n    \"data_sensitivity\": \"confidential\", // [public, internal, confidential, restricted]\n    \"expected_roi_percentage\": 150.50,\n    \"budget_allocated\": 250000,\n    \"target_go_live_date\": \"2026-03-01\",\n    \"status\": \"approved\", // [draft, under_review, approved, in_development, testing, staging, active, suspended, deprecated]\n    \"created_by\": \"user@example.com\",\n    \"updated_by\": \"user@example.com\",\n    \"roi_assessment\": true,\n    \"risk_assessment\": true,\n    \"data_assessment\": true,\n    \"estimated_implementation_cost\": 200000,\n    \"estimated_reduction_in_time\": 500,\n    \"estimated_reduction_in_cost\": 300000,\n    \"estimated_revenue_increase\": 750000,\n    \"estimated_fte_capacity_saving\": 3,\n    \"data_availability_status\": \"available\", // [available, partially available, not available]\n    \"data_readiness\": \"D3\" // [D1, D2, D3, D4]\n}",
+							"raw": "{\n  \"name\": \"Example Use Case\",\n  \"description\": \"Detailed description of the use case...\",\n  \"problem_statement\": \"The business problem to solve...\",\n  \"expected_business_value\": \"Expected value for the business...\",\n  \"stakeholder_ids\": [1, 2, 3],\n  \"status\": \"draft\", // Status: draft, staging, under_review, approved, rejected, on_hold, in_production, retired\n  \"business_domain\": \"operations\", // BusinessDomain: operations, finance, risk, compliance, customer_service, hr, marketing, sales, it, procurement, supply_chain, legal, strategy, other\n  \"roi_classification\": \"high\", // ROIClassification: high, medium, low\n  \"priority\": \"high\", // Priority: high, medium, low\n  \"data_sensitivity\": \"confidential\", // DataSensitivity: public, internal, confidential, restricted, personal_data, sensitive_data, highly_sensitive_data\n  \"expected_roi\": 85.5,\n  \"estimated_time_savings\": 120.0,\n  \"estimated_cost_savings\": 50000.0,\n  \"estimated_revenue_impact\": 100000.0,\n  \"success_metrics\": \"Success will be measured by...\",\n  \"preliminary_risk_level\": \"medium\", // RiskLevel: low, medium, high\n  \"regulatory_impact\": \"yes\", // yes, no\n  \"potential_harm\": \"Potential harm description...\",\n  \"human_oversight_mode\": \"human_in_the_loop\", // HumanOversight: human_in_the_loop, human_on_the_loop, human_in_command\n  \"dependencies\": \"Dependencies description...\",\n  \"budget_allocated\": 200000.0,\n  \"target_deployment_date\": \"2025-12-31\",\n  \"estimated_fte_saving\": 5,\n  \"data_availability_status\": \"available\", // DataAvailabilityStatus: available, partially_available, not_available, unknown\n  \"data_readiness\": \"ready_for_use\", // DataReadiness: ready_for_use, requires_cleaning, requires_integration, requires_collection, not_ready\n  \"business_owner_id\": 1,\n  \"technical_owner_id\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1631,6 +1674,16 @@
 				{
 					"name": "Create Stakeholder",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -4651,196 +4704,6 @@
 			"description": "Track alerts and triggers that led to or contributed to AI incidents"
 		},
 		{
-			"name": "AI Risk Register",
-			"item": [
-				{
-					"name": "List AI Risk Register Entries",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/ai-risk-register?per_page=15",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"ai-risk-register"
-							],
-							"query": [
-								{
-									"key": "per_page",
-									"value": "15",
-									"description": "Number of results per page (1-100)"
-								}
-							]
-						},
-						"description": "Get paginated list of AI risk register entries for the user's organization.\n\n**Optional Query Parameters:**\n- `per_page` (integer, 1-100): Results per page (default: 15)\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				},
-				{
-					"name": "Create AI Risk Register Entry",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"title\": \"Model Bias in Credit Scoring AI\",\n    \"risk_category\": \"bias_fairness\",\n    \"ai_model_id\": 1,\n    \"ai_model_version_id\": 5,\n    \"use_case_id\": 2,\n    \"description\": \"The credit scoring model may exhibit bias against certain demographic groups, potentially leading to unfair lending decisions and regulatory compliance issues. This could result in reputational damage and legal liability.\",\n    \"related_controls\": [\"CTRL-001\", \"CTRL-015\", \"CTRL-023\"],\n    \"method_id\": 1,\n    \"likelihood_code\": \"L3\",\n    \"impact_code\": \"I4\",\n    \"inherent_score\": \"7\",\n    \"residual_score\": \"5\",\n    \"risk_level\": \"high\",\n    \"decision\": \"treat\",\n    \"risk_owner\": 1,\n    \"review_cadence\": \"quarterly\",\n    \"next_review_due\": \"2026-02-15\",\n    \"status\": \"in_treatment\",\n    \"linked_assessment_id\": 123,\n    \"linked_incident_id\": 5,\n    \"linked_capa_id\": 3,\n    \"evidence_link\": \"https://evidence.example.com/risks/bias-analysis-2025-11\",\n    \"likelihood_label_snapshot\": \"Possible\",\n    \"impact_label_snapshot\": \"Major\",\n    \"method_name_snapshot\": \"5x5 Risk Matrix\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/ai-risk-register",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"ai-risk-register"
-							]
-						},
-						"description": "Create a new AI risk register entry for tracking identified risks.\n\n**Required Fields:**\n- `title` (string, max 255): Short, specific risk statement\n- `risk_category` (string): Risk category\n- `ai_model_id` (integer): Primary affected AI model ID\n- `description` (string): Context, causes, and consequences\n- `likelihood_code` (string, max 255): Likelihood code from risk methodology\n- `impact_code` (string, max 255): Impact code from risk methodology\n- `risk_level` (string): Derived risk level\n- `decision` (string): Risk treatment decision\n- `risk_owner` (integer): Stakeholder ID responsible for the risk\n- `review_cadence` (string): How often to review the risk\n- `next_review_due` (date): Next review date\n- `status` (string): Current risk status\n\n**Risk Category Options:**\n- `safety` - AI safety risks\n- `privacy` - Privacy risks\n- `bias_fairness` - Bias and fairness issues\n- `security` - Security vulnerabilities\n- `robustness` - Model robustness issues\n- `explainability` - Explainability concerns\n- `legal_compliance` - Legal and compliance risks\n- `ethics` - Ethical concerns\n- `availability` - Availability risks\n- `resilience` - Resilience issues\n- `vendor` - Vendor-related risks\n- `cost` - Cost overrun risks\n- `reputation` - Reputational risks\n- `other` - Other categories\n\n**Risk Level Options:**\n- `low` - Low risk\n- `medium` - Medium risk\n- `high` - High risk\n- `critical` - Critical risk\n\n**Decision Options:**\n- `treat` - Treat/Mitigate the risk\n- `accept` - Accept the risk\n- `transfer` - Transfer the risk (e.g., insurance)\n- `avoid` - Avoid the risk\n\n**Review Cadence Options:**\n- `monthly` - Monthly review\n- `quarterly` - Quarterly review\n- `semi_annual` - Semi-annual review\n- `annual` - Annual review\n\n**Status Options:**\n- `identified` - Risk identified\n- `assessed` - Risk assessed\n- `in_treatment` - Treatment in progress\n- `accepted` - Risk accepted\n- `transferred` - Risk transferred\n- `closed` - Risk closed\n\n**Optional Fields:**\n- `ai_model_version_id` (integer): Specific model version in scope\n- `use_case_id` (integer): Specific use case in scope\n- `related_controls` (array): IDs/references to control catalog\n- `method_id` (integer): Risk methodology used\n- `inherent_score` (string, max 255): Score before treatment\n- `residual_score` (string, max 255): Score after treatment\n- `linked_assessment_id` (integer): If raised via an assessment\n- `linked_incident_id` (integer): If discovered during an incident\n- `linked_capa_id` (integer): If CAPA exists\n- `evidence_link` (URL, max 500): Link to risk analysis\n- `likelihood_label_snapshot` (string, max 255): Likelihood label snapshot\n- `impact_label_snapshot` (string, max 255): Impact label snapshot\n- `method_name_snapshot` (string, max 255): Method name snapshot\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				},
-				{
-					"name": "Get AI Risk Register Entry Details",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"ai-risk-register",
-								":aiRiskRegister"
-							],
-							"variable": [
-								{
-									"key": "aiRiskRegister",
-									"value": "1",
-									"description": "AI Risk Register Entry ID"
-								}
-							]
-						},
-						"description": "Get details of a specific AI risk register entry with all relationships loaded.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				},
-				{
-					"name": "Update AI Risk Register Entry",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"status\": \"accepted\",\n    \"decision\": \"accept\",\n    \"residual_score\": \"3\",\n    \"risk_level\": \"medium\",\n    \"next_review_due\": \"2026-05-15\",\n    \"description\": \"Updated: After implementing additional bias detection controls and regular auditing, the residual risk has been reduced to acceptable levels. The organization accepts the remaining risk with ongoing monitoring.\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"ai-risk-register",
-								":aiRiskRegister"
-							],
-							"variable": [
-								{
-									"key": "aiRiskRegister",
-									"value": "1",
-									"description": "AI Risk Register Entry ID"
-								}
-							]
-						},
-						"description": "Update an existing AI risk register entry.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**All fields are optional and follow the same validation as Create AI Risk Register Entry**\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				},
-				{
-					"name": "Delete AI Risk Register Entry",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/ai-risk-register/:aiRiskRegister",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"ai-risk-register",
-								":aiRiskRegister"
-							],
-							"variable": [
-								{
-									"key": "aiRiskRegister",
-									"value": "1",
-									"description": "AI Risk Register Entry ID"
-								}
-							]
-						},
-						"description": "Delete an AI risk register entry.\n\n**Path Parameters:**\n- `aiRiskRegister` (integer): AI Risk Register Entry ID\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				}
-			],
-			"description": "Master list of AI risks - canonical record per risk, tied to a model/use case and scored with the current methodology"
-		},
-		{
 			"name": "Incident Actions",
 			"item": [
 				{
@@ -5647,21 +5510,13 @@
 							}
 						],
 						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "Artifact file (CSV, XLSX, or XLS format, max 10MB)"
-								},
-								{
-									"key": "artifact_type",
-									"value": "model_binary",
-									"type": "text",
-									"description": "[model_binary, tokenizer, prompt_pack, index, feature_store_export, config, docker_image, sbom]"
+							"mode": "raw",
+							"raw": "{\n  \"ai_model_version_id\": 1, // integer, must exist in ai_model_versions table\n  \"name\": \"Model Weights v2\", // string, max 255\n  \"uri\": \"https://example.com/model-weights-v2.onnx\", // url, max 2048, required_without:file\n  \"file\": null, // file upload, max 25MB, required_without:uri\n  \"checksum_algorithm\": \"sha256\", // enum: sha256, sha1, md5, none\n  \"checksum_value\": \"abc123def456...\", // string, max 255, required_with:checksum_algorithm\n  \"environment\": \"production\", // enum: development, testing, staging, production, shared, archive\n  \"file_format\": \"onnx\", // enum: binary, onnx, pickle_joblib, json, yaml, csv, parquet, notebook, pdf, markdown_txt, docker_oci_image, other\n  \"size_bytes\": 10485760, // integer, min 1 (example: 10MB)\n  \"artifact_type\": \"model_weights\", // enum: model_weights, serialized_model, onnx_model, training_script, inference_script, config_file, pipeline_definition, container_image, notebook, evaluation_report, explainability_report, documentation, model_card, data_schema, other\n  \"notes\": \"Weights for v2 model, ONNX format\" // string, max 1000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
-							]
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/ai-model-artifacts",
@@ -5745,175 +5600,18 @@
 				}
 			],
 			"description": "Upload and manage AI model artifact files including model binaries, tokenizers, prompts, configurations, and documentation"
-		},
-		{
-			"name": "Artifact Access Logs",
-			"item": [
-				{
-					"name": "List Artifact Access Logs",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/artifact-access-logs?per_page=15",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"artifact-access-logs"
-							],
-							"query": [
-								{
-									"key": "per_page",
-									"value": "15",
-									"description": "Items per page (1-100, default: 15)"
-								},
-								{
-									"key": "artifact_id",
-									"value": "1",
-									"description": "Filter by artifact ID",
-									"disabled": true
-								},
-								{
-									"key": "accessor_stakeholder_id",
-									"value": "1",
-									"description": "Filter by accessor stakeholder ID",
-									"disabled": true
-								},
-								{
-									"key": "action",
-									"value": "read",
-									"description": "Filter by action [read, write, delete]",
-									"disabled": true
-								},
-								{
-									"key": "context",
-									"value": "api",
-									"description": "Filter by context [ci_cd, notebook, console, api]",
-									"disabled": true
-								}
-							]
-						},
-						"description": "Retrieve a paginated list of artifact access logs with optional filtering.\n\n**Query Parameters:**\n- `per_page` (integer, optional): Number of items per page (1-100, default: 15)\n- `artifact_id` (integer, optional): Filter by artifact ID\n- `accessor_stakeholder_id` (integer, optional): Filter by accessor stakeholder ID\n- `action` (string, optional): Filter by action [read, write, delete]\n- `context` (string, optional): Filter by context [ci_cd, notebook, console, api]\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				},
-				{
-					"name": "Create Artifact Access Log",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"artifact_id\": 1,\n  \"accessor_stakeholder_id\": 5,\n  \"action\": \"read\", // [read, write, delete]\n  \"context\": \"api\", // [ci_cd, notebook, console, api]\n  \"ts\": \"2024-01-15T14:30:00Z\",\n  \"ip_or_agent\": \"192.168.1.100 / Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\",\n  \"request_id\": \"req_abc123xyz789\",\n  \"reason\": \"Model deployment validation for production release\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/artifact-access-logs",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"artifact-access-logs"
-							]
-						},
-						"description": "Create a new artifact access log entry for audit and compliance tracking.\n\n**Required Fields:**\n- `artifact_id` (integer): ID of the artifact being accessed (must exist in ai_model_artifacts)\n- `accessor_stakeholder_id` (integer): ID of the stakeholder accessing the artifact (must exist in stakeholders)\n- `action` (string): Type of access performed\n  - `read`: Viewing or downloading the artifact\n  - `write`: Modifying or updating the artifact\n  - `delete`: Removing the artifact\n- `context` (string): Context in which the access occurred\n  - `ci_cd`: Continuous integration/deployment pipeline\n  - `notebook`: Jupyter or similar notebook environment\n  - `console`: Command-line or console access\n  - `api`: Programmatic API access\n- `ts` (datetime): Timestamp when the access occurred (UTC)\n\n**Optional Fields:**\n- `ip_or_agent` (string, max 255): IP address and/or User-Agent fingerprint for security tracking\n- `request_id` (string, max 255): Correlation or trace ID for request tracking\n- `reason` (string, max 255): Brief rationale or justification for the access\n\n**Purpose:**\nImmutable audit trail for security, compliance, and accountability. Tracks who accessed which artifact, how, and when.\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact Access Log Details",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/artifact-access-logs/:artifactAccessLog",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"artifact-access-logs",
-								":artifactAccessLog"
-							],
-							"variable": [
-								{
-									"key": "artifactAccessLog",
-									"value": "1",
-									"description": "Artifact Access Log ID"
-								}
-							]
-						},
-						"description": "Retrieve details of a specific artifact access log entry.\n\n**Path Parameters:**\n- `artifactAccessLog` (integer): Artifact Access Log ID\n\n**Response includes:**\n- Access log details\n- Related artifact information\n- Accessor stakeholder information\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Artifact Access Log",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/artifact-access-logs/:artifactAccessLog",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"artifact-access-logs",
-								":artifactAccessLog"
-							],
-							"variable": [
-								{
-									"key": "artifactAccessLog",
-									"value": "1",
-									"description": "Artifact Access Log ID"
-								}
-							]
-						},
-						"description": "Delete an artifact access log entry.\n\n**Path Parameters:**\n- `artifactAccessLog` (integer): Artifact Access Log ID\n\n**Note:** While access logs are intended to be immutable for audit purposes, this endpoint allows deletion for data retention compliance or correction of erroneous entries.\n\n**Authentication:** Required (Bearer Token)"
-					},
-					"response": []
-				}
-			],
-			"description": "Immutable audit trail of artifact access events for security, compliance, and accountability tracking"
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IncidentAction\ListIncidentActionRequest;
 use App\Http\Requests\IncidentAction\StoreIncidentActionRequest;
 use App\Http\Requests\IncidentAction\UpdateIncidentActionRequest;
 use App\Http\Resources\IncidentActionResource;
 use App\Models\IncidentAction;
 use App\Repositories\IncidentActionRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class IncidentActionController extends Controller
 {
@@ -19,11 +20,11 @@ class IncidentActionController extends Controller
     /**
      * Display a listing of incident actions.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListIncidentActionRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page') ?? 15;
-        $organizationID = $request->user()->organization_id;
-        $incidentActions = $this->incidentActionRepository->getPaginatedIncidentActions($organizationID, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = Auth::user()->organization_id;
+        $incidentActions = $this->incidentActionRepository->getFilteredIncidentActions($validated);
 
         return response()->json([
             'error' => false,
@@ -38,7 +39,7 @@ class IncidentActionController extends Controller
     public function store(StoreIncidentActionRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['organization_id'] = $request->user()->organization_id;
+        $validated['organization_id'] = Auth::user()->organization_id;
         $incidentAction = $this->incidentActionRepository->createIncidentAction($validated);
 
         return response()->json([

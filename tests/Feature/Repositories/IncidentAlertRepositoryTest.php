@@ -4,6 +4,7 @@ namespace Tests\Feature\Repositories;
 
 use App\Models\AiIncident;
 use App\Models\IncidentAlert;
+use App\Models\Organization;
 use App\Repositories\IncidentAlertRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,18 +14,20 @@ class IncidentAlertRepositoryTest extends TestCase
     use RefreshDatabase;
 
     protected IncidentAlertRepository $repository;
+    protected Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = app(IncidentAlertRepository::class);
+        $this->organization = Organization::factory()->create();
     }
 
     public function test_get_paginated_incident_alerts_returns_paginated_results(): void
     {
         IncidentAlert::factory()->count(25)->create();
 
-        $result = $this->repository->getPaginatedIncidentAlerts(10);
+        $result = $this->repository->getFilteredIncidentAlerts(['per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(25, $result->total());
@@ -35,6 +38,7 @@ class IncidentAlertRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'source_type' => 'kri',
             'first_seen_at' => now()->subHour(),
@@ -56,6 +60,7 @@ class IncidentAlertRepositoryTest extends TestCase
     {
         $incident = AiIncident::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'source_type' => 'monitoring_rule',
             'source_ref' => 'RULE-1234',
@@ -149,6 +154,7 @@ class IncidentAlertRepositoryTest extends TestCase
         $lastSeen = now()->subHour();
 
         $data = [
+            'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
             'source_type' => 'security_tool',
             'first_seen_at' => $firstSeen,
@@ -170,6 +176,7 @@ class IncidentAlertRepositoryTest extends TestCase
 
         foreach ($sourceTypes as $sourceType) {
             $data = [
+                'organization_id' => $this->organization->id,
                 'ai_incident_id' => $incident->id,
                 'source_type' => $sourceType,
                 'first_seen_at' => now(),
@@ -185,7 +192,7 @@ class IncidentAlertRepositoryTest extends TestCase
     {
         IncidentAlert::factory()->count(3)->create();
 
-        $result = $this->repository->getPaginatedIncidentAlerts();
+        $result = $this->repository->getFilteredIncidentAlerts();
 
         $this->assertTrue($result->items()[0]->relationLoaded('aiIncident'));
     }

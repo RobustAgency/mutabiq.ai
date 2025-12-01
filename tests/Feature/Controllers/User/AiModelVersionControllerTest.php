@@ -2,18 +2,22 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\VersionType;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\AiModel;
-use App\Models\AiModelVersion;
-use App\Models\Organization;
 use App\Models\User;
+use App\Models\AiModel;
+use App\Enums\VersionType;
+use App\Models\Organization;
+use App\Enums\LifecycleStage;
 use App\Enums\ComplexityLevel;
+use App\Models\AiModelVersion;
 use App\Enums\ComplianceStatus;
 use App\Enums\DeploymentStatus;
-use App\Enums\LifecycleStage;
 use App\Enums\ValidationStatus;
+use App\Enums\VersionSourceType;
+use App\Enums\VersionReleaseRole;
+use App\Enums\VersionApprovalStatus;
+use App\Enums\VersionArchitectureType;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiModelVersionControllerTest extends TestCase
 {
@@ -35,7 +39,7 @@ class AiModelVersionControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
             'organization_id' => $this->organization->id,
         ]);
-        $url = '/api/ai-model-versions?ai_model_id=' . $aiModel->id;
+        $url = '/api/ai-model-versions?ai_model_id='.$aiModel->id;
 
         $response = $this->actingAs($user)->getJson($url);
 
@@ -44,31 +48,39 @@ class AiModelVersionControllerTest extends TestCase
                 'error',
                 'message',
                 'data' => [
-                    '*' => [
-                        'id',
-                        'ai_model_id',
-                        'version_number',
-                        'version_type',
-                        'description',
-                        'release_notes',
-                        'release_date',
-                        'architecture_type',
-                        'model_file_size_gb',
-                        'training_duration_hours',
-                        'complexity_level',
-                        'deployment_status',
-                        'lifecycle_stage',
-                        'parameter_count',
-                        'input_modalities',
-                        'output_modalities',
-                        'deployment_environments',
-                        'has_performance_data',
-                        'created_at',
-                        'updated_at',
+                    'data' => [
+                        '*' => [
+                            'id',
+                            'ai_model_id',
+                            'version_number',
+                            'version_type',
+                            'release_role',
+                            'source_type',
+                            'approval_status',
+                            'org_involvement',
+                            'description',
+                            'release_notes',
+                            'release_date',
+                            'architecture_type',
+                            'model_file_size_gb',
+                            'training_duration_hours',
+                            'complexity_level',
+                            'deployment_status',
+                            'lifecycle_stage',
+                            'parameter_count',
+                            'input_modalities',
+                            'output_modalities',
+                            'deployment_environments',
+                            'created_at',
+                            'updated_at',
+                        ],
                     ],
+                    'current_page',
+                    'per_page',
+                    'total',
                 ],
             ]);
-        $this->assertCount(5, $response->json('data'));
+        $this->assertCount(5, $response->json('data.data'));
     }
 
     public function test_user_can_create_ai_model_version(): void
@@ -81,9 +93,11 @@ class AiModelVersionControllerTest extends TestCase
             'version_number' => '1.0.0',
             'version_type' => VersionType::MAJOR,
             'description' => 'Initial release',
+            'release_role' => VersionReleaseRole::PATCH,
+            'source_type' => VersionSourceType::OPEN_SOURCE,
             'release_notes' => 'First version of the AI model',
             'release_date' => now()->toDateString(),
-            'architecture_type' => 'Transformer',
+            'architecture_type' => VersionArchitectureType::TRANSFORMER,
             'model_file_size_gb' => 2.5,
             'training_duration_hours' => 48,
             'complexity_level' => ComplexityLevel::MODERATE,
@@ -94,7 +108,9 @@ class AiModelVersionControllerTest extends TestCase
             'lifecycle_stage' => LifecycleStage::DEVELOPMENT,
             'compliance_check_status' => ComplianceStatus::NOT_CHECKED,
             'validation_status' => ValidationStatus::IN_PROGRESS,
-            'deployment_environments' => ['cloud', 'edge'],
+            'deployment_environments' => [DeploymentStatus::STAGING->value],
+            'customizations_applied' => ['fine-tuning on domain-specific data'],
+            'approval_status' => VersionApprovalStatus::PENDING_REVIEW,
         ];
 
         $response = $this->actingAs($user)->postJson('/api/ai-model-versions', $data);
@@ -115,7 +131,7 @@ class AiModelVersionControllerTest extends TestCase
         $updateData = [
             'version_number' => '1.0.1',
             'description' => 'Updated description',
-            'deployment_status' => DeploymentStatus::DEPLOYED,
+            'deployment_status' => DeploymentStatus::NOT_DEPLOYED,
         ];
 
         $response = $this->actingAs($user)->postJson("/api/ai-model-versions/{$aiModelVersion->id}", $updateData);
@@ -126,7 +142,7 @@ class AiModelVersionControllerTest extends TestCase
             'id' => $aiModelVersion->id,
             'version_number' => '1.0.1',
             'description' => 'Updated description',
-            'deployment_status' => DeploymentStatus::DEPLOYED,
+            'deployment_status' => DeploymentStatus::NOT_DEPLOYED,
         ]);
     }
 
@@ -154,15 +170,11 @@ class AiModelVersionControllerTest extends TestCase
                     'complexity',
                     'deployment_status',
                     'lifecycle_stage',
-                    'validation_status',
-                    'compliance_status',
                     'parameter_count',
                     'input_modalities',
                     'output_modalities',
                     'deployment_environments',
-                    'rollback_available',
                     'has_performance_data',
-                    'performance_baseline_established',
                     'created_at',
                     'updated_at',
                 ],

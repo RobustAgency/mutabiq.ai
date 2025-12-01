@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IncidentAlert\ListIncidentAlertRequest;
 use App\Http\Requests\IncidentAlert\StoreIncidentAlertRequest;
 use App\Http\Requests\IncidentAlert\UpdateIncidentAlertRequest;
 use App\Http\Resources\IncidentAlertResource;
@@ -19,11 +20,11 @@ class IncidentAlertController extends Controller
     /**
      * Display a listing of incident alerts.
      */
-    public function index(Request $request): JsonResponse
+    public function index(ListIncidentAlertRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page') ?? 15;
-        $organizationID = $request->user()->organization_id;
-        $incidentAlerts = $this->incidentAlertRepository->getPaginatedIncidentAlerts($organizationID, $perPage);
+        $validated = $request->validated();
+        $validated['organization_id'] = $request->user()->organization_id;
+        $incidentAlerts = $this->incidentAlertRepository->getFilteredIncidentAlerts($validated);
 
         return response()->json([
             'error' => false,

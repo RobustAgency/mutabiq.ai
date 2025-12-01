@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Stakeholder extends Model
 {
@@ -31,4 +31,13 @@ class Stakeholder extends Model
         'role_tags' => 'array',
         'active' => 'boolean',
     ];
+
+    protected $appends = [
+        'display_id',
+    ];
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'SH-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
 }

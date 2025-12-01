@@ -45,7 +45,7 @@ class AiModelCardRepositoryTest extends TestCase
             'organization_id' => $organization->id,
         ]);
 
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCardsByOrganizationID($organization->id, 10);
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards(['organization_id' => $organization->id, 'per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(15, $result->total());
@@ -63,7 +63,7 @@ class AiModelCardRepositoryTest extends TestCase
             'organization_id' => $organization->id,
         ]);
 
-        $result = $this->aiModelCardRepository->getPaginatedAiModelCardsByOrganizationID($organization->id, 5);
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards(['organization_id' => $organization->id, 'per_page' => 5]);
 
         $this->assertCount(5, $result->items());
         $this->assertEquals(20, $result->total());
@@ -142,5 +142,263 @@ class AiModelCardRepositoryTest extends TestCase
             'id' => $aiModelCard->id,
             'title' => 'Updated Title',
         ]);
+    }
+
+    public function test_it_filters_by_creator_role(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'creator_role' => CreatorRole::INTERNAL_TEAM,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'creator_role' => CreatorRole::COMMUNITY_CONTRIBUTED,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'creator_role' => CreatorRole::INTERNAL_TEAM,
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'creator_role' => CreatorRole::INTERNAL_TEAM,
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_status(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'status' => Status::DRAFT,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'status' => Status::PUBLISHED,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'status' => Status::DRAFT,
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'status' => Status::DRAFT,
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_format(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'format' => CardFormat::STANDARD,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'format' => CardFormat::REGULATORY,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'format' => CardFormat::STANDARD,
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'format' => CardFormat::STANDARD,
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_publication_status(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'publication_status' => PublicationStatus::PUBLISHED_INTERNAL,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'publication_status' => PublicationStatus::NOT_PUBLISHED,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'publication_status' => PublicationStatus::PUBLISHED_INTERNAL,
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'publication_status' => PublicationStatus::PUBLISHED_INTERNAL,
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_owner(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        $stakeholder1 = Stakeholder::factory()->create([
+            'organization_id' => $organization->id,
+            'display_name' => 'John Smith',
+        ]);
+        $stakeholder2 = Stakeholder::factory()->create([
+            'organization_id' => $organization->id,
+            'display_name' => 'Jane Doe',
+        ]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'owner_stakeholder_id' => $stakeholder1->id,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'owner_stakeholder_id' => $stakeholder2->id,
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'owner_stakeholder_id' => $stakeholder1->id,
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'owner' => 'John',
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_date_range(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'from' => now()->subDays(7)->format('Y-m-d'),
+            'to' => now()->subDays(2)->format('Y-m-d'),
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    public function test_it_filters_by_from_date_only(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'from' => now()->subDays(6)->format('Y-m-d'),
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    public function test_it_filters_by_to_date_only(): void
+    {
+        $organization = Organization::factory()->create();
+        $aiModel = AiModel::factory()->create(['organization_id' => $organization->id]);
+        $aiModelVersion = AiModelVersion::factory()->create(['ai_model_id' => $aiModel->id]);
+
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        AiModelCard::factory()->create([
+            'version_id' => $aiModelVersion->id,
+            'organization_id' => $organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $organization->id,
+            'to' => now()->subDays(6)->format('Y-m-d'),
+        ];
+        $result = $this->aiModelCardRepository->getFilteredAiModelCards($filters);
+
+        $this->assertCount(1, $result->items());
     }
 }

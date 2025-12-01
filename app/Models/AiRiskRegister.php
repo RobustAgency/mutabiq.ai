@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AiRiskRegister extends Model
 {
@@ -47,9 +47,13 @@ class AiRiskRegister extends Model
         'next_review_due' => 'date',
     ];
 
+    protected $appends = [
+        'display_id',
+    ];
+
     /**
      * Get the organization that owns this risk.
-     * 
+     *
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
@@ -59,7 +63,7 @@ class AiRiskRegister extends Model
 
     /**
      * Get the AI model associated with this risk.
-     * 
+     *
      * @return BelongsTo<AiModel, $this>
      */
     public function aiModel(): BelongsTo
@@ -69,7 +73,7 @@ class AiRiskRegister extends Model
 
     /**
      * Get the AI model version associated with this risk.
-     * 
+     *
      * @return BelongsTo<AiModelVersion, $this>
      */
     public function aiModelVersion(): BelongsTo
@@ -79,7 +83,7 @@ class AiRiskRegister extends Model
 
     /**
      * Get the use case associated with this risk.
-     * 
+     *
      * @return BelongsTo<UseCase, $this>
      */
     public function useCase(): BelongsTo
@@ -89,11 +93,16 @@ class AiRiskRegister extends Model
 
     /**
      * Get the stakeholder who owns this risk.
-     * 
+     *
      * @return BelongsTo<Stakeholder, $this>
      */
     public function riskOwner(): BelongsTo
     {
         return $this->belongsTo(Stakeholder::class, 'risk_owner');
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return 'ARR-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

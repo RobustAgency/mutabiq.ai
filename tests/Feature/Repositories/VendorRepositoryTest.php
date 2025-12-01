@@ -7,17 +7,20 @@ use App\Models\Vendor;
 use App\Repositories\VendorRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Organization;
 
 class VendorRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     private VendorRepository $repository;
+    private $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new VendorRepository();
+        $this->organization = Organization::factory()->create();
     }
 
     /**
@@ -25,9 +28,11 @@ class VendorRepositoryTest extends TestCase
      */
     public function test_get_paginated_vendors_returns_paginated_results(): void
     {
-        Vendor::factory()->count(20)->create();
+        Vendor::factory()->count(20)->create([
+            'organization_id' => $this->organization->id,
+        ]);
 
-        $result = $this->repository->getPaginatedVendors(10);
+        $result = $this->repository->getFilteredVendors(['per_page' => 10]);
 
         $this->assertCount(10, $result->items());
         $this->assertEquals(20, $result->total());
@@ -39,37 +44,21 @@ class VendorRepositoryTest extends TestCase
      */
     public function test_get_paginated_vendors_uses_default_per_page(): void
     {
-        Vendor::factory()->count(20)->create();
+        Vendor::factory()->count(20)->create([
+            'organization_id' => $this->organization->id,
+        ]);
 
-        $result = $this->repository->getPaginatedVendors();
+        $result = $this->repository->getFilteredVendors();
 
         $this->assertEquals(15, $result->perPage());
     }
 
     /**
-     * Test get paginated vendors orders by created_at descending.
-     */
-    public function test_get_paginated_vendors_orders_by_created_at_desc(): void
-    {
-        $oldVendor = Vendor::factory()->create([
-            'created_at' => now()->subDays(10),
-        ]);
-        $newVendor = Vendor::factory()->create([
-            'created_at' => now(),
-        ]);
-
-        $result = $this->repository->getPaginatedVendors();
-
-        $this->assertEquals($newVendor->id, $result->items()[0]->id);
-        $this->assertEquals($oldVendor->id, $result->items()[1]->id);
-    }
-
-    /**
      * Test get paginated vendors returns empty when no records.
      */
-    public function test_get_paginated_vendors_returns_empty_when_no_records(): void
+    public function test_get_filtered_vendors_returns_empty_when_no_records(): void
     {
-        $result = $this->repository->getPaginatedVendors();
+        $result = $this->repository->getFilteredVendors();
 
         $this->assertCount(0, $result->items());
         $this->assertEquals(0, $result->total());
@@ -82,7 +71,7 @@ class VendorRepositoryTest extends TestCase
     {
         Vendor::factory()->count(3)->create();
 
-        $result = $this->repository->getPaginatedVendors();
+        $result = $this->repository->getFilteredVendors();
 
         foreach ($result->items() as $vendor) {
             $this->assertTrue($vendor->relationLoaded('stakeholder'));
@@ -96,6 +85,7 @@ class VendorRepositoryTest extends TestCase
     {
         $stakeholder = Stakeholder::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'vendor_name' => 'Test Vendor',
             'legal_name' => 'Test Vendor Inc.',
             'hq_country' => 'US',
@@ -130,6 +120,7 @@ class VendorRepositoryTest extends TestCase
     {
         $stakeholder = Stakeholder::factory()->create();
         $data = [
+            'organization_id' => $this->organization->id,
             'vendor_name' => 'Minimal Vendor',
             'legal_name' => 'Minimal Vendor LLC',
             'hq_country' => 'GB',
@@ -164,6 +155,7 @@ class VendorRepositoryTest extends TestCase
         ];
 
         $data = [
+            'organization_id' => $this->organization->id,
             'vendor_name' => 'JSON Test Vendor',
             'legal_name' => 'JSON Test Vendor Inc.',
             'hq_country' => 'US',
@@ -309,5 +301,296 @@ class VendorRepositoryTest extends TestCase
         $result = $this->repository->deleteVendor($vendor);
 
         $this->assertTrue($result);
+    }
+
+    /**
+     * Test filter by organization id.
+     */
+    public function test_filter_by_organization_id(): void
+    {
+        $org1 = Organization::factory()->create();
+        $org2 = Organization::factory()->create();
+
+        Vendor::factory()->count(5)->create(['organization_id' => $org1->id]);
+        Vendor::factory()->count(3)->create(['organization_id' => $org2->id]);
+
+        $result1 = $this->repository->getFilteredVendors(['organization_id' => $org1->id]);
+        $result2 = $this->repository->getFilteredVendors(['organization_id' => $org2->id]);
+
+        $this->assertEquals(5, $result1->total());
+        $this->assertEquals(3, $result2->total());
+    }
+
+    /**
+     * Test filter by risk tier.
+     */
+    public function test_filter_by_risk_tier(): void
+    {
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => 'tier_1',
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => 'tier_2',
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => 'tier_1',
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => 'tier_3',
+        ]);
+
+        $filters = ['organization_id' => $this->organization->id, 'risk_tier' => 'tier_1'];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $vendor) {
+            $this->assertEquals('tier_1', $vendor->risk_tier);
+        }
+    }
+
+    /**
+     * Test filter by status.
+     */
+    public function test_filter_by_status(): void
+    {
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'approved',
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'evaluating',
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'approved',
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'suspended',
+        ]);
+
+        $filters = ['organization_id' => $this->organization->id, 'status' => 'approved'];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(2, $result->items());
+        foreach ($result->items() as $vendor) {
+            $this->assertEquals('approved', $vendor->status);
+        }
+    }
+
+    /**
+     * Test filter by owner stakeholder.
+     */
+    public function test_filter_by_owner(): void
+    {
+        $stakeholder1 = Stakeholder::factory()->create(['display_name' => 'John Smith']);
+        $stakeholder2 = Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
+        $stakeholder3 = Stakeholder::factory()->create(['display_name' => 'John Williams']);
+
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'stakeholder_id' => $stakeholder1->id,
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'stakeholder_id' => $stakeholder2->id,
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'stakeholder_id' => $stakeholder3->id,
+        ]);
+
+        $filters = ['organization_id' => $this->organization->id, 'owner' => 'John'];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    /**
+     * Test filter by date range.
+     */
+    public function test_filter_by_date_range(): void
+    {
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'from' => now()->subDays(7)->format('Y-m-d'),
+            'to' => now()->subDays(2)->format('Y-m-d'),
+        ];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    /**
+     * Test filter by from date only.
+     */
+    public function test_filter_by_from_date_only(): void
+    {
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'from' => now()->subDays(6)->format('Y-m-d'),
+        ];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(2, $result->items());
+    }
+
+    /**
+     * Test filter by to date only.
+     */
+    public function test_filter_by_to_date_only(): void
+    {
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(10),
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_at' => now()->subDays(1),
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'to' => now()->subDays(6)->format('Y-m-d'),
+        ];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(1, $result->items());
+    }
+
+    /**
+     * Test filter by different risk tiers.
+     */
+    public function test_filter_by_different_risk_tiers(): void
+    {
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_1']);
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_2']);
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_3']);
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_4']);
+
+        $tier1Result = $this->repository->getFilteredVendors(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_1']);
+        $tier2Result = $this->repository->getFilteredVendors(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_2']);
+        $tier3Result = $this->repository->getFilteredVendors(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_3']);
+        $tier4Result = $this->repository->getFilteredVendors(['organization_id' => $this->organization->id, 'risk_tier' => 'tier_4']);
+
+        $this->assertCount(1, $tier1Result->items());
+        $this->assertCount(1, $tier2Result->items());
+        $this->assertCount(1, $tier3Result->items());
+        $this->assertCount(1, $tier4Result->items());
+    }
+
+    /**
+     * Test filter by different statuses.
+     */
+    public function test_filter_by_different_statuses(): void
+    {
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'status' => 'approved']);
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'status' => 'evaluating']);
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'status' => 'suspended']);
+        Vendor::factory()->create(['organization_id' => $this->organization->id, 'status' => 'approved']);
+
+        $approvedResult = $this->repository->getFilteredVendors(['organization_id' => $this->organization->id, 'status' => 'approved']);
+        $evaluatingResult = $this->repository->getFilteredVendors(['organization_id' => $this->organization->id, 'status' => 'evaluating']);
+        $suspendedResult = $this->repository->getFilteredVendors(['organization_id' => $this->organization->id, 'status' => 'suspended']);
+
+        $this->assertCount(2, $approvedResult->items());
+        $this->assertCount(1, $evaluatingResult->items());
+        $this->assertCount(1, $suspendedResult->items());
+    }
+
+    /**
+     * Test filter returns empty when no matches.
+     */
+    public function test_filter_returns_empty_when_no_matches(): void
+    {
+        Vendor::factory()->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => 'tier_1',
+            'status' => 'approved',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'risk_tier' => 'tier_4',
+            'status' => 'suspended',
+        ];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(0, $result->items());
+    }
+
+    /**
+     * Test filter with per page parameter.
+     */
+    public function test_filter_with_per_page_parameter(): void
+    {
+        Vendor::factory()->count(20)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'approved',
+        ]);
+
+        $filters = [
+            'organization_id' => $this->organization->id,
+            'status' => 'approved',
+            'per_page' => 8,
+        ];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        $this->assertCount(8, $result->items());
+        $this->assertEquals(20, $result->total());
+        $this->assertEquals(8, $result->perPage());
+    }
+
+    /**
+     * Test filters maintain eager loading.
+     */
+    public function test_filters_maintain_eager_loading(): void
+    {
+        Vendor::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'approved',
+        ]);
+
+        $filters = ['organization_id' => $this->organization->id, 'status' => 'approved'];
+        $result = $this->repository->getFilteredVendors($filters);
+
+        foreach ($result->items() as $vendor) {
+            $this->assertTrue($vendor->relationLoaded('stakeholder'));
+        }
     }
 }

@@ -3,31 +3,38 @@
 namespace App\Repositories;
 
 use App\Models\AiModel;
-use App\Models\AiModelDataset;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class AiModelRepository
 {
-
     /**
      * Get all AI models by organization ID.
      *
-     * @param int $organizationID
-     * @return Collection<int, AiModel>
+     * @return LengthAwarePaginator<int, AiModel>
      */
-    public function getAllAiModelsByOrganizationID(int $organizationID): Collection
+    public function getFilteredAiModels(array $filters = []): LengthAwarePaginator
     {
-        return AiModel::where('organization_id', $organizationID)->get();
+        $query = AiModel::query();
+
+        if (! empty($filters['organization_id'])) {
+            $query->where('organization_id', $filters['organization_id']);
+        }
+
+        $query->when(! empty($filters['from']), function ($query) use ($filters) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        });
+
+        $query->when(! empty($filters['to']), function ($query) use ($filters) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        });
+
+        $perPage = $filters['per_page'] ?? 15;
+
+        return $query->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     public function create(array $data): AiModel
     {
         return AiModel::create($data);
-    }
-
-    public function getAiModelByID(int $id): AiModel
-    {
-        $data = AiModel::with(['createdBy', 'updatedBy'])->where('id', $id)->first();
-        return $data;
     }
 }

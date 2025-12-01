@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\ConsentCoverage;
 
-use App\Enums\UserConsent\ConsentPurpose;
-use App\Enums\UserConsent\Jurisdiction;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\UserConsent\Jurisdiction;
+use App\Enums\UserConsent\ConsentPurpose;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreConsentCoverageRequest extends FormRequest
 {
@@ -20,7 +20,7 @@ class StoreConsentCoverageRequest extends FormRequest
             'dataset_id' => ['required', 'integer', 'exists:datasets,id'],
             'snapshot_id' => ['nullable', 'integer', 'exists:dataset_snapshots,id'],
             'purpose' => ['required', 'array'],
-            'purpose.*' => ['string', Rule::in(array_map(fn($c) => $c->value, ConsentPurpose::cases()))],
+            'purpose.*' => ['string', Rule::in(array_map(fn ($c) => $c->value, ConsentPurpose::cases()))],
             'jurisdiction' => ['required', Rule::enum(Jurisdiction::class)],
             'as_of' => ['required', 'date'],
             'subjects_total' => ['required', 'integer', 'min:0'],

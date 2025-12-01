@@ -4,8 +4,8 @@ namespace App\Enums;
 
 enum ComplexityLevel: string
 {
-    case SIMPLE = 'simple';
+    case LOW = 'low';
     case MODERATE = 'moderate';
-    case COMPLEX = 'complex';
-    case MASSIVE = 'massive';
+    case HIGH = 'high';
+    case VERY_HIGH = 'very_high';
 }
