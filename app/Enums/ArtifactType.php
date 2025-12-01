@@ -4,12 +4,19 @@ namespace App\Enums;
 
 enum ArtifactType: string
 {
-    case MODEL_BINARY = 'model_binary';
-    case TOKENIZER = 'tokenizer';
-    case PROMPT_PACK = 'prompt_pack';
-    case INDEX = 'index';
-    case FEATURE_STORE_EXPORT = 'feature_store_export';
-    case CONFIG = 'config';
-    case DOCKER_IMAGE = 'docker_image';
-    case SBOM = 'sbom';
+    case MODEL_WEIGHTS = 'model_weights';
+    case SERIALIZED_MODEL = 'serialized_model';
+    case ONNX_MODEL = 'onnx_model';
+    case TRAINING_SCRIPT = 'training_script';
+    case INFERENCE_SCRIPT = 'inference_script';
+    case CONFIG_FILE = 'config_file';
+    case PIPELINE_DEFINITION = 'pipeline_definition';
+    case CONTAINER_IMAGE = 'container_image';
+    case NOTEBOOK = 'notebook';
+    case EVALUATION_REPORT = 'evaluation_report';
+    case EXPLAINABILITY_REPORT = 'explainability_report';
+    case DOCUMENTATION = 'documentation';
+    case MODEL_CARD = 'model_card';
+    case DATA_SCHEMA = 'data_schema';
+    case OTHER = 'other';
 }

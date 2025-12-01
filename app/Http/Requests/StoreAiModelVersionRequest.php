@@ -48,7 +48,7 @@ class StoreAiModelVersionRequest extends FormRequest
             'architecture_type' => ['required', Rule::in(array_map(fn ($c) => $c->value, VersionArchitectureType::cases()))],
             'model_file_size_gb' => ['nullable', 'numeric', 'min:0'],
             'training_duration_hours' => ['nullable', 'integer', 'min:0'],
-            'complexity_level' => ['required', Rule::in(array_map(fn ($c) => $c->value, ComplexityLevel::cases()))],
+            'complexity_level' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, ComplexityLevel::cases()))],
             'parameter_count' => ['nullable', 'integer', 'min:0'],
 
             // Modalities (stored as JSON)
@@ -64,7 +64,7 @@ class StoreAiModelVersionRequest extends FormRequest
             'deployment_environments.*' => ['string', Rule::in(array_map(fn ($c) => $c->value, VersionDeploymentEnvironment::cases()))],
             'customizations_applied' => ['nullable', 'array'],
             'customizations_applied.*' => ['string'],
-            'approval_status' => ['nullable', Rule::in(array_map(fn ($c) => $c->value, VersionApprovalStatus::cases()))],
+            'approval_status' => ['required_unless:deployment_status,'.DeploymentStatus::PRODUCTION->value, Rule::in(array_map(fn ($c) => $c->value, VersionApprovalStatus::cases()))],
         ];
     }
 }

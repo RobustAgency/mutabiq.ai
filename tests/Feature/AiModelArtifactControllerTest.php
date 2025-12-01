@@ -8,6 +8,7 @@ use App\Enums\ArtifactType;
 use App\Models\Organization;
 use App\Models\AiModelVersion;
 use App\Models\AiModelArtifact;
+use App\Enums\ArtifactChecksumAlgorithm;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiModelArtifactControllerTest extends TestCase
@@ -49,7 +50,11 @@ class AiModelArtifactControllerTest extends TestCase
                             'ai_model_version_id',
                             'artifact_type',
                             'uri',
-                            'checksum',
+                            'checksum_algorithm',
+                            'checksum_value',
+                            'file',
+                            'environment',
+                            'file_format',
                             'size_bytes',
                             'created_by',
                             'notes',
@@ -128,9 +133,11 @@ class AiModelArtifactControllerTest extends TestCase
                 'ai_model_version_id' => $aiModelVersion->id,
                 'name' => 'test-model.bin',
                 'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/models/test-model/model.bin',
-                'checksum' => 'abc123def456',
+                'checksum_algorithm' => ArtifactChecksumAlgorithm::MD5->value,
+                'checksum_value' => 'abc123def456',
+                'environment' => 'production',
                 'size_bytes' => 1048576,
-                'artifact_type' => ArtifactType::MODEL_BINARY->value,
+                'artifact_type' => ArtifactType::DOCUMENTATION->value,
                 'notes' => 'Test model binary artifact',
             ]);
 
@@ -143,9 +150,10 @@ class AiModelArtifactControllerTest extends TestCase
         $this->assertDatabaseHas('ai_model_artifacts', [
             'organization_id' => $this->organization->id,
             'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::MODEL_BINARY->value,
+            'artifact_type' => ArtifactType::DOCUMENTATION->value,
             'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/models/test-model/model.bin',
-            'checksum' => 'abc123def456',
+            'checksum_algorithm' => ArtifactChecksumAlgorithm::MD5->value,
+            'checksum_value' => 'abc123def456',
             'size_bytes' => 1048576,
             'notes' => 'Test model binary artifact',
         ]);
@@ -188,16 +196,14 @@ class AiModelArtifactControllerTest extends TestCase
                 'ai_model_version_id' => $aiModelVersion->id,
                 'name' => 'config.yaml',
                 'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/configs/test/config.yaml',
-                'checksum' => 'hash123',
-                'size_bytes' => 2048,
-                'artifact_type' => ArtifactType::CONFIG->value,
+                'artifact_type' => ArtifactType::CONFIG_FILE->value,
             ]);
 
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ai_model_artifacts', [
             'ai_model_version_id' => $aiModelVersion->id,
-            'artifact_type' => ArtifactType::CONFIG->value,
+            'artifact_type' => ArtifactType::CONFIG_FILE->value,
             'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/configs/test/config.yaml',
             'notes' => null,
         ]);
@@ -212,10 +218,8 @@ class AiModelArtifactControllerTest extends TestCase
             ->assertJsonValidationErrors([
                 'ai_model_version_id',
                 'name',
-                'uri',
-                'checksum',
-                'size_bytes',
                 'artifact_type',
+                'uri',
             ]);
     }
 
@@ -336,16 +340,18 @@ class AiModelArtifactControllerTest extends TestCase
                 'ai_model_version_id' => $aiModelVersion->id,
                 'name' => 'sbom.json',
                 'uri' => 'https://s3.amazonaws.com/ai-model-artifacts/sbom/model-123/sbom.json',
-                'checksum' => 'sha256:abcdef123456',
+                'checksum_algorithm' => 'sha256',
+                'checksum_value' => 'abcdef123456',
                 'size_bytes' => 4096,
-                'artifact_type' => ArtifactType::SBOM->value,
+                'artifact_type' => ArtifactType::CONTAINER_IMAGE->value,
             ]);
 
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ai_model_artifacts', [
-            'artifact_type' => ArtifactType::SBOM->value,
-            'checksum' => 'sha256:abcdef123456',
+            'artifact_type' => ArtifactType::CONTAINER_IMAGE->value,
+            'checksum_algorithm' => 'sha256',
+            'checksum_value' => 'abcdef123456',
         ]);
     }
 }
