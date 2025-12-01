@@ -8,7 +8,10 @@ use App\Models\Stakeholder;
 use App\Models\Organization;
 use App\Models\AiRiskRegister;
 use App\Models\AiRiskTreatment;
+use App\Enums\AiRiskTreatment\Status;
+use App\Enums\AiRiskTreatment\TreatmentType;
 use Illuminate\Foundation\Testing\WithFaker;
+use App\Enums\AiRiskTreatment\ResultVerification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiRiskTreatmentControllerTest extends TestCase
@@ -49,24 +52,32 @@ class AiRiskTreatmentControllerTest extends TestCase
 
         $payload = [
             'ai_risk_register_id' => $aiRisk->id,
-            'treatment_type' => 'mitigation',
+            'treatment_type' => TreatmentType::TRANSFER_INSURANCE,
             'plan_summary' => 'Mitigate by retraining with balanced dataset',
             'owner_stakeholder_id' => $stakeholder->id,
-            'assignee' => ['Alice'],
+            'assignee' => ['1'],
             'due_date' => now()->addDays(14)->format('Y-m-d'),
-            'status' => 'open',
+            'status' => Status::NEW,
+            'expected_residual_level' => 'low',
+            'result_verification' => ResultVerification::NOT_APPLICABLE,
+            'evidence_link' => 'https://example.com/evidence/123',
+            'linked_capa_id' => 'CAPA-1001',
+            'closed_at' => null,
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-risk-treatments', $payload);
 
-        // Controller returns 200 with data on success
         $response->assertOk()
-            ->assertJsonStructure(['data' => ['id', 'organization_id', 'status'], 'message', 'error']);
+            ->assertJsonStructure(['data' => ['id', 'organization_id', 'status', 'owner_stakeholder_id'], 'message', 'error']);
 
         $this->assertDatabaseHas('ai_risk_treatments', [
             'organization_id' => $this->organization->id,
+            'ai_risk_register_id' => $aiRisk->id,
             'plan_summary' => 'Mitigate by retraining with balanced dataset',
-            'status' => 'open',
+            'owner_stakeholder_id' => $stakeholder->id,
+            'status' => 'new',
+            'expected_residual_level' => 'low',
+            'linked_capa_id' => 'CAPA-1001',
         ]);
     }
 
