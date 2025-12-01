@@ -317,5 +317,4 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('{aiRiskTreatment}', 'update');
         Route::delete('{aiRiskTreatment}', 'destroy');
     });
-
 });

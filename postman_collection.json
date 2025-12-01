@@ -6015,6 +6015,211 @@
 				}
 			],
 			"description": "Manage risk assessment methodologies including likelihood scales, impact scales, and risk calculation matrices"
+		},
+		{
+			"name": "AI Risk Treatments",
+			"item": [
+				{
+					"name": "List AI Risk Treatments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-treatments?ai_risk_register_id=&treatment_type=&status=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-treatments"
+							],
+							"query": [
+								{
+									"key": "ai_risk_register_id",
+									"value": "",
+									"description": "Filter by AI Risk Register ID"
+								},
+								{
+									"key": "treatment_type",
+									"value": "",
+									"description": "Filter by treatment type"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by treatment status"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page"
+								}
+							]
+						},
+						"description": "Get all AI risk treatments for the user's organization with optional filtering.\n\n**Optional Query Parameters:**\n- `ai_risk_register_id` (integer): Filter by AI Risk Register ID\n- `treatment_type` (string): Filter by treatment type\n- `status` (string): Filter by treatment status\n- `per_page` (integer): Results per page\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create AI Risk Treatment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ai_risk_register_id\": 1, // integer, required, must exist in ai_risk_registers\n  \"treatment_type\": \"corrective\", // enum: corrective, preventive, detective, transfer_insurance, transfer_vendor, avoid_change, other\n  \"plan_summary\": \"Implement fairness monitoring and regular bias testing\", // string, max 255, required\n  \"owner_stakeholder_id\": 1, // integer, required, must exist in stakeholders\n  \"assignee\": [\"john.doe@example.com\", \"jane.smith@example.com\"], // array, nullable\n  \"due_date\": \"2025-06-30\", // date, required\n  \"status\": \"new\", // enum: new, in_progress, blocked, pending_verification, closed, cancelled\n  \"expected_residual_level\": \"low\", // string, max 255, nullable\n  \"result_verification\": \"pending\", // enum: pending, passed, failed, not_applicable\n  \"evidence_link\": \"https://example.com/evidence\", // string, max 255, nullable\n  \"linked_capa_id\": \"CAPA-001\", // string, max 255, nullable\n  \"closed_at\": \"2025-06-30\" // date, nullable\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-treatments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-treatments"
+							]
+						},
+						"description": "Create a new AI risk treatment plan.\n\n**Required Fields:**\n- `ai_risk_register_id` (integer): AI Risk Register ID (must exist)\n- `treatment_type` (enum): Type of treatment\n- `plan_summary` (string, max 255): Summary of the treatment plan\n- `owner_stakeholder_id` (integer): Stakeholder ID responsible for treatment\n- `due_date` (date): Treatment completion due date\n- `status` (enum): Current status of treatment\n\n**Treatment Type Options:**\n- `corrective`: Corrective action to eliminate the risk\n- `preventive`: Preventive action to prevent risk occurrence\n- `detective`: Detective control to identify risk manifestation\n- `transfer_insurance`: Transfer risk through insurance\n- `transfer_vendor`: Transfer risk to vendor/third party\n- `avoid_change`: Avoid the risk by changing operations\n- `other`: Other treatment type\n\n**Status Options:**\n- `new`: Newly created treatment\n- `in_progress`: Treatment implementation in progress\n- `blocked`: Treatment is blocked/on hold\n- `pending_verification`: Awaiting verification of results\n- `closed`: Treatment is closed\n- `cancelled`: Treatment was cancelled\n\n**Result Verification Options:**\n- `pending`: Verification pending\n- `passed`: Verification passed\n- `failed`: Verification failed\n- `not_applicable`: Verification not applicable\n\n**Optional Fields:**\n- `assignee` (array): List of assignee email addresses\n- `expected_residual_level` (string, max 255): Expected risk level after treatment\n- `result_verification` (enum): Verification status of treatment results\n- `evidence_link` (string, max 255): Link to supporting evidence\n- `linked_capa_id` (string, max 255): Linked CAPA reference\n- `closed_at` (date): Date when treatment was closed\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Risk Treatment Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-treatments/:aiRiskTreatment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-treatments",
+								":aiRiskTreatment"
+							],
+							"variable": [
+								{
+									"key": "aiRiskTreatment",
+									"value": "1",
+									"description": "AI Risk Treatment ID"
+								}
+							]
+						},
+						"description": "Get details of a specific AI risk treatment.\n\n**Path Parameters:**\n- `aiRiskTreatment` (integer): AI Risk Treatment ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update AI Risk Treatment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"in_progress\", // enum: new, in_progress, blocked, pending_verification, closed, cancelled\n  \"result_verification\": \"passed\", // enum: pending, passed, failed, not_applicable\n  \"due_date\": \"2025-07-15\", // date\n  \"expected_residual_level\": \"very_low\", // string, max 255\n  \"closed_at\": \"2025-07-15\" // date\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-treatments/:aiRiskTreatment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-treatments",
+								":aiRiskTreatment"
+							],
+							"variable": [
+								{
+									"key": "aiRiskTreatment",
+									"value": "1",
+									"description": "AI Risk Treatment ID"
+								}
+							]
+						},
+						"description": "Update an existing AI risk treatment. All fields are optional for updates.\n\n**Path Parameters:**\n- `aiRiskTreatment` (integer): AI Risk Treatment ID\n\n**Updatable Fields:**\n- `treatment_type` (enum): corrective, preventive, detective, transfer_insurance, transfer_vendor, avoid_change, other\n- `plan_summary` (string, max 255): Treatment plan summary\n- `owner_stakeholder_id` (integer): Stakeholder responsible for treatment\n- `assignee` (array): List of assignee emails\n- `due_date` (date): Due date for completion\n- `status` (enum): new, in_progress, blocked, pending_verification, closed, cancelled\n- `expected_residual_level` (string, max 255): Expected residual risk level\n- `result_verification` (enum): pending, passed, failed, not_applicable\n- `evidence_link` (string, max 255): Evidence supporting treatment\n- `linked_capa_id` (string, max 255): Linked CAPA reference\n- `closed_at` (date): Date when treatment was closed\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete AI Risk Treatment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-risk-treatments/:aiRiskTreatment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai-risk-treatments",
+								":aiRiskTreatment"
+							],
+							"variable": [
+								{
+									"key": "aiRiskTreatment",
+									"value": "1",
+									"description": "AI Risk Treatment ID"
+								}
+							]
+						},
+						"description": "Delete an AI risk treatment.\n\n**Path Parameters:**\n- `aiRiskTreatment` (integer): AI Risk Treatment ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage AI risk treatments and mitigation plans including corrective, preventive, and detective controls"
 		}
 	],
 	"auth": {
