@@ -2,11 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Enums\ArtifactType;
-use App\Models\AiModelArtifact;
-use App\Models\AiModelVersion;
 use App\Models\User;
+use App\Enums\ArtifactType;
 use App\Models\Organization;
+use App\Models\AiModelVersion;
+use App\Models\AiModelArtifact;
+use App\Enums\ArtifactFileFormat;
+use App\Enums\ArtifactEnvironment;
+use App\Enums\ArtifactChecksumAlgorithm;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -34,74 +37,15 @@ class AiModelArtifactFactory extends Factory
             'organization_id' => Organization::factory(),
             'ai_model_version_id' => AiModelVersion::factory(),
             'name' => fake()->words(5, true),
-            'artifact_type' => $artifactType,
-            'uri' => $this->generateUri($artifactType),
-            'checksum' => fake()->sha256(),
-            'size_bytes' => fake()->numberBetween(1024, 10737418240), // 1KB to 10GB
+            'artifact_type' => fake()->randomElement(ArtifactType::cases()),
+            'uri' => fake()->optional(0.5)->url(),
+            'checksum_algorithm' => fake()->randomElement(ArtifactChecksumAlgorithm::cases()),
+            'checksum_value' => fake()->md5(),
+            'environment' => fake()->randomElement(ArtifactEnvironment::cases()),
+            'file_format' => fake()->randomElement(ArtifactFileFormat::cases()),
+            'size_bytes' => fake()->numberBetween(10485760, 26214400), // 10MB to 25MB
             'created_by' => User::factory(),
             'notes' => fake()->optional(0.7)->sentence(12),
         ];
-    }
-
-    /**
-     * Generate a URI based on artifact type.
-     */
-    private function generateUri(ArtifactType $type): string
-    {
-        $bucket = 's3://ai-model-artifacts';
-        $modelId = fake()->uuid();
-
-        return match ($type) {
-            ArtifactType::MODEL_BINARY => "{$bucket}/models/{$modelId}/model.bin",
-            ArtifactType::TOKENIZER => "{$bucket}/tokenizers/{$modelId}/tokenizer.json",
-            ArtifactType::PROMPT_PACK => "{$bucket}/prompts/{$modelId}/prompts.zip",
-            ArtifactType::INDEX => "{$bucket}/indices/{$modelId}/index.faiss",
-            ArtifactType::FEATURE_STORE_EXPORT => "{$bucket}/features/{$modelId}/features.parquet",
-            ArtifactType::CONFIG => "{$bucket}/configs/{$modelId}/config.yaml",
-            ArtifactType::DOCKER_IMAGE => "docker://registry.example.com/ai-models/{$modelId}:latest",
-            ArtifactType::SBOM => "{$bucket}/sbom/{$modelId}/sbom.json",
-        };
-    }
-
-    /**
-     * Indicate that the artifact is a model binary.
-     */
-    public function modelBinary(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'artifact_type' => ArtifactType::MODEL_BINARY,
-            'uri' => 's3://ai-model-artifacts/models/' . fake()->uuid() . '/model.bin',
-        ]);
-    }
-
-    /**
-     * Indicate that the artifact is a Docker image.
-     */
-    public function dockerImage(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'artifact_type' => ArtifactType::DOCKER_IMAGE,
-            'uri' => 'docker://registry.example.com/ai-models/' . fake()->uuid() . ':latest',
-        ]);
-    }
-
-    /**
-     * Indicate that the artifact has no checksum.
-     */
-    public function withoutChecksum(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'checksum' => null,
-        ]);
-    }
-
-    /**
-     * Indicate that the artifact has no size.
-     */
-    public function withoutSize(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'size_bytes' => null,
-        ]);
     }
 }
