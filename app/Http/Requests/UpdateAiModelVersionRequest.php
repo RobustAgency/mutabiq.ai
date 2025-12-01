@@ -2,12 +2,18 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Enums\VersionType;
+use App\Enums\LifecycleStage;
 use App\Enums\ComplexityLevel;
 use App\Enums\DeploymentStatus;
-use App\Enums\LifecycleStage;
-use App\Enums\VersionType;
+use Illuminate\Validation\Rule;
+use App\Enums\VersionSourceType;
+use App\Enums\VersionReleaseRole;
+use App\Enums\VersionApprovalStatus;
+use App\Enums\VersionOrgInvolvement;
+use App\Enums\VersionArchitectureType;
+use App\Enums\VersionDeploymentEnvironment;
+use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAiModelVersionRequest extends FormRequest
 {
@@ -28,40 +34,37 @@ class UpdateAiModelVersionRequest extends FormRequest
     {
         return [
             // Core identifiers
-            'version_number' => ['sometimes', 'string', 'max:255'],
-            'version_type' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, VersionType::cases()))],
-            'ai_model_id' => ['sometimes', 'exists:ai_models,id'],
+            'version_number' => ['sometimes', 'required', 'string', 'max:255'],
+            'version_type' => ['sometimes', 'required', Rule::in(array_map(fn ($c) => $c->value, VersionType::cases()))],
+            'ai_model_id' => ['sometimes', 'required', 'exists:ai_models,id'],
             'description' => ['sometimes', 'nullable', 'string', 'max:1000'],
-            'version_role' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'version_source' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'our_involvement' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'org_involvement' => ['sometimes', 'nullable', Rule::in(array_map(fn ($c) => $c->value, VersionOrgInvolvement::cases()))],
             'release_date' => ['sometimes', 'nullable', 'date'],
             'release_notes' => ['sometimes', 'nullable', 'string'],
+            'release_role' => ['sometimes', 'nullable', Rule::in(array_map(fn ($c) => $c->value, VersionReleaseRole::cases()))],
+            'source_type' => ['sometimes', 'nullable', Rule::in(array_map(fn ($c) => $c->value, VersionSourceType::cases()))],
 
             // Technical characteristics
-            'architecture_type' => ['sometimes', 'string', 'max:255'],
+            'architecture_type' => ['sometimes', 'required', Rule::in(array_map(fn ($c) => $c->value, VersionArchitectureType::cases()))],
             'model_file_size_gb' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'training_duration_hours' => ['sometimes', 'nullable', 'integer', 'min:0'],
-            'complexity_level' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, ComplexityLevel::cases()))],
+            'complexity_level' => ['sometimes', 'nullable', Rule::in(array_map(fn ($c) => $c->value, ComplexityLevel::cases()))],
             'parameter_count' => ['sometimes', 'nullable', 'integer', 'min:0'],
 
             // Modalities (stored as JSON)
             'input_modalities' => ['sometimes', 'nullable', 'array'],
-            'input_modalities.*' => ['string', Rule::in(['text', 'image', 'audio', 'video', 'structured_data', 'time_series'])],
+            'input_modalities.*' => ['sometimes', 'string', Rule::in(['text', 'image', 'audio', 'video', 'structured_data', 'time_series'])],
             'output_modalities' => ['sometimes', 'nullable', 'array'],
-            'output_modalities.*' => ['string', Rule::in(['text', 'image', 'audio', 'classification', 'regression', 'embedding', 'structured_data'])],
+            'output_modalities.*' => ['sometimes', 'string', Rule::in(['text', 'image', 'audio', 'classification', 'regression', 'embedding', 'structured_data'])],
 
             // Deployment / lifecycle / compliance
-            'deployment_status' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, DeploymentStatus::cases()))],
-            'lifecycle_stage' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, LifecycleStage::cases()))],
+            'deployment_status' => ['sometimes', 'required', Rule::in(array_map(fn ($c) => $c->value, DeploymentStatus::cases()))],
+            'lifecycle_stage' => ['sometimes', 'required', Rule::in(array_map(fn ($c) => $c->value, LifecycleStage::cases()))],
             'deployment_environments' => ['sometimes', 'nullable', 'array'],
-            'deployment_environments.*' => ['string', 'max:100'],
-
-            // Flags
-            'has_performance_data' => ['sometimes', 'boolean'],
-
-            'created_by' => ['sometimes', 'email'],
-            'updated_by' => ['sometimes', 'nullable', 'email'],
+            'deployment_environments.*' => ['sometimes', 'string', Rule::in(array_map(fn ($c) => $c->value, VersionDeploymentEnvironment::cases()))],
+            'customizations_applied' => ['sometimes', 'nullable', 'array'],
+            'customizations_applied.*' => ['sometimes', 'string'],
+            'approval_status' => ['sometimes', 'required_unless:deployment_status,'.DeploymentStatus::PRODUCTION->value, Rule::in(array_map(fn ($c) => $c->value, VersionApprovalStatus::cases()))],
         ];
     }
 }
