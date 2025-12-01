@@ -8,5 +8,5 @@ use App\Http\Controllers\TeamInvitationController;
 Route::post('/auth/login', [SupabaseController::class, 'login']);
 Route::post('accept-invite', [TeamInvitationController::class, 'acceptInvitation']);
 
-require __DIR__ . '/api/admin.php';
-require __DIR__ . '/api/user.php';
+require __DIR__.'/api/admin.php';
+require __DIR__.'/api/user.php';
