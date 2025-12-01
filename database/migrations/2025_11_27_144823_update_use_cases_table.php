@@ -20,6 +20,8 @@ return new class extends Migration
                 'estimated_reduction_in_time',
                 'estimated_reduction_in_cost',
                 'estimated_revenue_increase',
+                'created_by',
+                'updated_by',
             ]);
 
             $table->renameColumn('target_go_live_date', 'target_deployment_date');
@@ -29,8 +31,8 @@ return new class extends Migration
             $table->string('business_domain')->nullable()->change();
             $table->string('status')->nullable()->change();
 
-            $table->unsignedBigInteger('created_by')->nullable()->change();
-            $table->unsignedBigInteger('updated_by')->nullable()->change();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
 
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
@@ -69,9 +71,10 @@ return new class extends Migration
 
             $table->dropForeign(['created_by']);
             $table->dropForeign(['updated_by']);
+            $table->dropColumn(['created_by', 'updated_by']);
 
-            $table->string('created_by')->nullable()->change();
-            $table->string('updated_by')->nullable()->change();
+            $table->string('created_by')->nullable();
+            $table->string('updated_by')->nullable();
 
             $table->dropColumn([
                 'problem_statement',
