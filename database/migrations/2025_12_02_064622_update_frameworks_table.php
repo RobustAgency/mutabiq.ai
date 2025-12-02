@@ -49,7 +49,7 @@ return new class extends Migration
                 'effective_date',
                 'source_url',
             ]);
-            $table->string('code')->nullable()->after('name');
+            $table->string('code')->nullable()->after('name')->unique();
             $table->string('type')->nullable()->after('code');
             $table->string('geography')->nullable()->after('type');
             $table->string('category')->nullable()->after('geography');
