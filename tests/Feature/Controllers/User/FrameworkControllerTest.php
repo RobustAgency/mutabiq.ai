@@ -2,12 +2,13 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
+use App\Enums\UserRole;
 use App\Models\Framework;
+use App\Enums\Framework\Status;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FrameworkControllerTest extends TestCase
 {
@@ -19,7 +20,7 @@ class FrameworkControllerTest extends TestCase
             'role' => UserRole::OWNER,
         ]);
 
-        Framework::factory()->count(10)->create(['is_published' => true]);
+        Framework::factory()->count(10)->create(['effective_date' => now()->subDays(1)]);
 
         // Explicitly set per_page to 10 to match rules and avoid ambiguity
         $response = $this->actingAs($user)->getJson('/api/frameworks');
@@ -32,17 +33,16 @@ class FrameworkControllerTest extends TestCase
         ]);
     }
 
-
-    public function test_user_can_retrieve_published_frameworks_with_type_filter(): void
+    public function test_user_can_retrieve_published_frameworks_with_status_filter(): void
     {
         $user = User::factory()->create([
             'role' => UserRole::ADMIN,
         ]);
 
-        Framework::factory()->create(['name' => 'EU AI Act', 'is_published' => true, 'authority_publisher' => 'Publisher A']);
-        Framework::factory()->create(['name' => 'ISO 42001', 'is_published' => true, 'authority_publisher' => 'Publisher B']);
+        Framework::factory()->create(['name' => 'EU AI Act', 'effective_date' => now()->subDays(1), 'status' => Status::ACTIVE->value]);
+        Framework::factory()->create(['name' => 'ISO 42001', 'effective_date' => now()->subDays(1), 'status' => Status::RETIRED->value]);
 
-        $response = $this->actingAs($user)->getJson('/api/frameworks?authority_publisher=Publisher A');
+        $response = $this->actingAs($user)->getJson('/api/frameworks?status='.Status::ACTIVE->value);
         $data = $response->json('data.data') ?? $response->json('data');
         $this->assertCount(1, $data);
         $this->assertEquals('EU AI Act', $data[0]['name']);
@@ -59,7 +59,7 @@ class FrameworkControllerTest extends TestCase
             'role' => UserRole::OWNER,
         ]);
 
-        $framework = Framework::factory()->create(['is_published' => true]);
+        $framework = Framework::factory()->create(['effective_date' => now()->subDays(1)]);
 
         $response = $this->actingAs($user)->getJson("/api/frameworks/{$framework->id}");
         $data = $response->json('data');

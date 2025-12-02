@@ -4,9 +4,9 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Models\Framework;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 class FrameworkRepository
 {
@@ -42,13 +42,12 @@ class FrameworkRepository
 
     /**
      * Get available frameworks for user with optional filters.
-     * 
-     * @param array $filters
+     *
      * @return \Illuminate\Database\Eloquent\Collection<int, Framework>
      */
     public function getPublishedFrameworks(array $filters = []): Collection
     {
-        $query = Framework::where('is_published', true)
+        $query = Framework::where('effective_date', '<=', now())
             ->with('media')
             ->withCount('controls', 'requirements');
 
@@ -63,47 +62,27 @@ class FrameworkRepository
     }
 
     /**
-     * @param \Illuminate\Database\Eloquent\Builder<\App\Models\Framework> $query
-     * @param array $filters
+     * @param  \Illuminate\Database\Eloquent\Builder<\App\Models\Framework>  $query
      * @return \Illuminate\Database\Eloquent\Builder<\App\Models\Framework>
      */
     private function applyFilters(Builder $query, array $filters): Builder
     {
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
-            $query->where('name', 'like', '%' . $filters['name'] . '%');
+            $query->where('name', 'like', '%'.$filters['name'].'%');
         });
 
         $query->when(! empty($filters['status']), function ($query) use ($filters) {
-            $query->where('is_published', $filters['status']);
+            $query->where('status', $filters['status']);
         });
 
-        $query->when(! empty($filters['type']), function ($query) use ($filters) {
-            $query->where('type', 'like', '%' . $filters['type'] . '%');
+        $query->when(! empty($filters['effective_date_from']), function ($query) use ($filters) {
+            $query->where('effective_date', '>=', $filters['effective_date_from']);
         });
 
-        $query->when(! empty($filters['authority_publisher']), function ($query) use ($filters) {
-            $query->where('authority_publisher', 'like', '%' . $filters['authority_publisher'] . '%');
+        $query->when(! empty($filters['effective_date_to']), function ($query) use ($filters) {
+            $query->where('effective_date', '<=', $filters['effective_date_to']);
         });
 
-        $query->when(! empty($filters['binding_level']), function ($query) use ($filters) {
-            $query->where('binding_level', 'like', '%' . $filters['binding_level'] . '%');
-        });
-
-        $query->when(! empty($filters['sector_applicability']), function ($query) use ($filters) {
-            $query->where('sector_applicability', 'like', '%' . $filters['sector_applicability'] . '%');
-        });
-
-        $query->when(! empty($filters['risk_class_coverage']), function ($query) use ($filters) {
-            $query->where('risk_class_coverage', 'like', '%' . $filters['risk_class_coverage'] . '%');
-        });
-
-        $query->when(! empty($filters['certification_attestation']), function ($query) use ($filters) {
-            $query->where('certification_attestation', 'like', '%' . $filters['certification_attestation'] . '%');
-        });
-
-        $query->when(! empty($filters['assessment_mode']), function ($query) use ($filters) {
-            $query->where('assessment_mode', 'like', '%' . $filters['assessment_mode'] . '%');
-        });
         return $query;
     }
 }

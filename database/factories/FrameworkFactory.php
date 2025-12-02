@@ -19,20 +19,12 @@ class FrameworkFactory extends Factory
         return [
             'user_id' => \App\Models\User::factory(),
             'name' => $this->faker->word(),
-            'code' => strtoupper($this->faker->lexify('???###')),
-            'type' => $this->faker->randomElement(['Type A', 'Type B', 'Type C']),
-            'geography' => $this->faker->country(),
-            'category' => $this->faker->randomElement(['mandatory', 'voluntary']),
             'version' => $this->faker->numerify('v#.##'),
-            'release_date' => $this->faker->date(),
-            'is_published' => $this->faker->boolean(),
-            'description' => $this->faker->paragraph(),
-            'authority_publisher' => $this->faker->company(),
-            'binding_level' => $this->faker->randomElement(['High', 'Medium', 'Low']),
-            'sector_applicability' => $this->faker->randomElement(['Finance', 'Healthcare', 'Education']),
-            'risk_class_coverage' => $this->faker->randomElement(['Low', 'Medium', 'High']),
-            'certification_attestation' => $this->faker->sentence(),
-            'assessment_mode' => $this->faker->randomElement(['Self-assessment', 'Third-party assessment']),
+            'jurisdictions' => $this->faker->randomElements(['US', 'EU', 'UK', 'CA', 'AU'], 2),
+            'scope' => $this->faker->sentence(6),
+            'status' => $this->faker->randomElement(\App\Enums\Framework\Status::cases())->value,
+            'effective_date' => $this->faker->date(),
+            'source_url' => $this->faker->url(),
         ];
     }
 }
