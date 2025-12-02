@@ -6220,6 +6220,226 @@
 				}
 			],
 			"description": "Manage AI risk treatments and mitigation plans including corrective, preventive, and detective controls"
+		},
+		{
+			"name": "KRI Indicators",
+			"item": [
+				{
+					"name": "List KRI Indicators",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kri-indicators?name=&status=&frequency=&directionality=&collection_method=&action_on_breach=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kri-indicators"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Filter by indicator name (substring search)"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status"
+								},
+								{
+									"key": "frequency",
+									"value": "",
+									"description": "Filter by collection frequency"
+								},
+								{
+									"key": "directionality",
+									"value": "",
+									"description": "Filter by directionality"
+								},
+								{
+									"key": "collection_method",
+									"value": "",
+									"description": "Filter by collection method"
+								},
+								{
+									"key": "action_on_breach",
+									"value": "",
+									"description": "Filter by action on breach"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page"
+								}
+							]
+						},
+						"description": "Get all KRI indicators for the user's organization with optional filtering.\n\n**Optional Query Parameters:**\n- `name` (string): Filter by indicator name (substring search)\n- `status` (string): Filter by status\n- `frequency` (string): Filter by collection frequency\n- `directionality` (string): Filter by directionality\n- `collection_method` (string): Filter by collection method\n- `action_on_breach` (string): Filter by action on breach\n- `per_page` (integer): Results per page\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create KRI Indicator",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ai_risk_register_id\": 1, // integer, required, must exist in ai_risk_registers\n  \"name\": \"Model Accuracy Threshold\", // string, max 255, required\n  \"definition\": \"Monitor the accuracy of model predictions against baseline\", // string, required\n  \"directionality\": \"higher_is_riskier\", // enum: higher_is_riskier, lower_is_riskier\n  \"unit\": \"percentage\", // string, max 100, nullable\n  \"sample_window\": \"daily\", // string, max 100, required\n  \"threshold_warning\": 75, // numeric, required\n  \"threshold_critical\": 90, // numeric, required\n  \"data_source\": \"database\", // string, max 255, required\n  \"collection_method\": \"scheduled_query\", // enum: scheduled_query, stream_aggregation, batch_import, manual_entry\n  \"frequency\": \"daily\", // enum: quarter_hourly, hourly, daily, weekly\n  \"alert_routing\": \"risk_team\", // enum: risk_team, product_ops, security_ir, privacy_office, model_owner, on_call\n  \"action_on_breach\": \"notify_only\", // enum: notify_only, open_incident, escalate_committee, trigger_assessment, auto_kill_switch\n  \"status\": \"active\", // enum: draft, active, paused, retired\n  \"owner_team\": \"Risk Management Team\", // string, max 255, required\n  \"notes\": \"Monitor daily accuracy drop below 75%\" // string, nullable\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/kri-indicators",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kri-indicators"
+							]
+						},
+						"description": "Create a new KRI (Key Risk Indicator) indicator.\n\n**Required Fields:**\n- `ai_risk_register_id` (integer): AI Risk Register ID (must exist)\n- `name` (string, max 255): Indicator name\n- `definition` (string): Indicator definition and purpose\n- `directionality` (enum): Direction of risk\n- `sample_window` (string, max 100): Sampling window\n- `threshold_warning` (numeric): Warning threshold value\n- `threshold_critical` (numeric): Critical threshold value\n- `data_source` (string, max 255): Source of data\n- `collection_method` (enum): How data is collected\n- `frequency` (enum): Collection frequency\n- `alert_routing` (enum): Where to route alerts\n- `action_on_breach` (enum): Action to take on breach\n- `status` (enum): Current status\n- `owner_team` (string, max 255): Team responsible for indicator\n\n**Directionality Options:**\n- `higher_is_riskier`: Higher values indicate more risk\n- `lower_is_riskier`: Lower values indicate more risk\n\n**Collection Method Options:**\n- `scheduled_query`: Scheduled database query\n- `stream_aggregation`: Real-time stream aggregation\n- `batch_import`: Batch data import\n- `manual_entry`: Manual data entry\n\n**Frequency Options:**\n- `quarter_hourly`: Every 15 minutes\n- `hourly`: Every hour\n- `daily`: Daily\n- `weekly`: Weekly\n\n**Alert Routing Options:**\n- `risk_team`: Risk Management Team\n- `product_ops`: Product Operations\n- `security_ir`: Security Incident Response\n- `privacy_office`: Privacy Office\n- `model_owner`: AI Model Owner\n- `on_call`: On-Call Engineer\n\n**Action on Breach Options:**\n- `notify_only`: Send notification only\n- `open_incident`: Open incident automatically\n- `escalate_committee`: Escalate to committee\n- `trigger_assessment`: Trigger risk assessment\n- `auto_kill_switch`: Automatically trigger kill switch\n\n**Status Options:**\n- `draft`: Draft status\n- `active`: Actively monitoring\n- `paused`: Paused monitoring\n- `retired`: Retired indicator\n\n**Optional Fields:**\n- `unit` (string, max 100): Measurement unit\n- `notes` (string): Additional notes\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get KRI Indicator Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kri-indicators/:kriIndicator",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kri-indicators",
+								":kriIndicator"
+							],
+							"variable": [
+								{
+									"key": "kriIndicator",
+									"value": "1",
+									"description": "KRI Indicator ID"
+								}
+							]
+						},
+						"description": "Get details of a specific KRI indicator including its relationships.\n\n**Path Parameters:**\n- `kriIndicator` (integer): KRI Indicator ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update KRI Indicator",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"active\", // enum: draft, active, paused, retired\n  \"threshold_warning\": 80, // numeric\n  \"threshold_critical\": 95, // numeric\n  \"frequency\": \"hourly\", // enum: quarter_hourly, hourly, daily, weekly\n  \"action_on_breach\": \"open_incident\", // enum: notify_only, open_incident, escalate_committee, trigger_assessment, auto_kill_switch\n  \"notes\": \"Updated threshold values based on recent analysis\" // string\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/kri-indicators/:kriIndicator",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kri-indicators",
+								":kriIndicator"
+							],
+							"variable": [
+								{
+									"key": "kriIndicator",
+									"value": "1",
+									"description": "KRI Indicator ID"
+								}
+							]
+						},
+						"description": "Update an existing KRI indicator. All fields are optional for updates.\n\n**Path Parameters:**\n- `kriIndicator` (integer): KRI Indicator ID\n\n**Updatable Fields:**\n- `name` (string, max 255): Indicator name\n- `definition` (string): Indicator definition\n- `directionality` (enum): higher_is_riskier, lower_is_riskier\n- `unit` (string, max 100): Measurement unit\n- `sample_window` (string, max 100): Sampling window\n- `threshold_warning` (numeric): Warning threshold\n- `threshold_critical` (numeric): Critical threshold\n- `data_source` (string, max 255): Data source\n- `collection_method` (enum): scheduled_query, stream_aggregation, batch_import, manual_entry\n- `frequency` (enum): quarter_hourly, hourly, daily, weekly\n- `alert_routing` (enum): risk_team, product_ops, security_ir, privacy_office, model_owner, on_call\n- `action_on_breach` (enum): notify_only, open_incident, escalate_committee, trigger_assessment, auto_kill_switch\n- `status` (enum): draft, active, paused, retired\n- `owner_team` (string, max 255): Responsible team\n- `notes` (string): Additional notes\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete KRI Indicator",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kri-indicators/:kriIndicator",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kri-indicators",
+								":kriIndicator"
+							],
+							"variable": [
+								{
+									"key": "kriIndicator",
+									"value": "1",
+									"description": "KRI Indicator ID"
+								}
+							]
+						},
+						"description": "Delete a KRI indicator.\n\n**Path Parameters:**\n- `kriIndicator` (integer): KRI Indicator ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage Key Risk Indicators (KRI) for monitoring and tracking AI model risk metrics"
 		}
 	],
 	"auth": {
