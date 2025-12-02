@@ -123,6 +123,58 @@ class AiModelVersionControllerTest extends TestCase
         ]);
     }
 
+    public function test_user_can_create_ai_model_version_with_all_fields(): void
+    {
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $aiModel = AiModel::factory()->create(['organization_id' => $this->organization->id]);
+
+        $data = [
+            'ai_model_id' => $aiModel->id,
+            'version_number' => '1.2.3',
+            'version_type' => VersionType::MAJOR->value,
+            'description' => 'Full payload creation test',
+            'org_involvement' => 'full_development',
+            'release_date' => now()->toDateString(),
+            'release_notes' => 'Comprehensive feature set',
+            'release_role' => VersionReleaseRole::ORIGINAL_RELEASE->value,
+            'source_type' => VersionSourceType::OPEN_SOURCE->value,
+
+            // Technical
+            'architecture_type' => VersionArchitectureType::TRANSFORMER->value,
+            'model_file_size_gb' => 4.2,
+            'training_duration_hours' => 72,
+            'complexity_level' => ComplexityLevel::MODERATE->value,
+            'parameter_count' => 1500000000,
+
+            // Modalities
+            'input_modalities' => ['text', 'image'],
+            'output_modalities' => ['classification', 'text'],
+
+            // Lifecycle
+            'deployment_status' => DeploymentStatus::PRODUCTION->value,
+            'lifecycle_stage' => LifecycleStage::DEPLOYMENT->value,
+            'deployment_environments' => ['production', 'staging'],
+
+            // Misc
+            'customizations_applied' => ['fine_tuning', 'adapter_insertion'],
+            'has_performance_data' => true,
+            'compliance_check_status' => ComplianceStatus::NOT_CHECKED->value ?? 'not_checked',
+            'validation_status' => ValidationStatus::IN_PROGRESS->value ?? 'in_progress',
+            'deployment_environments' => ['production'],
+            'approval_status' => VersionApprovalStatus::APPROVED_FOR_PRODUCTION->value,
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/ai-model-versions', $data);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure(['error', 'message']);
+
+        $this->assertDatabaseHas('ai_model_versions', [
+            'version_number' => '1.2.3',
+            'ai_model_id' => $aiModel->id,
+        ]);
+    }
+
     public function test_user_can_update_ai_model_version(): void
     {
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
