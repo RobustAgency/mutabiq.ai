@@ -2,6 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Control\Status;
+use Illuminate\Validation\Rule;
+use App\Enums\Control\TestingMethod;
+use App\Enums\Control\TestingFrequency;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SearchControlRequest extends FormRequest
@@ -22,8 +26,11 @@ class SearchControlRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['string', 'min:2'],
-            'per_page' => ['integer', 'min:1'],
+            'name' => ['sometimes', 'string', 'min:2'],
+            'status' => ['sometimes', Rule::in(array_map(fn ($case) => $case->value, Status::cases()))],
+            'testing_method' => ['sometimes', Rule::in(array_map(fn ($case) => $case->value, TestingMethod::cases()))],
+            'testing_frequency' => ['sometimes', Rule::in(array_map(fn ($case) => $case->value, TestingFrequency::cases()))],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
         ];
     }
 }

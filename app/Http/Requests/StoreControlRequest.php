@@ -2,6 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Control\Status;
+use Illuminate\Validation\Rule;
+use App\Enums\Control\TestingMethod;
+use App\Enums\Control\TestingFrequency;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreControlRequest extends FormRequest
@@ -23,16 +27,15 @@ class StoreControlRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:100', 'unique:controls,code'],
-            'question' => ['nullable', 'string'],
-            'summary' => ['nullable', 'string'],
-            'description' => ['nullable', 'string'],
-            'framework_ids' => ['array'],
-            'framework_ids.*' => ['exists:frameworks,id'],
-            'requirement_ids' => ['array'],
-            'requirement_ids.*' => ['exists:requirements,id'],
-            'tag_ids' => ['array'],
-            'tag_ids.*' => ['exists:tags,id'],
+            'reference' => ['required', 'string', 'max:255', 'unique:controls,reference'],
+            'objective' => ['nullable', 'string'],
+            'testing_method' => ['required', Rule::in(array_map(fn ($case) => $case->value, TestingMethod::cases()))],
+            'testing_frequency' => ['required', Rule::in(array_map(fn ($case) => $case->value, TestingFrequency::cases()))],
+            'evidence_expectations' => ['nullable', 'string'],
+            'applicability_criteria' => ['nullable', 'string'],
+            'status' => ['required', 'string', Rule::in(array_map(fn ($case) => $case->value, Status::cases()))],
+            'last_test_date' => ['nullable', 'date'],
+            'next_test_due' => ['nullable', 'date', 'after_or_equal:last_test_date'],
         ];
     }
 }

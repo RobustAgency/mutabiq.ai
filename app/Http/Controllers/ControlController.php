@@ -47,7 +47,7 @@ class ControlController extends Controller
 
     public function show(Control $control): JsonResponse
     {
-        $control->load(['frameworks', 'requirements', 'tags']);
+        $control->load('requirements');
 
         return response()->json([
             'error' => false,
