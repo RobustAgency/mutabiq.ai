@@ -25,7 +25,7 @@ class UpdateRequirementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reference' => ['sometimes', 'string', 'max:255'],
+            'reference' => ['sometimes', 'string', 'max:255', 'unique:requirements,reference,'.$this->requirement->id],
             'requirement_text' => ['sometimes', 'nullable', 'string'],
             'category' => ['sometimes', Rule::in(array_map(fn ($c) => $c->value, Category::cases()))],
             'applicability' => ['sometimes', 'string', 'max:255'],
@@ -36,8 +36,7 @@ class UpdateRequirementRequest extends FormRequest
             'priority' => ['sometimes', Rule::in(array_map(fn ($c) => $c->value, Priority::cases()))],
             'tags' => ['sometimes', 'nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
-            'framework_ids' => ['sometimes', 'array'],
-            'framework_ids.*' => ['exists:frameworks,id'],
+            'framework_id' => ['sometimes', 'required', 'exists:frameworks,id', 'unique:requirements,framework_id,'.$this->requirement->id],
         ];
     }
 }

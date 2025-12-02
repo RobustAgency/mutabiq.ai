@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+use App\Enums\Requirement\Category;
+use App\Enums\Requirement\Priority;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRequirementRequest extends FormRequest
@@ -22,19 +25,18 @@ class StoreRequirementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reference' => ['required', 'string', 'max:255'],
+            'reference' => ['required', 'string', 'max:255', 'unique:requirements,reference'],
             'requirement_text' => ['nullable', 'string'],
-            'category' => ['required', 'string', 'max:255'],
+            'category' => ['required', Rule::in(array_map(fn ($case) => $case->value, Category::cases()))],
             'applicability' => ['required', 'string', 'max:255'],
             'effective_from' => ['nullable', 'date'],
             'effective_to' => ['nullable', 'date'],
             'supersedes_req_id' => ['nullable', 'exists:requirements,id'],
             'superseded_by_req_id' => ['nullable', 'exists:requirements,id'],
-            'priority' => ['required', 'string', 'max:100'],
+            'priority' => ['required', Rule::in(array_map(fn ($case) => $case->value, Priority::cases()))],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
-            'framework_ids' => ['required', 'array'],
-            'framework_ids.*' => ['exists:frameworks,id'],
+            'framework_id' => ['required', 'exists:frameworks,id', 'unique:requirements,framework_id'],
         ];
     }
 }

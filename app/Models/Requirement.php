@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -12,6 +13,7 @@ class Requirement extends Model
     use HasFactory;
 
     protected $fillable = [
+        'framework_id',
         'reference',
         'requirement_text',
         'category',
@@ -33,11 +35,11 @@ class Requirement extends Model
     /**
      * Get the AI frameworks for this requirement.
      *
-     * @return BelongsToMany<Framework, $this>
+     * @return BelongsTo<Framework, $this>
      */
-    public function frameworks(): BelongsToMany
+    public function framework(): BelongsTo
     {
-        return $this->belongsToMany(Framework::class);
+        return $this->belongsTo(Framework::class);
     }
 
     /**
