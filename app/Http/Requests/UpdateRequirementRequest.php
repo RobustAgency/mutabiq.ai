@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Validation\Rule;
+use App\Enums\Requirement\Category;
+use App\Enums\Requirement\Priority;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateRequirementRequest extends FormRequest
@@ -23,12 +25,17 @@ class UpdateRequirementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['sometimes', 'required', 'string', 'min:3', 'max:255'],
-            'code' => [
-                'sometimes', 'required', 'string', 'max:100',
-                Rule::unique('requirements', 'code')->ignore($this->route('requirement')),
-            ],
-            'description' => ['nullable', 'string'],
+            'reference' => ['sometimes', 'string', 'max:255'],
+            'requirement_text' => ['sometimes', 'nullable', 'string'],
+            'category' => ['sometimes', Rule::in(array_map(fn ($c) => $c->value, Category::cases()))],
+            'applicability' => ['sometimes', 'string', 'max:255'],
+            'effective_from' => ['sometimes', 'nullable', 'date'],
+            'effective_to' => ['sometimes', 'nullable', 'date'],
+            'supersedes_req_id' => ['sometimes', 'nullable', 'exists:requirements,id'],
+            'superseded_by_req_id' => ['sometimes', 'nullable', 'exists:requirements,id'],
+            'priority' => ['sometimes', Rule::in(array_map(fn ($c) => $c->value, Priority::cases()))],
+            'tags' => ['sometimes', 'nullable', 'array'],
+            'tags.*' => ['string', 'max:50'],
             'framework_ids' => ['sometimes', 'array'],
             'framework_ids.*' => ['exists:frameworks,id'],
         ];
