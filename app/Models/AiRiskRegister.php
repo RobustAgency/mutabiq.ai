@@ -11,8 +11,6 @@ class AiRiskRegister extends Model
     /** @use HasFactory<\Database\Factories\AiRiskRegisterFactory> */
     use HasFactory;
 
-    protected $table = 'ai_risk_register';
-
     protected $fillable = [
         'organization_id',
         'title',

@@ -32,6 +32,7 @@ use App\Http\Controllers\User\AiModelVersionController;
 use App\Http\Controllers\User\AiRiskRegisterController;
 use App\Http\Controllers\User\DatasetElementController;
 use App\Http\Controllers\IncidentNotificationController;
+use App\Http\Controllers\User\AiRiskTreatmentController;
 use App\Http\Controllers\User\ConsentCoverageController;
 use App\Http\Controllers\User\DatasetSnapshotController;
 use App\Http\Controllers\User\RiskMethodologyController;
@@ -309,4 +310,11 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::delete('{riskMethodology}', 'destroy');
     });
 
+    Route::prefix('ai-risk-treatments')->controller(AiRiskTreatmentController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiRiskTreatment}', 'show');
+        Route::post('{aiRiskTreatment}', 'update');
+        Route::delete('{aiRiskTreatment}', 'destroy');
+    });
 });

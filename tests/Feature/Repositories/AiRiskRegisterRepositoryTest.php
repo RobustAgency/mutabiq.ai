@@ -2,35 +2,36 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Enums\AiRiskRegister\ReviewCadence;
-use App\Enums\AiRiskRegister\RiskCategory;
-use App\Enums\AiRiskRegister\RiskDecision;
-use App\Enums\AiRiskRegister\RiskLevel;
-use App\Enums\AiRiskRegister\RiskStatus;
-use App\Models\AiIncident;
+use Tests\TestCase;
+use App\Models\User;
 use App\Models\AiModel;
+use App\Models\UseCase;
+use App\Models\AiIncident;
+use App\Models\Stakeholder;
+use App\Models\Organization;
 use App\Models\AiModelVersion;
 use App\Models\AiRiskRegister;
+use App\Enums\AiRiskRegister\RiskLevel;
+use App\Enums\AiRiskRegister\RiskStatus;
+use App\Enums\AiRiskRegister\RiskCategory;
+use App\Enums\AiRiskRegister\RiskDecision;
 use App\Models\CorrectivePreventiveAction;
-use App\Models\Organization;
-use App\Models\Stakeholder;
-use App\Models\UseCase;
-use App\Models\User;
+use App\Enums\AiRiskRegister\ReviewCadence;
 use App\Repositories\AiRiskRegisterRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class AiRiskRegisterRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     protected AiRiskRegisterRepository $repository;
+
     protected Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new AiRiskRegisterRepository();
+        $this->repository = new AiRiskRegisterRepository;
         $this->organization = Organization::factory()->create();
     }
 
@@ -123,7 +124,7 @@ class AiRiskRegisterRepositoryTest extends TestCase
         $this->assertEquals(RiskCategory::PRIVACY->value, $aiRiskRegister->risk_category);
         $this->assertEquals(RiskLevel::HIGH->value, $aiRiskRegister->risk_level);
 
-        $this->assertDatabaseHas('ai_risk_register', [
+        $this->assertDatabaseHas('ai_risk_registers', [
             'title' => 'Data Privacy Risk',
             'risk_category' => RiskCategory::PRIVACY->value,
             'organization_id' => $this->organization->id,
@@ -213,7 +214,7 @@ class AiRiskRegisterRepositoryTest extends TestCase
         $this->assertEquals('Updated Title', $result->title);
         $this->assertEquals(RiskLevel::HIGH->value, $result->risk_level);
 
-        $this->assertDatabaseHas('ai_risk_register', [
+        $this->assertDatabaseHas('ai_risk_registers', [
             'id' => $aiRiskRegister->id,
             'title' => 'Updated Title',
             'risk_level' => RiskLevel::HIGH->value,
@@ -244,7 +245,7 @@ class AiRiskRegisterRepositoryTest extends TestCase
         $result = $this->repository->deleteAiRiskRegister($aiRiskRegister);
 
         $this->assertTrue($result);
-        $this->assertDatabaseMissing('ai_risk_register', [
+        $this->assertDatabaseMissing('ai_risk_registers', [
             'id' => $aiRiskRegister->id,
         ]);
     }
