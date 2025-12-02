@@ -25,6 +25,7 @@ use App\Http\Controllers\User\DataElementController;
 use App\Http\Controllers\User\StakeholderController;
 use App\Http\Controllers\User\UserConsentController;
 use App\Http\Controllers\User\ConsentScopeController;
+use App\Http\Controllers\User\KriIndicatorController;
 use App\Http\Controllers\User\OrganizationController;
 use App\Http\Controllers\User\AiModelDatasetController;
 use App\Http\Controllers\User\AiModelUseCaseController;
@@ -316,5 +317,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{aiRiskTreatment}', 'show');
         Route::post('{aiRiskTreatment}', 'update');
         Route::delete('{aiRiskTreatment}', 'destroy');
+    });
+
+    Route::prefix('kri-indicators')->controller(KriIndicatorController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{kriIndicator}', 'show');
+        Route::post('{kriIndicator}', 'update');
+        Route::delete('{kriIndicator}', 'destroy');
     });
 });
