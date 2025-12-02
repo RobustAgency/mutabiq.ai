@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,10 +17,16 @@ class RequirementFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'name' => $this->faker->sentence(3),
-            'code' => 'REQ-' . strtoupper($this->faker->bothify('###??##')),
-            'description' => $this->faker->optional()->paragraph(),
+            'reference' => $this->faker->unique()->bothify('REQ-####'),
+            'requirement_text' => $this->faker->paragraph(),
+            'category' => $this->faker->randomElement(['security', 'human_rights', 'privacy']),
+            'applicability' => $this->faker->sentence(),
+            'effective_from' => $this->faker->date(),
+            'effective_to' => $this->faker->optional()->date(),
+            'supersedes_req_id' => null,
+            'superseded_by_req_id' => null,
+            'priority' => $this->faker->randomElement(['low', 'medium', 'high']),
+            'tags' => $this->faker->randomElements(['security', 'compliance', 'performance', 'usability'], 2),
         ];
     }
 }

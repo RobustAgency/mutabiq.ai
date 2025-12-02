@@ -18,7 +18,7 @@ class RequirementControllerTest extends TestCase
     {
         $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
 
-        Requirement::factory()->count(3)->create(['user_id' => $user->id]);
+        Requirement::factory()->count(3)->create();
 
         $response = $this->actingAs($user)->getJson('/api/admin/requirements');
 
@@ -35,9 +35,16 @@ class RequirementControllerTest extends TestCase
         $framework = Framework::factory()->create(['user_id' => $user->id]);
 
         $payload = [
-            'name' => 'EU AI Act',
-            'code' => 'MRF-1',
-            'description' => 'Comprehensive regulation for governing AI systems in the EU.',
+            'reference' => 'REQ-001',
+            'requirement_text' => 'The system shall ensure data encryption at rest.',
+            'category' => 'security',
+            'applicability' => 'All AI systems handling sensitive data.',
+            'effective_from' => '2024-01-01',
+            'effective_to' => '2025-01-01',
+            'supersedes_req_id' => null,
+            'superseded_by_req_id' => null,
+            'priority' => 'high',
+            'tags' => ['security', 'compliance'],
             'framework_ids' => [$framework->id],
         ];
 
@@ -50,8 +57,9 @@ class RequirementControllerTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('requirements', [
-            'name' => 'EU AI Act',
-            'user_id' => $user->id,
+            'reference' => 'REQ-001',
+            'category' => 'security',
+            'priority' => 'high',
         ]);
     }
 
@@ -59,7 +67,7 @@ class RequirementControllerTest extends TestCase
     {
         $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework = Framework::factory()->create(['user_id' => $user->id]);
-        $requirement = Requirement::factory()->create(['user_id' => $user->id]);
+        $requirement = Requirement::factory()->create();
 
         $requirement->frameworks()->attach($framework->id);
 
@@ -80,13 +88,20 @@ class RequirementControllerTest extends TestCase
         $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
         $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);
-        $requirement = Requirement::factory()->create(['name' => 'Old Requirement Name', 'user_id' => $user->id]);
+        $requirement = Requirement::factory()->create(['reference' => 'Old Requirement Name']);
         $requirement->frameworks()->attach($framework2->id);
 
         $payload = [
-            'name' => 'Updated Requirement Name',
-            'code' => 'MRF-2',
-            'description' => 'Updated description for the requirement.',
+            'reference' => 'REQ-002',
+            'requirement_text' => 'The system shall ensure data encryption in transit.',
+            'category' => 'security',
+            'applicability' => 'All AI systems handling sensitive data.',
+            'effective_from' => '2024-01-01',
+            'effective_to' => '2025-01-01',
+            'supersedes_req_id' => null,
+            'superseded_by_req_id' => null,
+            'priority' => 'high',
+            'tags' => ['security', 'compliance'],
             'framework_ids' => [$framework1->id, $framework2->id],
         ];
 
@@ -100,7 +115,7 @@ class RequirementControllerTest extends TestCase
 
         $this->assertDatabaseHas('requirements', [
             'id' => $requirement->id,
-            'name' => 'Updated Requirement Name',
+            'reference' => 'REQ-002',
         ]);
     }
 
@@ -111,14 +126,12 @@ class RequirementControllerTest extends TestCase
         $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
         $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);
 
-        $requirement = Requirement::factory()->create(['name' => 'Linked Requirement', 'user_id' => $user->id]);
+        $requirement = Requirement::factory()->create(['reference' => 'Linked Requirement']);
 
         $requirement->frameworks()->attach([$framework1->id, $framework2->id]);
 
         $payload = [
-            'name' => 'Linked Requirement',
-            'code' => 'MRF-3',
-            'description' => 'Requirement after unlinking one framework.',
+            'reference' => 'Linked Requirement',
             'framework_ids' => [$framework1->id],
         ];
 

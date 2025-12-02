@@ -22,9 +22,17 @@ class StoreRequirementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:3', 'max:255'],
-            'code' => ['required', 'string', 'max:100', 'unique:requirements,code'],
-            'description' => ['nullable', 'string'],
+            'reference' => ['required', 'string', 'max:255'],
+            'requirement_text' => ['nullable', 'string'],
+            'category' => ['required', 'string', 'max:255'],
+            'applicability' => ['required', 'string', 'max:255'],
+            'effective_from' => ['nullable', 'date'],
+            'effective_to' => ['nullable', 'date'],
+            'supersedes_req_id' => ['nullable', 'exists:requirements,id'],
+            'superseded_by_req_id' => ['nullable', 'exists:requirements,id'],
+            'priority' => ['required', 'string', 'max:100'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'max:50'],
             'framework_ids' => ['required', 'array'],
             'framework_ids.*' => ['exists:frameworks,id'],
         ];

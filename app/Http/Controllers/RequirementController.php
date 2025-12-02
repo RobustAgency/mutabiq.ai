@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Requirement;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\RequirementResource;
 use App\Repositories\RequirementRepository;
 use App\Http\Requests\StoreRequirementRequest;
@@ -23,10 +21,8 @@ class RequirementController extends Controller
 
     public function index(SearchRequirementRequest $request): JsonResponse
     {
-        /** @var User $user */
-        $user = Auth::user();
         $validated = $request->validated();
-        $requirements = $this->requirementRepository->getFilteredRequirements($user, $validated);
+        $requirements = $this->requirementRepository->getFilteredRequirements($validated);
 
         return response()->json([
             'error' => false,
@@ -37,11 +33,9 @@ class RequirementController extends Controller
 
     public function store(StoreRequirementRequest $request): JsonResponse
     {
-        /** @var User $user */
-        $user = Auth::user();
         $validated = $request->validated();
 
-        $this->requirementRepository->createForAdmin($user, $validated);
+        $this->requirementRepository->createForAdmin($validated);
 
         return response()->json([
             'error' => false,

@@ -12,10 +12,22 @@ class Requirement extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'name',
-        'code',
-        'description',
+        'reference',
+        'requirement_text',
+        'category',
+        'applicability',
+        'effective_from',
+        'effective_to',
+        'supersedes_req_id',
+        'superseded_by_req_id',
+        'priority',
+        'tags',
+    ];
+
+    protected $casts = [
+        'tags' => 'json',
+        'effective_from' => 'date',
+        'effective_to' => 'date',
     ];
 
     /**

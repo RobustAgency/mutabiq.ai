@@ -2,7 +2,6 @@
 
 namespace App\Repositories;
 
-use App\Models\User;
 use App\Models\Requirement;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -13,12 +12,24 @@ class RequirementRepository
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator<int, Requirement>
      */
-    public function getFilteredRequirements(User $user, array $filters = []): LengthAwarePaginator
+    public function getFilteredRequirements(array $filters = []): LengthAwarePaginator
     {
-        $query = Requirement::where('user_id', $user->id)->withCount('frameworks', 'controls');
+        $query = Requirement::withCount('frameworks', 'controls');
 
-        $query->when(! empty($filters['name']), function ($query) use ($filters) {
-            $query->where('name', 'like', '%'.$filters['name'].'%');
+        $query->when(! empty($filters['category']), function ($query) use ($filters) {
+            $query->where('category', $filters['category']);
+        });
+
+        $query->when(! empty($filters['priority']), function ($query) use ($filters) {
+            $query->where('priority', $filters['priority']);
+        });
+
+        $query->when(! empty($filters['effective_from']), function ($query) use ($filters) {
+            $query->whereDate('effective_from', '>=', $filters['effective_from']);
+        });
+
+        $query->when(! empty($filters['effective_to']), function ($query) use ($filters) {
+            $query->whereDate('effective_to', '<=', $filters['effective_to']);
         });
 
         $perPage = $filters['per_page'] ?? 10;
@@ -26,10 +37,8 @@ class RequirementRepository
         return $query->latest()->paginate($perPage);
     }
 
-    public function createForAdmin(User $user, array $requirementData): Requirement
+    public function createForAdmin(array $requirementData): Requirement
     {
-        $requirementData['user_id'] = $user->id;
-
         $requirement = Requirement::create($requirementData);
         if (isset($requirementData['framework_ids'])) {
             $requirement->frameworks()->sync($requirementData['framework_ids']);
