@@ -17,7 +17,7 @@ class FrameworkRepository
      */
     public function getFilteredFrameworks(User $user, array $filters = []): LengthAwarePaginator
     {
-        $query = Framework::where('user_id', $user->id)->with('media')->withCount('controls', 'requirements');
+        $query = Framework::where('user_id', $user->id)->with('media')->withCount('controls');
 
         $query = $this->applyFilters($query, $filters);
 
@@ -49,7 +49,7 @@ class FrameworkRepository
     {
         $query = Framework::where('effective_date', '<=', now())
             ->with('media')
-            ->withCount('controls', 'requirements');
+            ->withCount('controls');
 
         $query = $this->applyFilters($query, $filters);
 
@@ -58,7 +58,7 @@ class FrameworkRepository
 
     public function getFrameworkByID(int $id): Framework
     {
-        return Framework::with('media')->withCount('controls', 'requirements')->find($id);
+        return Framework::with('media')->withCount('controls')->find($id);
     }
 
     /**

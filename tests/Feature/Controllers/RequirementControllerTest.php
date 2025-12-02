@@ -45,7 +45,7 @@ class RequirementControllerTest extends TestCase
             'superseded_by_req_id' => null,
             'priority' => 'high',
             'tags' => ['security', 'compliance'],
-            'framework_ids' => [$framework->id],
+            'framework_id' => $framework->id,
         ];
 
         $response = $this->actingAs($user)->postJson('/api/admin/requirements', $payload);
@@ -67,9 +67,9 @@ class RequirementControllerTest extends TestCase
     {
         $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
         $framework = Framework::factory()->create(['user_id' => $user->id]);
-        $requirement = Requirement::factory()->create();
-
-        $requirement->frameworks()->attach($framework->id);
+        $requirement = Requirement::factory()->create([
+            'framework_id' => $framework->id,
+        ]);
 
         $response = $this->actingAs($user)->getJson("/api/admin/requirements/{$requirement->id}");
 
@@ -86,10 +86,11 @@ class RequirementControllerTest extends TestCase
     public function test_super_admin_can_update_requirement(): void
     {
         $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
-        $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
-        $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);
-        $requirement = Requirement::factory()->create(['reference' => 'Old Requirement Name']);
-        $requirement->frameworks()->attach($framework2->id);
+        $framework = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
+        $requirement = Requirement::factory()->create([
+            'reference' => 'Old Requirement Name',
+            'framework_id' => $framework->id,
+        ]);
 
         $payload = [
             'reference' => 'REQ-002',
@@ -102,7 +103,7 @@ class RequirementControllerTest extends TestCase
             'superseded_by_req_id' => null,
             'priority' => 'high',
             'tags' => ['security', 'compliance'],
-            'framework_ids' => [$framework1->id, $framework2->id],
+            'framework_id' => $framework->id,
         ];
 
         $response = $this->actingAs($user)->postJson("/api/admin/requirements/{$requirement->id}", $payload);
@@ -117,34 +118,5 @@ class RequirementControllerTest extends TestCase
             'id' => $requirement->id,
             'reference' => 'REQ-002',
         ]);
-    }
-
-    public function test_super_admin_can_unlink_framework_from_requirement(): void
-    {
-        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
-
-        $framework1 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 1']);
-        $framework2 = Framework::factory()->create(['user_id' => $user->id, 'name' => 'Framework 2']);
-
-        $requirement = Requirement::factory()->create(['reference' => 'Linked Requirement']);
-
-        $requirement->frameworks()->attach([$framework1->id, $framework2->id]);
-
-        $payload = [
-            'reference' => 'Linked Requirement',
-            'framework_ids' => [$framework1->id],
-        ];
-
-        $response = $this->actingAs($user)->postJson("/api/admin/requirements/{$requirement->id}", $payload);
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'error' => false,
-            'message' => 'Requirement updated successfully',
-        ]);
-
-        $requirement->refresh();
-        $this->assertTrue($requirement->frameworks->contains($framework1->id));
-        $this->assertFalse($requirement->frameworks->contains($framework2->id));
     }
 }

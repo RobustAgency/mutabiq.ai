@@ -46,7 +46,7 @@ class RequirementController extends Controller
 
     public function show(Requirement $requirement): JsonResponse
     {
-        $requirement->load('frameworks');
+        $requirement->load('framework');
 
         return response()->json([
             'error' => false,

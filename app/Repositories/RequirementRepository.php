@@ -14,7 +14,7 @@ class RequirementRepository
      */
     public function getFilteredRequirements(array $filters = []): LengthAwarePaginator
     {
-        $query = Requirement::withCount('frameworks', 'controls');
+        $query = Requirement::withCount('controls');
 
         $query->when(! empty($filters['category']), function ($query) use ($filters) {
             $query->where('category', $filters['category']);
@@ -40,23 +40,13 @@ class RequirementRepository
     public function createForAdmin(array $requirementData): Requirement
     {
         $requirement = Requirement::create($requirementData);
-        if (isset($requirementData['framework_ids'])) {
-            $requirement->frameworks()->sync($requirementData['framework_ids']);
-        }
 
         return $requirement;
     }
 
     public function update(Requirement $requirement, array $requirementData): Requirement
     {
-        $frameworkIds = $requirementData['framework_ids'] ?? null;
-        unset($requirementData['framework_ids']);
-
         $requirement->update($requirementData);
-
-        if ($frameworkIds !== null) {
-            $requirement->frameworks()->sync($frameworkIds);
-        }
 
         return $requirement;
     }

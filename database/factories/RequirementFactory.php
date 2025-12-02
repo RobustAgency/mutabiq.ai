@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Framework;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +18,7 @@ class RequirementFactory extends Factory
     public function definition(): array
     {
         return [
+            'framework_id' => Framework::factory(),
             'reference' => $this->faker->unique()->bothify('REQ-####'),
             'requirement_text' => $this->faker->paragraph(),
             'category' => $this->faker->randomElement(['security', 'human_rights', 'privacy']),

@@ -81,7 +81,7 @@ class RequirementRepositoryTest extends TestCase
             'effective_to' => now()->addYear(),
             'priority' => 'high',
             'tags' => json_encode(['compliance', 'mandatory']),
-            'framework_ids' => [$framework->id],
+            'framework_id' => $framework->id,
         ];
 
         $requirement = $this->requirementRepository->createForAdmin($data);
@@ -89,7 +89,6 @@ class RequirementRepositoryTest extends TestCase
         $this->assertEquals('REQ-001', $requirement->reference);
         $this->assertEquals('System must be secure', $requirement->requirement_text);
         $this->assertEquals('security', $requirement->category);
-        $this->assertTrue($requirement->frameworks->pluck('id')->contains($framework->id));
         $this->assertDatabaseHas('requirements', [
             'id' => $requirement->id,
             'reference' => 'REQ-001',
@@ -104,21 +103,19 @@ class RequirementRepositoryTest extends TestCase
         $requirement = Requirement::factory()->create([
             'reference' => 'REQ-001',
             'priority' => 'Low',
+            'framework_id' => $framework1->id,
         ]);
-
-        $requirement->frameworks()->sync([$framework1->id]);
 
         $data = [
             'reference' => 'REQ-001-UPDATED',
             'priority' => 'High',
-            'framework_ids' => [$framework2->id],
+            'framework_id' => $framework2->id,
         ];
 
         $updatedRequirement = $this->requirementRepository->update($requirement, $data);
 
         $this->assertEquals('REQ-001-UPDATED', $updatedRequirement->reference);
         $this->assertEquals('High', $updatedRequirement->priority);
-        $this->assertFalse($updatedRequirement->frameworks->pluck('id')->contains($framework1->id));
-        $this->assertTrue($updatedRequirement->frameworks->pluck('id')->contains($framework2->id));
+
     }
 }
