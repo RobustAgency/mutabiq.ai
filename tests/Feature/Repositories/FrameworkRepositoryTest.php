@@ -5,6 +5,7 @@ namespace Tests\Feature\Repositories;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Framework;
+use App\Enums\Framework\Status;
 use App\Repositories\FrameworkRepository;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class FrameworkRepositoryTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
+
+    private FrameworkRepository $frameworkRepository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->frameworkRepository = app(FrameworkRepository::class);
+    }
 
     public function test_it_filter_frameworks_by_name(): void
     {
@@ -27,8 +37,7 @@ class FrameworkRepositoryTest extends TestCase
             'name' => 'ISO 42001',
         ]);
 
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getFilteredFrameworks($user, ['name' => 'AI']);
+        $results = $this->frameworkRepository->getFilteredFrameworks($user, ['name' => 'AI']);
 
         $this->assertCount(1, $results);
         $this->assertEquals('EU AI Act', $results->first()->name);
@@ -41,17 +50,16 @@ class FrameworkRepositoryTest extends TestCase
         Framework::factory()->create([
             'user_id' => $user->id,
             'name' => 'Published Framework',
-            'is_published' => true,
+            'status' => Status::ACTIVE->value,
         ]);
 
         Framework::factory()->create([
             'user_id' => $user->id,
             'name' => 'Draft Framework',
-            'is_published' => false,
+            'status' => Status::DRAFT->value,
         ]);
 
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getFilteredFrameworks($user, ['status' => true]);
+        $results = $this->frameworkRepository->getFilteredFrameworks($user, ['status' => Status::ACTIVE->value]);
 
         $this->assertCount(1, $results);
         $this->assertEquals('Published Framework', $results->first()->name);
@@ -65,8 +73,7 @@ class FrameworkRepositoryTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getFilteredFrameworks($user, ['per_page' => 5]);
+        $results = $this->frameworkRepository->getFilteredFrameworks($user, ['per_page' => 5]);
 
         $this->assertCount(5, $results);
         $this->assertEquals(5, $results->perPage());
@@ -77,21 +84,20 @@ class FrameworkRepositoryTest extends TestCase
     {
         Framework::factory()->create([
             'name' => 'Published Framework 1',
-            'is_published' => true,
+            'effective_date' => now()->subDays(10),
         ]);
 
         Framework::factory()->create([
             'name' => 'Published Framework 2',
-            'is_published' => true,
+            'effective_date' => now()->subDays(5),
         ]);
 
         Framework::factory()->create([
             'name' => 'Draft Framework',
-            'is_published' => false,
+            'effective_date' => now()->addDays(5),
         ]);
 
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks();
+        $results = $this->frameworkRepository->getPublishedFrameworks();
 
         $this->assertCount(2, $results);
     }
@@ -116,192 +122,52 @@ class FrameworkRepositoryTest extends TestCase
     {
         Framework::factory()->create([
             'name' => 'Type A Framework',
-            'type' => 'Type A',
-            'is_published' => true,
+            'status' => Status::ACTIVE->value,
+            'effective_date' => now()->subDays(10),
         ]);
 
         Framework::factory()->create([
             'name' => 'Type B Framework',
-            'type' => 'Type B',
-            'is_published' => true,
+            'status' => Status::RETIRED->value,
+            'effective_date' => now()->subDays(5),
         ]);
 
         Framework::factory()->create([
             'name' => 'Draft Type A Framework',
-            'type' => 'Type A',
-            'is_published' => false,
+            'status' => Status::DRAFT->value,
+            'effective_date' => now()->addDays(5),
         ]);
 
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks(['type' => 'Type A', 'per_page' => 10]);
+        $results = $this->frameworkRepository->getPublishedFrameworks(['status' => Status::ACTIVE->value, 'per_page' => 10]);
 
         $this->assertCount(1, $results);
         $this->assertEquals('Type A Framework', $results->first()->name);
     }
 
-    public function test_it_can_get_published_frameworks_with_authority_publisher_filter()
+    public function test_it_creates_framework(): void
     {
-        Framework::factory()->create([
-            'name' => 'Type A Framework',
-            'type' => 'Type A',
-            'is_published' => true,
-            'authority_publisher' => 'Publisher A',
+        $user = User::factory()->create();
+
+        $data = [
+            'name' => 'New Framework',
+            'version' => '1.0',
+            'status' => Status::DRAFT->value,
+            'effective_date' => now(),
+            'jurisdictions' => json_encode(['US', 'EU']),
+            'scope' => 'AI Systems',
+            'source_url' => 'https://example.com/framework',
+        ];
+
+        $framework = $this->frameworkRepository->createForAdmin($user, $data);
+
+        $this->assertNotNull($framework->id);
+        $this->assertEquals('New Framework', $framework->name);
+        $this->assertEquals(Status::DRAFT->value, $framework->status);
+        $this->assertEquals($user->id, $framework->user_id);
+        $this->assertDatabaseHas('frameworks', [
+            'id' => $framework->id,
+            'name' => 'New Framework',
+            'user_id' => $user->id,
         ]);
-
-        Framework::factory()->create([
-            'name' => 'Type B Framework',
-            'type' => 'Type B',
-            'is_published' => true,
-            'authority_publisher' => 'Publisher B',
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Draft Type A Framework',
-            'type' => 'Type A',
-            'is_published' => false,
-            'authority_publisher' => 'Publisher A',
-        ]);
-
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks(['authority_publisher' => 'Publisher A']);
-
-        $this->assertCount(1, $results);
-        $this->assertEquals('Type A Framework', $results->first()->name);
     }
-
-    public function test_it_can_get_published_frameworks_with_binding_level_filter()
-    {
-        Framework::factory()->create([
-            'name' => 'Level 1 Framework',
-            'binding_level' => 'Level 1',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Level 2 Framework',
-            'binding_level' => 'Level 2',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Draft Level 1 Framework',
-            'binding_level' => 'Level 1',
-            'is_published' => false,
-        ]);
-
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks(['binding_level' => 'Level 1']);
-
-        $this->assertCount(1, $results);
-        $this->assertEquals('Level 1 Framework', $results->first()->name);
-    }
-
-    public function test_it_can_get_published_frameworks_with_sector_applicability_filter()
-    {
-        Framework::factory()->create([
-            'name' => 'Finance Sector Framework',
-            'sector_applicability' => 'Finance',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Healthcare Sector Framework',
-            'sector_applicability' => 'Healthcare',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Draft Finance Sector Framework',
-            'sector_applicability' => 'Finance',
-            'is_published' => false,
-        ]);
-
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks(['sector_applicability' => 'Finance']);
-
-        $this->assertCount(1, $results);
-        $this->assertEquals('Finance Sector Framework', $results->first()->name);
-    }
-
-    public function test_it_can_get_published_frameworks_with_risk_class_coverage_filter()
-    {
-        Framework::factory()->create([
-            'name' => 'High Risk Framework',
-            'risk_class_coverage' => 'High',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Low Risk Framework',
-            'risk_class_coverage' => 'Low',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Draft High Risk Framework',
-            'risk_class_coverage' => 'High',
-            'is_published' => false,
-        ]);
-
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks(['risk_class_coverage' => 'High']);
-
-        $this->assertCount(1, $results);
-        $this->assertEquals('High Risk Framework', $results->first()->name);
-    }
-
-    public function test_it_can_get_published_frameworks_with_certification_attestation_filter()
-    {
-        Framework::factory()->create([
-            'name' => 'Certified Framework',
-            'certification_attestation' => 'Certified',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Attested Framework',
-            'certification_attestation' => 'Attested',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Draft Certified Framework',
-            'certification_attestation' => 'Certified',
-            'is_published' => false,
-        ]);
-
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks(['certification_attestation' => 'Certified']);
-
-        $this->assertCount(1, $results);
-        $this->assertEquals('Certified Framework', $results->first()->name);
-    }
-
-    public function test_it_can_get_published_frameworks_with_assessment_mode_filter()
-    {
-        Framework::factory()->create([
-            'name' => 'Self-Assessment Framework',
-            'assessment_mode' => 'Self-Assessment',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Third-Party Assessment Framework',
-            'assessment_mode' => 'Third-Party',
-            'is_published' => true,
-        ]);
-
-        Framework::factory()->create([
-            'name' => 'Draft Self-Assessment Framework',
-            'assessment_mode' => 'Self-Assessment',
-            'is_published' => false,
-        ]);
-
-        $repository = app(FrameworkRepository::class);
-        $results = $repository->getPublishedFrameworks(['assessment_mode' => 'Self-Assessment']);
-
-        $this->assertCount(1, $results);
-        $this->assertEquals('Self-Assessment Framework', $results->first()->name);
-    }
-
 }

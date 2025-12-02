@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Framework\Status;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,24 +25,12 @@ class UpdateFrameworkRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'min:2', 'max:255'],
-            'code' => [
-                'sometimes', 'required', 'string', 'max:100',
-                Rule::unique('requirements', 'code')->ignore($this->route('framework')),
-            ],
-            'type' => ['sometimes', 'required', 'string', 'max:100'],
-            'geography' => ['sometimes', 'required', 'string', 'max:100'],
-            'category' => ['sometimes', 'required', 'string'],
             'version' => ['sometimes', 'required', 'string', 'max:50'],
-            'release_date' => ['nullable', 'date'],
-            'is_published' => ['boolean'],
-            'description' => ['nullable', 'string'],
-            'authority_publisher' => ['nullable', 'string', 'max:255'],
-            'binding_level' => ['nullable', 'string', 'max:100'],
-            'sector_applicability' => ['nullable', 'string', 'max:255'],
-            'risk_class_coverage' => ['nullable', 'string', 'max:255'],
-            'certification_attestation' => ['nullable', 'string', 'max:255'],
-            'assessment_mode' => ['nullable', 'string', 'max:255'],
-            'framework_logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            'jurisdictions' => ['sometimes', 'required', 'array'],
+            'scope' => ['sometimes', 'required', 'string'],
+            'status' => ['sometimes', 'required', Rule::in(array_map(fn ($c) => $c->value, Status::cases()))],
+            'effective_date' => ['sometimes', 'required', 'date'],
+            'source_url' => ['sometimes', 'required', 'url', 'max:255'],
         ];
     }
 }
