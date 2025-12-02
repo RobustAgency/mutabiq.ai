@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\AiModelVersion;
 use Illuminate\Http\Request;
+use App\Models\AiModelVersion;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
