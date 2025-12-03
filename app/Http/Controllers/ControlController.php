@@ -47,8 +47,6 @@ class ControlController extends Controller
 
     public function show(Control $control): JsonResponse
     {
-        $control->load('requirements');
-
         return response()->json([
             'error' => false,
             'message' => 'Control retrieved successfully',

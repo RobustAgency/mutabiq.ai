@@ -1,12 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\FrameworkController;
-use App\Http\Controllers\RequirementController;
-use App\Http\Controllers\ControlController;
-use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\ControlController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\RequirementController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\Admin\FrameworkController;
+use App\Http\Controllers\Admin\RequirementControlController;
 
 Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
     Route::prefix('/admin')->group(function () {
@@ -38,6 +39,14 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
             Route::post('', 'store');
             Route::get('{control}', 'show');
             Route::post('{control}', 'update');
+        });
+
+        Route::prefix('/requirement-controls')->controller(RequirementControlController::class)->group(function () {
+            Route::get('', 'index');
+            Route::post('', 'store');
+            Route::get('{requirementControl}', 'show');
+            Route::post('{requirementControl}', 'update');
+            Route::delete('{requirementControl}', 'destroy');
         });
 
         Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {
