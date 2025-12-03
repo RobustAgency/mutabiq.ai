@@ -6440,6 +6440,382 @@
 				}
 			],
 			"description": "Manage Key Risk Indicators (KRI) for monitoring and tracking AI model risk metrics"
+		},
+		{
+			"name": "Requirement Controls",
+			"item": [
+				{
+					"name": "List Requirement Controls",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/requirement-controls?per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"requirement-controls"
+							],
+							"query": [
+								{
+									"key": "requirement_id",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "control_id",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "coverage",
+									"value": "full",
+									"disabled": true
+								},
+								{
+									"key": "review_status",
+									"value": "approved",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get paginated list of requirement controls with optional filters.\n\n**Query Parameters:**\n- `requirement_id` (integer, nullable): Filter by requirement ID\n- `control_id` (integer, nullable): Filter by control ID\n- `coverage` (enum, nullable): Filter by coverage - full, partial, not_applicable\n- `review_status` (enum, nullable): Filter by review status - draft, peer_reviewed, approved\n- `per_page` (integer, nullable): Records per page (1-100, default: 10)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Requirement Control",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"requirement_id\": 1,\n  \"control_id\": 1,\n  \"ai_model_id\": \"All AI systems\",\n  \"coverage\": \"full\",\n  \"interpretation_notes\": \"This control fully addresses the requirement\",\n  \"residual_gaps\": \"No residual gaps identified\",\n  \"review_status\": \"draft\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/requirement-controls",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"requirement-controls"
+							]
+						},
+						"description": "Create a new requirement control mapping.\n\n**Required Fields:**\n- `requirement_id` (integer): Requirement ID\n- `control_id` (integer): Control ID\n- `model_scope` (string, max 255): Scope of the model\n- `coverage` (enum): full, partial, not_applicable\n- `review_status` (enum): draft, peer_reviewed, approved\n\n**Optional Fields:**\n- `interpretation_notes` (string): Notes on interpretation\n- `residual_gaps` (string): Identified residual gaps\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Requirement Control",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/requirement-controls/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"requirement-controls",
+								"1"
+							]
+						},
+						"description": "Get a specific requirement control with all relationships.\n\n**Path Parameters:**\n- `id` (integer): Requirement Control ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Requirement Control",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coverage\": \"full\",\n  \"review_status\": \"approved\",\n  \"interpretation_notes\": \"Updated interpretation\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/requirement-controls/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"requirement-controls",
+								"1"
+							]
+						},
+						"description": "Update an existing requirement control (all fields optional).\n\n**Path Parameters:**\n- `id` (integer): Requirement Control ID\n\n**Updatable Fields:**\n- `coverage` (enum): full, partial, not_applicable\n- `review_status` (enum): draft, peer_reviewed, approved\n- `interpretation_notes` (string): Notes on interpretation\n- `residual_gaps` (string): Identified residual gaps\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Requirement Control",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/requirement-controls/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"requirement-controls",
+								"1"
+							]
+						},
+						"description": "Delete a requirement control.\n\n**Path Parameters:**\n- `id` (integer): Requirement Control ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage mappings between requirements and controls, including coverage analysis and review status"
+		},
+		{
+			"name": "Compliance Evidence",
+			"item": [
+				{
+					"name": "List Compliance Evidence",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/compliance-evidences?per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"compliance-evidences"
+							],
+							"query": [
+								{
+									"key": "artifact_type",
+									"value": "document",
+									"disabled": true
+								},
+								{
+									"key": "review_outcome",
+									"value": "pass",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get paginated list of compliance evidence with optional filters.\n\n**Query Parameters:**\n- `artifact_type` (enum, nullable): Filter by artifact type - document, screenshot, log, test_result, sample_set, ticket, transcript, submission_ack\n- `review_outcome` (enum, nullable): Filter by review outcome - pass, fail, needs_fix\n- `per_page` (integer, nullable): Records per page (1-100, default: 10)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Compliance Evidence",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"control_id\": 1,\n  \"requirement_id\": 1,\n  \"ai_model_id\": 1,\n  \"artifact_type\": \"document\",\n  \"artifact_uri\": \"https://example.com/evidence.pdf\",\n  \"sample_ids\": [\"sample1\", \"sample2\"],\n  \"sampling_method\": \"random\",\n  \"collection_period_start\": \"2024-01-01\",\n  \"collection_period_end\": \"2024-12-31\",\n  \"collected_by\": 1,\n  \"hash_checksum\": \"abc123def456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/compliance-evidences",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"compliance-evidences"
+							]
+						},
+						"description": "Create a new compliance evidence record.\n\n**Required Fields:**\n- `control_id` (integer): Control ID\n- `artifact_type` (enum): document, screenshot, log, test_result, sample_set, ticket, transcript, submission_ack\n- `artifact_uri` (string, url): URI/URL to the artifact\n- `hash_checksum` (string, max 255): SHA256 hash of the artifact\n\n**Optional Fields:**\n- `requirement_id` (integer): Requirement ID\n- `ai_model_id` (integer): AI Model ID\n- `sample_ids` (array): JSON array of sample identifiers\n- `sampling_method` (string, max 255): Sampling method used\n- `collection_period_start` (date): Start of collection period\n- `collection_period_end` (date): End of collection period\n- `collected_by` (integer): User ID who collected evidence\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Compliance Evidence",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/compliance-evidences/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"compliance-evidences",
+								"1"
+							]
+						},
+						"description": "Get a specific compliance evidence record with all relationships.\n\n**Path Parameters:**\n- `id` (integer): Compliance Evidence ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Compliance Evidence",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"review_outcome\": \"pass\",\n  \"reviewed_by\": 1,\n  \"reviewed_at\": \"2024-12-03\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/compliance-evidences/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"compliance-evidences",
+								"1"
+							]
+						},
+						"description": "Update an existing compliance evidence record (all fields optional).\n\n**Path Parameters:**\n- `id` (integer): Compliance Evidence ID\n\n**Updatable Fields:**\n- `artifact_type` (enum): document, screenshot, log, test_result, sample_set, ticket, transcript, submission_ack\n- `artifact_uri` (string, url): URI/URL to the artifact\n- `sample_ids` (array): JSON array of sample identifiers\n- `sampling_method` (string, max 255): Sampling method used\n- `collection_period_start` (date): Start of collection period\n- `collection_period_end` (date): End of collection period\n- `review_outcome` (enum): pass, fail, needs_fix\n- `reviewed_by` (integer): User ID who reviewed\n- `reviewed_at` (date): Review date\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Compliance Evidence",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/compliance-evidences/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"compliance-evidences",
+								"1"
+							]
+						},
+						"description": "Delete a compliance evidence record.\n\n**Path Parameters:**\n- `id` (integer): Compliance Evidence ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage compliance evidence collection, storage, and review including artifacts, sampling methods, and review outcomes"
 		}
 	],
 	"auth": {
