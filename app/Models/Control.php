@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Control extends Model
 {
@@ -34,16 +33,6 @@ class Control extends Model
     protected $appends = [
         'display_id',
     ];
-
-    /**
-     * The requirements that belong to the control.
-     *
-     * @return BelongsToMany<Requirement, $this>
-     */
-    public function requirements(): BelongsToMany
-    {
-        return $this->belongsToMany(Requirement::class);
-    }
 
     /**
      * Get the user that owns the control.

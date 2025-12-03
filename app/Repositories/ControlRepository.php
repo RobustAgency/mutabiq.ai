@@ -15,7 +15,7 @@ class ControlRepository
      */
     public function getFilteredControls(User $user, array $filters = []): LengthAwarePaginator
     {
-        $query = Control::where('user_id', $user->id)->withCount('requirements');
+        $query = Control::where('user_id', $user->id);
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%'.$filters['name'].'%');

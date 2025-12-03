@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Requirement extends Model
 {
@@ -40,15 +39,5 @@ class Requirement extends Model
     public function framework(): BelongsTo
     {
         return $this->belongsTo(Framework::class);
-    }
-
-    /**
-     * Get the requirements for this controls.
-     *
-     * @return BelongsToMany<Control, $this>
-     */
-    public function controls(): BelongsToMany
-    {
-        return $this->belongsToMany(Control::class);
     }
 }

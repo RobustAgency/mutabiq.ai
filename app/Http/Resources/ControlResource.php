@@ -30,7 +30,6 @@ class ControlResource extends JsonResource
             'status' => $this->status,
             'last_test_date' => $this->last_test_date?->toDateString(),
             'next_test_due' => $this->next_test_due?->toDateString(),
-            'requirements' => RequirementResource::collection($this->whenLoaded('requirements')),
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];
