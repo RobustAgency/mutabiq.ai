@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\Admin\FrameworkController;
+use App\Http\Controllers\Admin\ComplianceEvidenceController;
 use App\Http\Controllers\Admin\RequirementControlController;
 
 Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
@@ -47,6 +48,14 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
             Route::get('{requirementControl}', 'show');
             Route::post('{requirementControl}', 'update');
             Route::delete('{requirementControl}', 'destroy');
+        });
+
+        Route::prefix('/compliance-evidences')->controller(ComplianceEvidenceController::class)->group(function () {
+            Route::get('', 'index');
+            Route::post('', 'store');
+            Route::get('{complianceEvidence}', 'show');
+            Route::post('{complianceEvidence}', 'update');
+            Route::delete('{complianceEvidence}', 'destroy');
         });
 
         Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {
