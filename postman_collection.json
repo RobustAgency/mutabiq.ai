@@ -6816,6 +6816,194 @@
 				}
 			],
 			"description": "Manage compliance evidence collection, storage, and review including artifacts, sampling methods, and review outcomes"
+		},
+		{
+			"name": "Regulatory Submissions",
+			"item": [
+				{
+					"name": "List Regulatory Submissions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/regulatory-submissions?per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"regulatory-submissions"
+							],
+							"query": [
+								{
+									"key": "authority",
+									"value": "FDA",
+									"disabled": true
+								},
+								{
+									"key": "submission_type",
+									"value": "registration",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "draft",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get paginated list of regulatory submissions with optional filters.\n\n**Query Parameters:**\n- `authority` (string, nullable): Filter by regulatory authority name (e.g., FDA, EMA)\n- `submission_type` (enum, nullable): Filter by submission type - registration, notification, conformity_assessment, incident_report, dpia_filing, renewal, audit_response\n- `status` (enum, nullable): Filter by status - draft, submitted, acknowledged, approved, rejected, closed\n- `per_page` (integer, nullable): Records per page (1-100, default: 10)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Regulatory Submission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"framework_id\": 1,\n  \"ai_model_id\": 1,\n  \"authority\": \"FDA\",\n  \"jurisdiction\": [\"US\", \"EU\"],\n  \"submission_type\": \"registration\",\n  \"content_summary\": \"Comprehensive submission for AI model registration including technical specifications and safety measures\",\n  \"tracking_id\": \"REG-2025-001-TEST\",\n  \"commitments\": [\"Ongoing monitoring\", \"Annual audits\", \"Incident reporting\"],\n  \"renewal_due_at\": \"2026-12-31\",\n  \"evidence_bundle_ids\": [1, 2, 3]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/regulatory-submissions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"regulatory-submissions"
+							]
+						},
+						"description": "Create a new regulatory submission record.\n\n**Required Fields:**\n- `framework_id` (integer): Framework ID\n- `ai_model_id` (integer): AI Model ID\n- `authority` (string, max 255): Regulatory authority name\n- `jurisdiction` (array, min 1): Array of jurisdiction codes (e.g., [\"US\", \"EU\"])\n- `submission_type` (enum): registration, notification, conformity_assessment, incident_report, dpia_filing, renewal, audit_response\n- `content_summary` (string, max 5000): Detailed summary of submission content\n- `tracking_id` (string, max 255, unique): Unique tracking identifier for the submission\n\n**Optional Fields:**\n- `commitments` (array): Regulatory commitments\n- `renewal_due_at` (date): Expected renewal date\n- `evidence_bundle_ids` (array): IDs of associated evidence bundles\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Regulatory Submission",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/regulatory-submissions/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"regulatory-submissions",
+								"1"
+							]
+						},
+						"description": "Get a specific regulatory submission record with all relationships.\n\n**Path Parameters:**\n- `id` (integer): Regulatory Submission ID\n\n**Response Includes:**\n- Framework details\n- AI Model details\n- Submitted by user information\n- All submission metadata\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Regulatory Submission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"submitted\",\n  \"submitted_by\": 1,\n  \"submitted_at\": \"2024-12-04\",\n  \"documents_uri\": \"https://example.com/submission-docs.zip\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/regulatory-submissions/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"regulatory-submissions",
+								"1"
+							]
+						},
+						"description": "Update an existing regulatory submission record (all fields optional).\n\n**Path Parameters:**\n- `id` (integer): Regulatory Submission ID\n\n**Updatable Fields:**\n- `framework_id` (integer): Framework ID\n- `ai_model_id` (integer): AI Model ID\n- `authority` (string, max 255): Regulatory authority name\n- `jurisdiction` (array, min 1): Array of jurisdiction codes\n- `submission_type` (enum): registration, notification, conformity_assessment, incident_report, dpia_filing, renewal, audit_response\n- `content_summary` (string, max 5000): Submission content summary\n- `status` (enum): draft, submitted, acknowledged, approved, rejected, closed\n- `submitted_by` (integer): User ID who submitted\n- `submitted_at` (date): Submission timestamp\n- `documents_uri` (string, url, max 2048): URL to submission documents\n- `commitments` (array): Regulatory commitments\n- `renewal_due_at` (date): Expected renewal date\n- `evidence_bundle_ids` (array): IDs of associated evidence bundles\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Regulatory Submission",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/regulatory-submissions/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"regulatory-submissions",
+								"1"
+							]
+						},
+						"description": "Delete a regulatory submission record.\n\n**Path Parameters:**\n- `id` (integer): Regulatory Submission ID\n\n**Note:** Deletes the submission and associated metadata. Ensure data is backed up before deletion.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage regulatory submissions, filings, and compliance tracking across multiple jurisdictions including status tracking and document management"
 		}
 	],
 	"auth": {
