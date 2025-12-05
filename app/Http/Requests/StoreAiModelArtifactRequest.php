@@ -24,7 +24,6 @@ class StoreAiModelArtifactRequest extends FormRequest
             'uri' => ['nullable', 'url', 'max:2048', 'required_without:file'],
             'file' => ['nullable', 'file', 'max:26214400', 'required_without:uri'],
             'checksum_algorithm' => ['nullable', Rule::enum(ArtifactChecksumAlgorithm::class)],
-            'checksum_value' => ['required_with:checksum_algorithm', 'string', 'max:255'],
             'environment' => ['nullable', Rule::enum(ArtifactEnvironment::class)],
             'file_format' => ['nullable', Rule::enum(ArtifactFileFormat::class)],
             'size_bytes' => ['nullable', 'integer', 'min:1'],
