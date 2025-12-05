@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Framework\Status;
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreFrameworkRequest extends FormRequest
@@ -23,21 +25,12 @@ class StoreFrameworkRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:2', 'max:255'],
-            'code' => ['required', 'string', 'min:2', 'max:100', 'unique:frameworks,code'],
-            'type' => ['required', 'string', 'max:100'],
-            'geography' => ['required', 'string', 'max:100'],
-            'category' => ['required', 'string'],
             'version' => ['required', 'string', 'max:50'],
-            'release_date' => ['nullable', 'date'],
-            'is_published' => ['boolean'],
-            'description' => ['nullable', 'string'],
-            'authority_publisher' => ['nullable', 'string', 'max:255'],
-            'binding_level' => ['nullable', 'string', 'max:100'],
-            'sector_applicability' => ['nullable', 'string', 'max:255'],
-            'risk_class_coverage' => ['nullable', 'string', 'max:255'],
-            'certification_attestation' => ['nullable', 'string', 'max:255'],
-            'assessment_mode' => ['nullable', 'string', 'max:255'],
-            'framework_logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            'jurisdictions' => ['required', 'array'],
+            'scope' => ['required', 'string'],
+            'status' => ['required', Rule::in(array_map(fn ($c) => $c->value, Status::cases()))],
+            'effective_date' => ['required', 'date'],
+            'source_url' => ['required', 'url', 'max:255'],
         ];
     }
 }

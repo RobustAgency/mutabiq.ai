@@ -15,10 +15,22 @@ class ControlRepository
      */
     public function getFilteredControls(User $user, array $filters = []): LengthAwarePaginator
     {
-        $query = Control::where('user_id', $user->id)->withCount('frameworks', 'requirements');
+        $query = Control::where('user_id', $user->id);
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
+        });
+
+        $query->when(! empty($filters['status']), function ($query) use ($filters) {
+            $query->where('status', $filters['status']);
+        });
+
+        $query->when(! empty($filters['testing_method']), function ($query) use ($filters) {
+            $query->where('testing_method', $filters['testing_method']);
+        });
+
+        $query->when(! empty($filters['testing_frequency']), function ($query) use ($filters) {
+            $query->where('testing_frequency', $filters['testing_frequency']);
         });
 
         $perPage = $filters['per_page'] ?? 10;
@@ -32,26 +44,12 @@ class ControlRepository
 
         $control = Control::create($controlData);
 
-        $control->frameworks()->sync($controlData['framework_ids'] ?? []);
-        $control->requirements()->sync($controlData['requirement_ids'] ?? []);
-        $control->tags()->sync($controlData['tag_ids'] ?? []);
-
         return $control;
     }
 
     public function update(Control $control, array $data): Control
     {
         $control->update($data);
-
-        if (isset($data['framework_ids'])) {
-            $control->frameworks()->sync($data['framework_ids']);
-        }
-        if (isset($data['requirement_ids'])) {
-            $control->requirements()->sync($data['requirement_ids']);
-        }
-        if (isset($data['tag_ids'])) {
-            $control->tags()->sync($data['tag_ids']);
-        }
 
         return $control;
     }

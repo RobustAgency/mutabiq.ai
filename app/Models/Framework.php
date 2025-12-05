@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\FrameworkCategory;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -18,26 +17,17 @@ class Framework extends Model implements HasMedia
     protected $fillable = [
         'user_id',
         'name',
-        'code',
-        'type',
-        'geography',
-        'category',
         'version',
-        'release_date',
-        'is_published',
-        'description',
-        'authority_publisher',
-        'binding_level',
-        'sector_applicability',
-        'risk_class_coverage',
-        'certification_attestation',
-        'assessment_mode',
+        'jurisdictions',
+        'scope',
+        'status',
+        'effective_date',
+        'source_url',
     ];
 
     protected $casts = [
-        'release_date' => 'date',
-        'is_published' => 'boolean',
-        'category' => FrameworkCategory::class,
+        'jurisdictions' => 'json',
+        'effective_date' => 'date',
     ];
 
     /**

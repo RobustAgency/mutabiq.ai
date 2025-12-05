@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Models\User;
 use App\Models\Framework;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\FrameworkResource;
 use App\Repositories\FrameworkRepository;
 use App\Http\Requests\StoreFrameworkRequest;
 use App\Http\Requests\SearchFrameworkRequest;
 use App\Http\Requests\UpdateFrameworkRequest;
-use App\Http\Controllers\Controller;
 
 class FrameworkController extends Controller
 {
@@ -42,11 +42,7 @@ class FrameworkController extends Controller
         $user = Auth::user();
         $validated = $request->validated();
 
-        $framework = $this->frameworkRepository->createForAdmin($user, $validated);
-
-        if ($request->hasFile('framework_logo')) {
-            $framework->addMediaFromRequest('framework_logo')->toMediaCollection('framework_logos');
-        }
+        $this->frameworkRepository->createForAdmin($user, $validated);
 
         return response()->json([
             'error' => false,
@@ -55,9 +51,9 @@ class FrameworkController extends Controller
         ], 201);
     }
 
-    public function show(Framework $framework): JsonResponse
+    public function show(int $id): JsonResponse
     {
-        $framework->load('media', 'requirements');
+        $framework = $this->frameworkRepository->getFrameworkByID($id);
 
         return response()->json([
             'error' => false,
@@ -71,11 +67,6 @@ class FrameworkController extends Controller
         $validated = $request->validated();
 
         $framework = $this->frameworkRepository->update($framework, $validated);
-
-        if ($request->hasFile('framework_logo')) {
-            $framework->clearMediaCollection('framework_logos');
-            $framework->addMediaFromRequest('framework_logo')->toMediaCollection('framework_logos');
-        }
 
         return response()->json([
             'error' => false,

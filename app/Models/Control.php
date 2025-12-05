@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Control extends Model
 {
@@ -15,45 +14,25 @@ class Control extends Model
     protected $fillable = [
         'user_id',
         'name',
-        'code',
-        'question',
-        'summary',
-        'description',
+        'reference',
+        'objective',
+        'testing_method',
+        'testing_frequency',
+        'evidence_expectations',
+        'applicability_criteria',
+        'status',
+        'last_test_date',
+        'next_test_due',
+    ];
+
+    protected $casts = [
+        'last_test_date' => 'date',
+        'next_test_due' => 'date',
     ];
 
     protected $appends = [
         'display_id',
     ];
-
-    /**
-     * The frameworks that belong to the control.
-     *
-     * @return BelongsToMany<Framework, $this>
-     */
-    public function frameworks(): BelongsToMany
-    {
-        return $this->belongsToMany(Framework::class);
-    }
-
-    /**
-     * The requirements that belong to the control.
-     *
-     * @return BelongsToMany<Requirement, $this>
-     */
-    public function requirements(): BelongsToMany
-    {
-        return $this->belongsToMany(Requirement::class);
-    }
-
-    /**
-     * The tags that belong to the control.
-     *
-     * @return BelongsToMany<Tag, $this>
-     */
-    public function tags(): BelongsToMany
-    {
-        return $this->belongsToMany(Tag::class);
-    }
 
     /**
      * Get the user that owns the control.

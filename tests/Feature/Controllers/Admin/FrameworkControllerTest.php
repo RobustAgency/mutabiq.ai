@@ -6,9 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Enums\UserRole;
 use App\Models\Framework;
-use App\Enums\FrameworkCategory;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
+use App\Enums\Framework\Status;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -37,20 +35,13 @@ class FrameworkControllerTest extends TestCase
 
         $payload = [
             'name' => 'EU AI Act',
-            'code' => 'MFF-1',
-            'type' => 'Law/Act',
-            'geography' => 'EU',
-            'category' => FrameworkCategory::Mandatory->value,
             'version' => '1.0',
-            'release_date' => now()->toDateTimeString(),
-            'is_published' => true,
-            'description' => 'Comprehensive regulation for governing AI systems in the EU.',
-            'authority_publisher' => 'European Commission',
-            'binding_level' => 'Legally Binding',
-            'sector_applicability' => 'Cross-sector (Healthcare, Finance, Education)',
-            'risk_class_coverage' => 'High-Risk AI, Prohibited Uses',
-            'certification_attestation' => 'Notified Body Required',
-            'assessment_mode' => 'Third-party Assessment',
+            'jurisdictions' => ['EU'],
+            'scope' => 'Comprehensive regulation for governing AI systems in the EU.',
+            'status' => Status::ACTIVE->value,
+            'effective_date' => now()->toDateTimeString(),
+            'source_url' => 'https://example.com',
+
         ];
 
         $response = $this->actingAs($user)->postJson('/api/admin/frameworks', $payload);
@@ -65,35 +56,6 @@ class FrameworkControllerTest extends TestCase
             'name' => 'EU AI Act',
             'user_id' => $user->id,
         ]);
-    }
-
-    public function test_super_admin_can_store_framework_with_logo(): void
-    {
-        Storage::fake('public');
-
-        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
-
-        $payload = [
-            'name' => 'EU AI Act',
-            'code' => 'MFF-1',
-            'type' => 'Law/Act',
-            'geography' => 'EU',
-            'version' => '1.0',
-            'release_date' => now()->toDateTimeString(),
-            'is_published' => true,
-            'client_logo' => UploadedFile::fake()->image('logo.png'),
-            'category' => FrameworkCategory::Voluntary->value,
-        ];
-
-        $response = $this->actingAs($user)->post('/api/admin/frameworks', $payload);
-
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('frameworks', ['name' => 'EU AI Act']);
-
-        $framework = Framework::first();
-
-        $this->assertNotNull($framework);
-        $this->assertNotNull($framework->getFirstMediaUrl('client_logo'));
     }
 
     public function test_super_admin_can_view_single_framework(): void
@@ -118,20 +80,12 @@ class FrameworkControllerTest extends TestCase
 
         $payload = [
             'name' => 'Updated Framework Name',
-            'code' => 'MFF-1',
-            'type' => 'Law/Act',
-            'geography' => 'EU',
-            'category' => FrameworkCategory::Voluntary->value,
-            'version' => '1.0',
-            'release_date' => now()->toDateTimeString(),
-            'is_published' => true,
-            'description' => 'Comprehensive regulation for governing AI systems in the EU.',
-            'authority_publisher' => 'European Commission',
-            'binding_level' => 'Legally Binding',
-            'sector_applicability' => 'Cross-sector (Healthcare, Finance, Education)',
-            'risk_class_coverage' => 'High-Risk AI, Prohibited Uses',
-            'certification_attestation' => 'Notified Body Required',
-            'assessment_mode' => 'Third-party Assessment',
+            'version' => '2.0',
+            'jurisdictions' => ['US', 'EU'],
+            'scope' => 'Updated scope description.',
+            'status' => Status::RETIRED->value,
+            'effective_date' => now()->toDateTimeString(),
+            'source_url' => 'https://updated-source-url.com',
         ];
 
         $response = $this->actingAs($user)->postJson("/api/admin/frameworks/{$framework->id}", $payload);
@@ -147,38 +101,5 @@ class FrameworkControllerTest extends TestCase
             'id' => $framework->id,
             'name' => 'Updated Framework Name',
         ]);
-    }
-
-    public function test_super_admin_can_replace_framework_logo_on_update(): void
-    {
-        Storage::fake('public');
-
-        $user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
-
-        $framework = Framework::factory()->create(['user_id' => $user->id]);
-
-        $framework->addMedia(UploadedFile::fake()->image('old_logo.png'))->toMediaCollection('framework_logos');
-
-        $payload = [
-            'name' => 'With New Logo',
-            'launch_date' => now()->toDateTimeString(),
-            'framework_logo' => UploadedFile::fake()->image('new_logo.png'),
-        ];
-
-        $response = $this->actingAs($user)->postJson("/api/admin/frameworks/{$framework->id}", $payload);
-
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('frameworks', [
-            'id' => $framework->id,
-            'name' => 'With New Logo',
-        ]);
-
-        $freshFramework = $framework->fresh();
-
-        $this->assertCount(1, $freshFramework->getMedia('framework_logos'));
-        $this->assertStringContainsString(
-            'new_logo',
-            $freshFramework->getFirstMediaUrl('framework_logos')
-        );
     }
 }

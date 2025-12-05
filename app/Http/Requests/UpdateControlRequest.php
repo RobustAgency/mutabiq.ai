@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+use App\Enums\Control\TestingMethod;
+use App\Enums\Control\TestingFrequency;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateControlRequest extends FormRequest
@@ -23,16 +26,15 @@ class UpdateControlRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'code' => ['sometimes', 'required', 'string', 'max:100', 'unique:controls,code,'.$this->control->id],
-            'question' => ['nullable', 'string'],
-            'summary' => ['nullable', 'string'],
-            'description' => ['nullable', 'string'],
-            'framework_ids' => ['array'],
-            'framework_ids.*' => ['exists:frameworks,id'],
-            'requirement_ids' => ['array'],
-            'requirement_ids.*' => ['exists:requirements,id'],
-            'tag_ids' => ['array'],
-            'tag_ids.*' => ['exists:tags,id'],
+            'reference' => ['sometimes', 'required', 'string', 'max:255', 'unique:controls,reference'],
+            'objective' => ['sometimes', 'nullable', 'string'],
+            'testing_method' => ['sometimes', 'required', Rule::in(array_map(fn ($case) => $case->value, TestingMethod::cases()))],
+            'testing_frequency' => ['sometimes', 'required', Rule::in(array_map(fn ($case) => $case->value, TestingFrequency::cases()))],
+            'evidence_expectations' => ['sometimes', 'nullable', 'string'],
+            'applicability_criteria' => ['sometimes', 'nullable', 'string'],
+            'status' => ['sometimes', 'required', Rule::in(array_map(fn ($case) => $case->value, TestingFrequency::cases()))],
+            'last_test_date' => ['sometimes', 'nullable', 'date'],
+            'next_test_due' => ['sometimes', 'nullable', 'date', 'after_or_equal:last_test_date'],
         ];
     }
 }

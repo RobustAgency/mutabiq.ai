@@ -24,14 +24,9 @@ class SearchFrameworkRequest extends FormRequest
         return [
             'name' => ['string', 'min:2'],
             'status' => ['string', 'nullable'],
+            'effective_date_from' => ['date', 'nullable'],
+            'effective_date_to' => ['date', 'nullable'],
             'per_page' => ['integer', 'min:1'],
-            'type' => ['string', 'nullable'],
-            'authority_publisher' => ['string', 'nullable'],
-            'binding_level' => ['string', 'nullable'],
-            'sector_applicability' => ['string', 'nullable'],
-            'risk_class_coverage' => ['string', 'nullable'],
-            'certification_attestation' => ['string', 'nullable'],
-            'assessment_mode' => ['string', 'nullable'],
         ];
     }
 }

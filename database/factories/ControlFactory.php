@@ -3,6 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Enums\Control\Status;
+use App\Enums\Control\TestingMethod;
+use App\Enums\Control\TestingFrequency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,10 +23,15 @@ class ControlFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => $this->faker->sentence(6, true),
-            'code' => 'CTL-' . strtoupper($this->faker->bothify('###??##')),
-            'question' => $this->faker->optional()->sentence(10, true),
-            'summary' => $this->faker->optional()->paragraph(2, true),
-            'description' => $this->faker->optional()->paragraphs(3, true),
+            'reference' => $this->faker->bothify('REF-###-???'),
+            'objective' => $this->faker->paragraphs(2, true),
+            'testing_method' => $this->faker->randomElement(TestingMethod::cases())->value,
+            'testing_frequency' => $this->faker->randomElement(TestingFrequency::cases())->value,
+            'evidence_expectations' => $this->faker->paragraphs(2, true),
+            'applicability_criteria' => $this->faker->paragraphs(2, true),
+            'status' => $this->faker->randomElement(Status::cases())->value,
+            'last_test_date' => $this->faker->date(),
+            'next_test_due' => $this->faker->date(),
         ];
     }
 }
