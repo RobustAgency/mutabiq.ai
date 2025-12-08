@@ -42,6 +42,7 @@ use App\Http\Controllers\IncidentRootCauseAnalysisController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
 use App\Http\Controllers\User\PdpProcessingRegisterController;
 use App\Http\Controllers\User\DatasetSubjectPopulationController;
+use App\Http\Controllers\User\RecordOfProcessingActivityController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -326,4 +327,13 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('{kriIndicator}', 'update');
         Route::delete('{kriIndicator}', 'destroy');
     });
+
+    Route::prefix('record-of-processing-activities')->controller(RecordOfProcessingActivityController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{recordOfProcessingActivity}', 'show');
+        Route::post('{recordOfProcessingActivity}', 'update');
+        Route::delete('{recordOfProcessingActivity}', 'destroy');
+    });
+
 });

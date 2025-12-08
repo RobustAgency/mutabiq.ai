@@ -7698,6 +7698,232 @@
 				}
 			],
 			"description": "Manage tags for categorizing and organizing resources"
+		},
+		{
+			"name": "Record of Processing Activities",
+			"item": [
+				{
+					"name": "List Processing Activities",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/record-of-processing-activities?status=active&owner_team=it&contains_pii=true&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"record-of-processing-activities"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"disabled": true,
+									"description": "Search by activity name, code, or purpose"
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"disabled": true,
+									"description": "Filter by status: draft, active, under_review, archived"
+								},
+								{
+									"key": "owner_team",
+									"value": "it",
+									"disabled": true,
+									"description": "Filter by owner team: hr, finance, risk, ai/ml, it, marketing, operations, legal, sales"
+								},
+								{
+									"key": "contains_pii",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by PII status: true or false"
+								},
+								{
+									"key": "sort_by",
+									"value": "created_at",
+									"disabled": true,
+									"description": "Sort by field (default: created_at)"
+								},
+								{
+									"key": "sort_direction",
+									"value": "desc",
+									"disabled": true,
+									"description": "Sort direction: asc or desc (default: desc)"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of results per page (default: 15, max: 100)"
+								}
+							]
+						},
+						"description": "Get paginated list of Record of Processing Activities (ROPA) with optional filtering and sorting.\n\n**Optional Query Parameters:**\n- `search` (string): Search term for activity name, code, or purpose\n- `status` (enum): Filter by status - draft, active, under_review, archived\n- `owner_team` (enum): Filter by owner team - hr, finance, risk, ai/ml, it, marketing, operations, legal, sales\n- `contains_pii` (boolean): Filter by PII status\n- `sort_by` (string): Field to sort by (default: created_at)\n- `sort_direction` (enum): asc or desc (default: desc)\n- `per_page` (integer): Results per page (default: 15, max: 100)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Processing Activity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_code\": \"RPA-2025-001\",\n  \"activity_name\": \"Customer Data Analytics Processing\",\n  \"purpose\": \"Analyze customer behavior for service improvement\",\n  \"detailed_purpose\": \"Process customer transaction and interaction data to identify patterns for improving service offerings and customer experience\",\n  \"owner_team\": \"it\",\n  \"controller_role\": \"controller\",\n  \"data_subject_categories\": [\"customers\", \"prospects\"],\n  \"data_categories\": [\"contact\", \"financial\", \"behavioral\"],\n  \"contains_pii\": true,\n  \"consent_required\": true,\n  \"lawful_basis\": \"consent\",\n  \"legitimate_interest_assessment\": \"Balancing test completed. Processing necessary for service improvement with minimal impact on data subjects.\",\n  \"consent_coverage_percent\": 95,\n  \"dpia_required\": true,\n  \"dpia_status\": \"completed\",\n  \"dpia_id\": \"dpia-2025-001\",\n  \"retention_period\": \"2 years\",\n  \"retention_justification\": \"Required for service improvement analysis and compliance auditing\",\n  \"has_international_transfers\": true,\n  \"applicable_jurisdictions\": [\"eu\", \"uk\", \"us_ca\"],\n  \"security_measures\": \"AES-256 encryption at rest, TLS 1.3 in transit, role-based access control, audit logging\",\n  \"internal_recipients\": [\"Analytics Team\", \"Product Team\"],\n  \"external_recipients\": [\"Cloud Provider (AWS)\"],\n  \"status\": \"active\",\n  \"last_reviewed_date\": \"2024-11-01\",\n  \"next_review_date\": \"2025-05-01\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/record-of-processing-activities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"record-of-processing-activities"
+							]
+						},
+						"description": "Create a new Record of Processing Activity (ROPA) entry for GDPR/privacy compliance.\n\n**Required Fields:**\n- `activity_code` (string, max 255, unique): Unique activity identifier\n- `activity_name` (string, max 255): Name of the processing activity\n- `purpose` (string): Purpose of data processing\n- `owner_team` (enum): Team responsible - hr, finance, risk, ai/ml, it, marketing, operations, legal, sales\n- `controller_role` (enum): Role in processing - controller, processor, joint_controller\n- `data_subject_categories` (array, min 1): Categories of data subjects - customers, employees, prospects, vendors, students, children, patients\n- `data_categories` (array, min 1): Types of data processed - name, contact, identifier, financial, health, biometric, behavioral, sensitive, children, location\n- `contains_pii` (boolean): Whether processing contains PII\n- `consent_required` (boolean): Whether explicit consent is required\n- `lawful_basis` (enum): Legal basis - consent, contract, legitimate_interest, legal_obligation, public_task, vital_interest\n- `consent_coverage_percent` (integer, 0-100): Percentage of subjects with consent\n- `dpia_required` (boolean): Whether DPIA (Data Protection Impact Assessment) is required\n- `dpia_status` (enum): DPIA status - required, in_progress, completed, approved, rejected\n- `retention_period` (string, max 255): How long data is retained (e.g., '2 years')\n- `retention_justification` (string): Why this retention period is necessary\n- `has_international_transfers` (boolean): Whether data is transferred internationally\n- `applicable_jurisdictions` (array, min 1): Applicable jurisdictions - eu, uae, uk, ksa, difc, us_ca, other\n- `security_measures` (string): Description of security measures\n- `internal_recipients` (array): Internal teams/departments receiving data\n- `external_recipients` (array): External organizations receiving data\n- `status` (enum): Current status - draft, active, under_review, archived\n\n**Optional Fields:**\n- `detailed_purpose` (string): Detailed explanation of the purpose\n- `legitimate_interest_assessment` (string): Assessment of legitimate interest\n- `dpia_id` (string, UUID): ID of the DPIA document\n- `last_reviewed_date` (date): Last review date\n- `next_review_date` (date): Scheduled next review date\n\n**Owner Team Enum Values:**\n- `hr` - Human Resources\n- `finance` - Finance Department\n- `risk` - Risk Management\n- `ai/ml` - AI/Machine Learning\n- `it` - Information Technology\n- `marketing` - Marketing\n- `operations` - Operations\n- `legal` - Legal Department\n- `sales` - Sales Department\n\n**Controller Role Enum Values:**\n- `controller` - Data Controller\n- `processor` - Data Processor\n- `joint_controller` - Joint Data Controller\n\n**Data Subject Category Enum Values:**\n- `customers` - Customers\n- `employees` - Employees\n- `prospects` - Prospects/Leads\n- `vendors` - Vendors/Suppliers\n- `students` - Students\n- `children` - Children\n- `patients` - Patients\n\n**Data Category Enum Values:**\n- `name` - Names\n- `contact` - Contact Information (email, phone)\n- `identifier` - Identifiers (ID numbers, social security)\n- `financial` - Financial Data (payment methods, transactions)\n- `health` - Health Information\n- `biometric` - Biometric Data (fingerprints, facial recognition)\n- `behavioral` - Behavioral Data (browsing history, preferences)\n- `sensitive` - Sensitive Personal Data\n- `children` - Children's Data\n- `location` - Location Data\n\n**Lawful Basis Enum Values:**\n- `consent` - Explicit consent from data subject\n- `contract` - Processing necessary for contract performance\n- `legitimate_interest` - Legitimate interests of the controller\n- `legal_obligation` - Legal or regulatory obligation\n- `public_task` - Public task or official authority\n- `vital_interest` - Vital interests of data subject\n\n**DPIA Status Enum Values:**\n- `required` - DPIA required\n- `in_progress` - DPIA currently in progress\n- `completed` - DPIA completed\n- `approved` - DPIA approved by authority\n- `rejected` - DPIA rejected\n\n**Applicable Jurisdiction Enum Values:**\n- `eu` - European Union (GDPR)\n- `uae` - United Arab Emirates\n- `uk` - United Kingdom (UK GDPR)\n- `ksa` - Kingdom of Saudi Arabia\n- `difc` - Dubai International Financial Centre\n- `us_ca` - California, USA (CCPA)\n- `other` - Other jurisdictions\n\n**Status Enum Values:**\n- `draft` - Draft/Not yet active\n- `active` - Actively processing\n- `under_review` - Under compliance review\n- `archived` - Archived/No longer in use\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Processing Activity Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/record-of-processing-activities/:recordOfProcessingActivity",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"record-of-processing-activities",
+								":recordOfProcessingActivity"
+							],
+							"variable": [
+								{
+									"key": "recordOfProcessingActivity",
+									"value": "1",
+									"description": "Record of Processing Activity ID"
+								}
+							]
+						},
+						"description": "Get details of a specific Record of Processing Activity.\n\n**Path Parameters:**\n- `recordOfProcessingActivity` (integer): Record of Processing Activity ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Processing Activity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"under_review\",\n  \"dpia_status\": \"approved\",\n  \"next_review_date\": \"2025-06-01\",\n  \"security_measures\": \"AES-256 encryption at rest, TLS 1.3 in transit, role-based access control, audit logging, multi-factor authentication\",\n  \"last_reviewed_date\": \"2024-12-05\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/record-of-processing-activities/:recordOfProcessingActivity",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"record-of-processing-activities",
+								":recordOfProcessingActivity"
+							],
+							"variable": [
+								{
+									"key": "recordOfProcessingActivity",
+									"value": "1",
+									"description": "Record of Processing Activity ID"
+								}
+							]
+						},
+						"description": "Update an existing Record of Processing Activity. All fields are optional for partial updates.\n\n**Path Parameters:**\n- `recordOfProcessingActivity` (integer): Record of Processing Activity ID\n\n**Updatable Fields:**\nAll fields from the Create endpoint are updatable using the same enum values and validation rules.\n\n**Common Update Scenarios:**\n- Updating review status and dates\n- Changing data retention policies\n- Adding new data recipients\n- Updating security measures\n- Changing processing status\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Processing Activity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/record-of-processing-activities/:recordOfProcessingActivity",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"record-of-processing-activities",
+								":recordOfProcessingActivity"
+							],
+							"variable": [
+								{
+									"key": "recordOfProcessingActivity",
+									"value": "1",
+									"description": "Record of Processing Activity ID"
+								}
+							]
+						},
+						"description": "Delete a Record of Processing Activity.\n\n**Path Parameters:**\n- `recordOfProcessingActivity` (integer): Record of Processing Activity ID\n\n**Note:** Ensure data is archived before deletion for compliance auditing purposes.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage Records of Processing Activities (ROPA) for GDPR/privacy compliance including data processing details, legal basis, data recipients, retention periods, and data protection impact assessments"
 		}
 	],
 	"auth": {
