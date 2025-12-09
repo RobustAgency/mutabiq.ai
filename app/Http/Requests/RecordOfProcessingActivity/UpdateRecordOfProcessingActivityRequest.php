@@ -54,6 +54,13 @@ class UpdateRecordOfProcessingActivityRequest extends FormRequest
             'has_international_transfers' => ['sometimes', 'boolean'],
             'applicable_jurisdictions' => ['sometimes', 'array', 'min:1'],
             'applicable_jurisdictions.*' => ['string', Rule::enum(ApplicableJurisdiction::class)],
+
+            'linked_dataset_ids' => ['sometimes', 'nullable', 'array', 'distinct'],
+            'linked_dataset_ids.*' => ['integer', 'exists:datasets,id'],
+
+            'linked_ai_models_ids' => ['sometimes', 'nullable', 'array', 'distinct'],
+            'linked_ai_models_ids.*' => ['integer', 'exists:ai_models,id'],
+
             'security_measures' => ['sometimes', 'string'],
             'internal_recipients' => ['sometimes', 'array'],
             'internal_recipients.*' => ['string', 'max:255'],

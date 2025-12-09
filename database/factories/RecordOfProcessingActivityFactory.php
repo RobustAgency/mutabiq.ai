@@ -57,6 +57,12 @@ class RecordOfProcessingActivityFactory extends Factory
             'applicable_jurisdictions' => [
                 $this->faker->randomElement(array_map(fn ($case) => $case->value, ApplicableJurisdiction::cases())),
             ],
+            'linked_dataset_ids' => function () {
+                return \App\Models\Dataset::inRandomOrder()->take($this->faker->numberBetween(0, 3))->pluck('id')->toArray();
+            },
+            'linked_ai_models_ids' => function () {
+                return \App\Models\AIModel::inRandomOrder()->take($this->faker->numberBetween(0, 2))->pluck('id')->toArray();
+            },
             'security_measures' => $this->faker->sentence(),
             'internal_recipients' => [
                 $this->faker->randomElement(['IT Department', 'HR Department', 'Finance Team']),

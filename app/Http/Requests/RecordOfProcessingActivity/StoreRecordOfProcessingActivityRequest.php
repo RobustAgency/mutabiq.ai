@@ -54,6 +54,13 @@ class StoreRecordOfProcessingActivityRequest extends FormRequest
             'has_international_transfers' => ['nullable', 'boolean'],
             'applicable_jurisdictions' => ['required', 'array', 'min:1'],
             'applicable_jurisdictions.*' => ['string', Rule::enum(ApplicableJurisdiction::class)],
+
+            'linked_dataset_ids' => ['nullable', 'array', 'distinct'],
+            'linked_dataset_ids.*' => ['integer', 'exists:datasets,id'],
+
+            'linked_ai_models_ids' => ['nullable', 'array', 'distinct'],
+            'linked_ai_models_ids.*' => ['integer', 'exists:ai_models,id'],
+
             'security_measures' => ['required', 'string'],
             'internal_recipients' => ['nullable', 'array'],
             'internal_recipients.*' => ['nullable', 'max:255'],

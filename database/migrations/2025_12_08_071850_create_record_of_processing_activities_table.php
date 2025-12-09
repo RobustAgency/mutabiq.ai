@@ -33,6 +33,8 @@ return new class extends Migration
             $table->text('retention_justification');
             $table->boolean('has_international_transfers')->nullable();
             $table->json('applicable_jurisdictions');
+            $table->json('linked_dataset_ids')->nullable();
+            $table->json('linked_ai_models_ids')->nullable();
             $table->text('security_measures');
             $table->json('internal_recipients')->nullable();
             $table->json('external_recipients')->nullable();
