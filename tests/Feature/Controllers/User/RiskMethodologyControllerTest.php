@@ -6,7 +6,9 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Organization;
 use App\Models\RiskMethodology;
+use App\Enums\RiskMethodology\ImpactScale;
 use Illuminate\Foundation\Testing\WithFaker;
+use App\Enums\RiskMethodology\LikelihoodScale;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class RiskMethodologyControllerTest extends TestCase
@@ -84,8 +86,8 @@ class RiskMethodologyControllerTest extends TestCase
     {
         $data = [
             'name' => 'New Risk Methodology',
-            'likelihood_scale' => ['rare', 'possible', 'likely'],
-            'impact_scale' => ['minor', 'moderate', 'major'],
+            'likelihood_scale' => LikelihoodScale::RARE->value,
+            'impact_scale' => ImpactScale::MINOR->value,
             'matrix_rule' => [
                 'rare' => ['minor' => 'low', 'moderate' => 'low', 'major' => 'medium'],
                 'possible' => ['minor' => 'low', 'moderate' => 'medium', 'major' => 'high'],
@@ -256,8 +258,8 @@ class RiskMethodologyControllerTest extends TestCase
     {
         $data = [
             'name' => 'Test Methodology',
-            'likelihood_scale' => ['low', 'medium', 'high'],
-            'impact_scale' => ['low', 'medium', 'high'],
+            'likelihood_scale' => LikelihoodScale::POSSIBLE->value,
+            'impact_scale' => ImpactScale::MINOR->value,
             'aggregation_logic' => 'mean',
             'matrix_rule' => [
                 'low' => ['low' => 'low', 'medium' => 'medium', 'high' => 'high'],

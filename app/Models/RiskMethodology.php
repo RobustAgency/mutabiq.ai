@@ -27,8 +27,6 @@ class RiskMethodology extends Model
     ];
 
     protected $casts = [
-        'likelihood_scale' => 'array',
-        'impact_scale' => 'array',
         'matrix_rule' => 'array',
         'effective_from' => 'date',
         'effective_to' => 'date',

@@ -2,19 +2,15 @@
 
 namespace Database\Factories;
 
-use App\Enums\AiRiskRegister\ReviewCadence;
-use App\Enums\AiRiskRegister\RiskCategory;
-use App\Enums\AiRiskRegister\RiskDecision;
+use App\Models\AiModel;
+use App\Models\Stakeholder;
+use App\Models\Organization;
+use App\Models\RiskMethodology;
 use App\Enums\AiRiskRegister\RiskLevel;
 use App\Enums\AiRiskRegister\RiskStatus;
-use App\Models\AiIncident;
-use App\Models\AiModel;
-use App\Models\AiModelVersion;
-use App\Models\CorrectivePreventiveAction;
-use App\Models\Organization;
-use App\Models\Stakeholder;
-use App\Models\UseCase;
-use App\Models\User;
+use App\Enums\AiRiskRegister\RiskCategory;
+use App\Enums\AiRiskRegister\RiskDecision;
+use App\Enums\AiRiskRegister\ReviewCadence;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -31,8 +27,9 @@ class AiRiskRegisterFactory extends Factory
     {
         return [
             'organization_id' => Organization::factory(),
+            'risk_methodology_id' => RiskMethodology::factory(),
             'title' => $this->faker->sentence(),
-            'risk_category' => $this->faker->randomElement(array_map(fn($c) => $c->value, RiskCategory::cases())),
+            'risk_category' => $this->faker->randomElement(array_map(fn ($c) => $c->value, RiskCategory::cases())),
             'ai_model_id' => AiModel::factory(),
             'ai_model_version_id' => null,
             'use_case_id' => null,
@@ -42,12 +39,12 @@ class AiRiskRegisterFactory extends Factory
             'impact_code' => $this->faker->randomElement(['I1', 'I2', 'I3', 'I4', 'I5']),
             'inherent_score' => $this->faker->randomElement(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']),
             'residual_score' => $this->faker->randomElement(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']),
-            'risk_level' => $this->faker->randomElement(array_map(fn($c) => $c->value, RiskLevel::cases())),
-            'decision' => $this->faker->randomElement(array_map(fn($c) => $c->value, RiskDecision::cases())),
+            'risk_level' => $this->faker->randomElement(array_map(fn ($c) => $c->value, RiskLevel::cases())),
+            'decision' => $this->faker->randomElement(array_map(fn ($c) => $c->value, RiskDecision::cases())),
             'risk_owner' => Stakeholder::factory(),
-            'review_cadence' => $this->faker->randomElement(array_map(fn($c) => $c->value, ReviewCadence::cases())),
+            'review_cadence' => $this->faker->randomElement(array_map(fn ($c) => $c->value, ReviewCadence::cases())),
             'next_review_due' => $this->faker->dateTimeBetween('now', '+1 year'),
-            'status' => $this->faker->randomElement(array_map(fn($c) => $c->value, RiskStatus::cases())),
+            'status' => $this->faker->randomElement(array_map(fn ($c) => $c->value, RiskStatus::cases())),
             'linked_assessment_id' => null,
             'linked_incident_id' => null,
             'linked_capa_id' => null,

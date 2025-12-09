@@ -8,6 +8,7 @@ use App\Models\AiModel;
 use App\Models\Stakeholder;
 use App\Models\Organization;
 use App\Models\AiRiskRegister;
+use App\Models\RiskMethodology;
 use App\Enums\AiRiskRegister\RiskLevel;
 use App\Enums\AiRiskRegister\RiskStatus;
 use App\Enums\AiRiskRegister\RiskCategory;
@@ -138,6 +139,7 @@ class AiRiskRegisterControllerTest extends TestCase
         ]);
 
         $data = [
+            'risk_methodology_id' => RiskMethodology::factory()->create()->id,
             'title' => 'Model Bias Risk',
             'risk_category' => RiskCategory::BIAS_FAIRNESS->value,
             'ai_model_id' => $aiModel->id,
