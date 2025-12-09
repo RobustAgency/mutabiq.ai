@@ -6,6 +6,8 @@ use App\Clients\SupabaseClient;
 use App\Services\Auth\SupabaseGuard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use App\Models\RecordOfProcessingActivity;
+use App\Observers\RecordOfProcessingActivityObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,5 +35,7 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(SupabaseClient::class)
             );
         });
+
+        RecordOfProcessingActivity::observe(RecordOfProcessingActivityObserver::class);
     }
 }
