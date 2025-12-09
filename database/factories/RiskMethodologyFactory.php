@@ -4,6 +4,8 @@ namespace Database\Factories;
 
 use App\Models\Organization;
 use App\Models\RiskMethodology;
+use App\Enums\RiskMethodology\ImpactScale;
+use App\Enums\RiskMethodology\LikelihoodScale;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RiskMethodologyFactory extends Factory
@@ -23,8 +25,8 @@ class RiskMethodologyFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'name' => $this->faker->words(3, true),
-            'likelihood_scale' => ['rare', 'possible', 'likely'],
-            'impact_scale' => ['minor', 'moderate', 'major'],
+            'likelihood_scale' => $this->faker->randomElement(array_map(fn ($c) => $c->value, LikelihoodScale::cases())),
+            'impact_scale' => $this->faker->randomElement(array_map(fn ($c) => $c->value, ImpactScale::cases())),
             'matrix_rule' => ['low', 'medium', 'high'],
             'acceptance_thresholds' => 'hola',
             'aggregation_logic' => 'mean',
