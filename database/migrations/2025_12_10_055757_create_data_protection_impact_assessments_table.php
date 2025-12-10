@@ -53,7 +53,7 @@ return new class extends Migration
             $table->json('applicable_jurisdictions');
             $table->foreignIdFor(User::class, 'created_by')->constrained()->onDelete('cascade');
             $table->foreignIdFor(User::class, 'updated_by')->constrained()->onDelete('cascade');
-            $table->integer('version')->default(1);
+            $table->integer('version')->nullable();
 
             $table->timestamps();
         });
