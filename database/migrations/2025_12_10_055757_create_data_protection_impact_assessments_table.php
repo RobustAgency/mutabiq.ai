@@ -18,7 +18,7 @@ return new class extends Migration
             $table->id();
             $table->string('dpia_code')->unique();
             $table->string('dpia_name');
-            $table->foreignIdFor(RecordOfProcessingActivity::class, 'ropo_id')->constrained()->onDelete('cascade');
+            $table->foreignIdFor(RecordOfProcessingActivity::class, 'ropa_id')->constrained()->onDelete('cascade');
             $table->foreignIdFor(AiModel::class, 'linked_ai_model_id')->nullable()->constrained()->onDelete('set null');
             $table->string('linked_asset_type');
             $table->boolean('automated_trigger');

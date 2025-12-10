@@ -31,7 +31,7 @@ class StoreDataProtectionImpactAssessmentRequest extends FormRequest
     {
         return [
             'dpia_name' => ['required', 'string', 'max:255'],
-            'ropo_id' => ['required', 'integer', 'exists:record_of_processing_activities,id'],
+            'ropa_id' => ['required', 'integer', 'exists:record_of_processing_activities,id'],
             'linked_ai_model_id' => ['nullable', 'integer', 'exists:ai_models,id'],
             'linked_asset_type' => ['required', Rule::enum(LinkedAssetsType::class)],
             'automated_trigger' => ['required', 'boolean'],

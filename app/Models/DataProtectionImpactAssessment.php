@@ -3,13 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DataProtectionImpactAssessment extends Model
 {
+    /** @use HasFactory<\Database\Factories\DataProtectionImpactAssessmentFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'dpia_code',
         'dpia_name',
-        'ropo_id',
+        'ropa_id',
         'linked_ai_model_id',
         'linked_asset_type',
         'automated_trigger',

@@ -17,7 +17,7 @@ class DataProtectionImpactAssessmentRepository
         $query = DataProtectionImpactAssessment::query();
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
-            $query->where('name', 'like', '%'.$filters['name'].'%');
+            $query->where('dpia_name', 'like', '%'.$filters['name'].'%');
         });
 
         $query->when(! empty($filters['status']), function ($query) use ($filters) {
