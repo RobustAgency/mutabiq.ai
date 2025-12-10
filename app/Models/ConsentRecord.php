@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ConsentRecord extends Model
 {
+    /** @use HasFactory<\Database\Factories\ConsentRecordFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'consent_code',
         'subject_key',

@@ -16,9 +16,29 @@ class ConsentRecordRepository
     {
         $query = ConsentRecord::query();
 
+        $query->when(! empty($filters['subject_realm']), function ($query) use ($filters) {
+            $query->where('subject_realm', $filters['subject_realm']);
+        });
+
+        $query->when(! empty($filters['status']), function ($query) use ($filters) {
+            $query->where('status', $filters['status']);
+        });
+
+        $query->when(! empty($filters['lifecycle_stage']), function ($query) use ($filters) {
+            $query->where('lifecycle_stage', $filters['lifecycle_stage']);
+        });
+
+        $query->when(! empty($filters['language']), function ($query) use ($filters) {
+            $query->where('language', $filters['language']);
+        });
+
+        $query->when(! empty($filters['jurisdiction']), function ($query) use ($filters) {
+            $query->where('jurisdiction', $filters['jurisdiction']);
+        });
+
         $perPage = $filters['per_page'] ?? 15;
 
-        return $query->paginate($perPage);
+        return $query->latest()->paginate($perPage);
     }
 
     /**

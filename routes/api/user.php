@@ -27,6 +27,7 @@ use App\Http\Controllers\User\UserConsentController;
 use App\Http\Controllers\User\ConsentScopeController;
 use App\Http\Controllers\User\KriIndicatorController;
 use App\Http\Controllers\User\OrganizationController;
+use App\Http\Controllers\User\ConsentRecordController;
 use App\Http\Controllers\User\AiModelDatasetController;
 use App\Http\Controllers\User\AiModelUseCaseController;
 use App\Http\Controllers\User\AiModelVersionController;
@@ -334,6 +335,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{recordOfProcessingActivity}', 'show');
         Route::post('{recordOfProcessingActivity}', 'update');
         Route::delete('{recordOfProcessingActivity}', 'destroy');
+    });
+
+    Route::prefix('consent-records')->controller(ConsentRecordController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{consentRecord}', 'show');
+        Route::post('{consentRecord}', 'update');
+        Route::delete('{consentRecord}', 'destroy');
     });
 
 });
