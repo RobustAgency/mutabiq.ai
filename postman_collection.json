@@ -7924,6 +7924,247 @@
 				}
 			],
 			"description": "Manage Records of Processing Activities (ROPA) for GDPR/privacy compliance including data processing details, legal basis, data recipients, retention periods, and data protection impact assessments"
+		},
+		{
+			"name": "Consent Records",
+			"item": [
+				{
+					"name": "List Consent Records",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-records?status=active&language=en&jurisdiction=eu&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-records"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by consent code, subject key, or purpose",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"description": "Filter by status (draft, active, under_review, archived)"
+								},
+								{
+									"key": "lifecycle_stage",
+									"value": "",
+									"description": "Filter by lifecycle stage (development, design, validation, deployment, monitoring, retired)",
+									"disabled": true
+								},
+								{
+									"key": "language",
+									"value": "en",
+									"description": "Filter by language code"
+								},
+								{
+									"key": "jurisdiction",
+									"value": "eu",
+									"description": "Filter by jurisdiction"
+								},
+								{
+									"key": "record_of_processing_activity_id",
+									"value": "",
+									"description": "Filter by related ROPA ID",
+									"disabled": true
+								},
+								{
+									"key": "can_withdraw",
+									"value": "",
+									"description": "Filter by withdrawal capability (true/false)",
+									"disabled": true
+								},
+								{
+									"key": "sort_by",
+									"value": "",
+									"description": "Sort by field (id, consent_code, subject_key, status, lifecycle_stage, created_at, updated_at)",
+									"disabled": true
+								},
+								{
+									"key": "sort_direction",
+									"value": "",
+									"description": "Sort direction (asc/desc)",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Records per page (default 15)"
+								}
+							]
+						},
+						"description": "List all consent records with optional filtering and pagination.\n\n**Query Parameters:**\n- `search` (string): Search across consent code, subject key, and purpose\n- `status` (enum): Filter by status - draft, active, under_review, archived\n- `lifecycle_stage` (enum): Filter by lifecycle - development, design, validation, deployment, monitoring, retired\n- `language` (enum): Filter by language - en, ar, es, fr, de, zh\n- `jurisdiction` (enum): Filter by jurisdiction - eu, uae, uk, ksa, difc, us_ca, other\n- `record_of_processing_activity_id` (integer): Filter by related ROPA\n- `can_withdraw` (boolean): Filter by withdrawal capability\n- `sort_by` (string): Field to sort by\n- `sort_direction` (string): asc or desc\n- `per_page` (integer): Items per page (default 15, max 100)\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Consent Record",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject_key\": \"subject-12345\",\n  \"subject_realm\": \"individual\",\n  \"subject_age_group\": \"25-65\",\n  \"purpose\": \"marketing\",\n  \"record_of_processing_activity_id\": 1,\n  \"status\": \"active\",\n  \"lifecycle_stage\": \"deployment\",\n  \"consent_version\": 1,\n  \"consent_text\": \"I consent to the processing of my personal data for marketing purposes\",\n  \"consent_method\": \"online\",\n  \"effective_from\": \"2024-12-10\",\n  \"effective_to\": \"2025-12-10\",\n  \"last_refreshed_date\": \"2024-12-10\",\n  \"source_system\": \"web_portal\",\n  \"evidence_uri\": \"https://example.com/consent/evidence\",\n  \"ip_address\": \"192.168.1.100\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\",\n  \"language\": \"en\",\n  \"jurisdiction\": \"eu\",\n  \"data_categories\": [\"name\", \"email\", \"phone\", \"behavioral\"],\n  \"can_withdraw\": true,\n  \"withdrawal_method\": \"email\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/consent-records",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-records"
+							]
+						},
+						"description": "Create a new consent record for tracking data subject consent.\n\n**Required Fields:**\n- `subject_key` (string, max 255): Unique identifier for the data subject\n- `subject_realm` (enum): Subject type - individual, organization\n- `purpose` (enum): Consent purpose - marketing, analytics, service_improvement, research, compliance\n- `record_of_processing_activity_id` (integer): ID of related ROPA\n- `status` (enum): Status - draft, active, under_review, archived\n- `lifecycle_stage` (enum): Lifecycle - development, design, validation, deployment, monitoring, retired\n- `consent_version` (integer, min 1): Version number\n- `consent_text` (string): Full consent text\n- `consent_method` (enum): How consent was obtained - online, offline, api, email\n- `effective_from` (date): Consent effective start date\n- `source_system` (enum): Source system - web_portal, mobile_app, api, backend_system\n- `ip_address` (string): IPv4 or IPv6 address\n- `user_agent` (string): User agent string\n- `language` (enum): Language - en, ar, es, fr, de, zh\n- `jurisdiction` (enum): Jurisdiction - eu, uae, uk, ksa, difc, us_ca, other\n- `data_categories` (array, min 1): Data types included\n- `can_withdraw` (boolean): Whether withdrawal is allowed\n\n**Optional Fields:**\n- `subject_age_group` (string): Age group (0-13, 13-18, 18-25, 25-65, 65+)\n- `effective_to` (date): Consent expiration date\n- `last_refreshed_date` (date): Last refresh date\n- `evidence_uri` (string): URL to consent evidence\n- `withdrawal_method` (string): How to withdraw - email, phone, online_form, api\n\n**Subject Realm Enum:**\n- `individual` - Individual data subject\n- `organization` - Organization/corporate data subject\n\n**Purpose Enum:**\n- `marketing` - Marketing and promotional activities\n- `analytics` - Data analytics and insights\n- `service_improvement` - Service optimization\n- `research` - Research purposes\n- `compliance` - Regulatory compliance\n\n**Status Enum:**\n- `draft` - Draft/Not yet active\n- `active` - Actively in use\n- `under_review` - Under compliance review\n- `archived` - Archived/No longer in use\n\n**Lifecycle Stage Enum:**\n- `development` - Development phase\n- `design` - Design phase\n- `validation` - Validation phase\n- `deployment` - Deployed\n- `monitoring` - Active monitoring\n- `retired` - Retired/Decommissioned\n\n**Consent Method Enum:**\n- `online` - Online consent form\n- `offline` - Paper/offline consent\n- `api` - API submission\n- `email` - Email consent\n\n**Language Enum:**\n- `en` - English\n- `ar` - Arabic\n- `es` - Spanish\n- `fr` - French\n- `de` - German\n- `zh` - Chinese\n\n**Jurisdiction Enum:**\n- `eu` - European Union (GDPR)\n- `uae` - United Arab Emirates\n- `uk` - United Kingdom\n- `ksa` - Kingdom of Saudi Arabia\n- `difc` - Dubai International Financial Centre\n- `us_ca` - California, USA (CCPA)\n- `other` - Other jurisdictions\n\n**Source System Enum:**\n- `web_portal` - Web portal\n- `mobile_app` - Mobile application\n- `api` - API submission\n- `backend_system` - Backend system\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Consent Record Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-records/:consentRecord",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-records",
+								":consentRecord"
+							],
+							"variable": [
+								{
+									"key": "consentRecord",
+									"value": "1",
+									"description": "Consent Record ID"
+								}
+							]
+						},
+						"description": "Get details of a specific consent record.\n\n**Path Parameters:**\n- `consentRecord` (integer): Consent Record ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Consent Record",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"under_review\",\n  \"lifecycle_stage\": \"monitoring\",\n  \"last_refreshed_date\": \"2024-12-10\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/consent-records/:consentRecord",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-records",
+								":consentRecord"
+							],
+							"variable": [
+								{
+									"key": "consentRecord",
+									"value": "1",
+									"description": "Consent Record ID"
+								}
+							]
+						},
+						"description": "Update a consent record with partial data (only fields provided will be updated).\n\n**Path Parameters:**\n- `consentRecord` (integer): Consent Record ID\n\n**All Fields Optional:** Any field from the Create endpoint can be updated\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Consent Record",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/consent-records/:consentRecord",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"consent-records",
+								":consentRecord"
+							],
+							"variable": [
+								{
+									"key": "consentRecord",
+									"value": "1",
+									"description": "Consent Record ID"
+								}
+							]
+						},
+						"description": "Delete a consent record.\n\n**Path Parameters:**\n- `consentRecord` (integer): Consent Record ID\n\n**Note:** Ensure consent withdrawal is processed before deletion for compliance purposes.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage consent records for tracking data subject consent across different jurisdictions and consent methods with lifecycle management and withdrawal capabilities"
 		}
 	],
 	"auth": {
