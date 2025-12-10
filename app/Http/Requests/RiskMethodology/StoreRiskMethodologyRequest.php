@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests\RiskMethodology;
 
+use Illuminate\Validation\Rule;
+use App\Enums\RiskMethodology\ImpactScale;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\RiskMethodology\LikelihoodScale;
 
 class StoreRiskMethodologyRequest extends FormRequest
 {
@@ -15,8 +18,8 @@ class StoreRiskMethodologyRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'likelihood_scale' => ['required', 'array'],
-            'impact_scale' => ['required', 'array'],
+            'likelihood_scale' => ['required', Rule::enum(LikelihoodScale::class)],
+            'impact_scale' => ['required', Rule::enum(ImpactScale::class)],
             'matrix_rule' => ['required', 'array'],
             'acceptance_thresholds' => ['required', 'string'],
             'aggregation_logic' => ['nullable', 'string'],

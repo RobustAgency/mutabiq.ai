@@ -27,6 +27,7 @@ use App\Http\Controllers\User\UserConsentController;
 use App\Http\Controllers\User\ConsentScopeController;
 use App\Http\Controllers\User\KriIndicatorController;
 use App\Http\Controllers\User\OrganizationController;
+use App\Http\Controllers\User\ConsentRecordController;
 use App\Http\Controllers\User\AiModelDatasetController;
 use App\Http\Controllers\User\AiModelUseCaseController;
 use App\Http\Controllers\User\AiModelVersionController;
@@ -44,6 +45,7 @@ use App\Http\Controllers\User\PdpProcessingRegisterController;
 use App\Http\Controllers\User\DatasetSubjectPopulationController;
 use App\Http\Controllers\User\DataSubjectRequestAccessController;
 use App\Http\Controllers\User\RecordOfProcessingActivityController;
+use App\Http\Controllers\User\DataProtectionImpactAssessmentController;
 
 Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
@@ -343,6 +345,22 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{dataSubjectRequestAccess}', 'show');
         Route::post('{dataSubjectRequestAccess}', 'update');
         Route::delete('{dataSubjectRequestAccess}', 'destroy');
+    });
+
+    Route::prefix('consent-records')->controller(ConsentRecordController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{consentRecord}', 'show');
+        Route::post('{consentRecord}', 'update');
+        Route::delete('{consentRecord}', 'destroy');
+    });
+
+    Route::prefix('data-protection-impact-assessments')->controller(DataProtectionImpactAssessmentController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{dataProtectionImpactAssessment}', 'show');
+        Route::post('{dataProtectionImpactAssessment}', 'update');
+        Route::delete('{dataProtectionImpactAssessment}', 'destroy');
     });
 
 });

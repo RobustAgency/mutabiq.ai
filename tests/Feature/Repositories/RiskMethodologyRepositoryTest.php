@@ -113,8 +113,8 @@ class RiskMethodologyRepositoryTest extends TestCase
         $data = [
             'organization_id' => $organization->id,
             'name' => 'New Risk Methodology',
-            'likelihood_scale' => ['rare', 'possible', 'likely'],
-            'impact_scale' => ['minor', 'moderate', 'major'],
+            'likelihood_scale' => 'possible',
+            'impact_scale' => 'moderate',
             'matrix_rule' => [
                 'rare' => ['minor' => 'low', 'moderate' => 'low', 'major' => 'medium'],
                 'possible' => ['minor' => 'low', 'moderate' => 'medium', 'major' => 'high'],

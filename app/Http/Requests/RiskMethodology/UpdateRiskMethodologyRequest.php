@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests\RiskMethodology;
 
+use Illuminate\Validation\Rule;
+use App\Enums\RiskMethodology\ImpactScale;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\RiskMethodology\LikelihoodScale;
 
 class UpdateRiskMethodologyRequest extends FormRequest
 {
@@ -15,8 +18,8 @@ class UpdateRiskMethodologyRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'likelihood_scale' => ['sometimes', 'array'],
-            'impact_scale' => ['sometimes', 'array'],
+            'likelihood_scale' => ['sometimes', Rule::enum(LikelihoodScale::class)],
+            'impact_scale' => ['sometimes', Rule::enum(ImpactScale::class)],
             'matrix_rule' => ['sometimes', 'array'],
             'acceptance_thresholds' => ['sometimes', 'nullable', 'string'],
             'aggregation_logic' => ['sometimes', 'string'],
