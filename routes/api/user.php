@@ -43,6 +43,7 @@ use App\Http\Controllers\IncidentRootCauseAnalysisController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
 use App\Http\Controllers\User\PdpProcessingRegisterController;
 use App\Http\Controllers\User\DatasetSubjectPopulationController;
+use App\Http\Controllers\User\DataSubjectRequestAccessController;
 use App\Http\Controllers\User\RecordOfProcessingActivityController;
 use App\Http\Controllers\User\DataProtectionImpactAssessmentController;
 
@@ -336,6 +337,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{recordOfProcessingActivity}', 'show');
         Route::post('{recordOfProcessingActivity}', 'update');
         Route::delete('{recordOfProcessingActivity}', 'destroy');
+    });
+
+    Route::prefix('data-subject-request-accesses')->controller(DataSubjectRequestAccessController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{dataSubjectRequestAccess}', 'show');
+        Route::post('{dataSubjectRequestAccess}', 'update');
+        Route::delete('{dataSubjectRequestAccess}', 'destroy');
     });
 
     Route::prefix('consent-records')->controller(ConsentRecordController::class)->group(function () {

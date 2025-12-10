@@ -30,7 +30,6 @@ return new class extends Migration
             $table->date('submitted_date');
             $table->date('due_date');
             $table->date('extended_due_date');
-            // $table->integer('days_remaining');
             $table->date('response_date')->nullable();
             $table->date('completed_date')->nullable();
             $table->string('status');
