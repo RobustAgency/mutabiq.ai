@@ -51,6 +51,7 @@ class AiRiskRegisterControllerTest extends TestCase
                     'data' => [
                         '*' => [
                             'id',
+                            'risk_methodology_id',
                             'organization_id',
                             'title',
                             'risk_category',

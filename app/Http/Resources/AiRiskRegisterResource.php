@@ -21,6 +21,7 @@ class AiRiskRegisterResource extends JsonResource
         return [
             'id' => $this->id,
             'organization_id' => $this->organization_id,
+            'risk_methodology_id' => $this->risk_methodology_id,
             'title' => $this->title,
             'risk_category' => $this->risk_category,
             'ai_model_id' => $this->ai_model_id,

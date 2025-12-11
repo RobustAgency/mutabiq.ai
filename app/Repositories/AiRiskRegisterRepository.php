@@ -23,7 +23,7 @@ class AiRiskRegisterRepository
     /**
      * Create a new AI risk register entry.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function createAiRiskRegister(array $data): AiRiskRegister
     {
@@ -33,11 +33,12 @@ class AiRiskRegisterRepository
     /**
      * Update an existing AI risk register entry.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function updateAiRiskRegister(AiRiskRegister $aiRiskRegister, array $data): AiRiskRegister
     {
         $aiRiskRegister->update($data);
+
         return $aiRiskRegister->fresh();
     }
 
@@ -58,7 +59,8 @@ class AiRiskRegisterRepository
             'aiModel',
             'aiModelVersion',
             'useCase',
-            'riskOwner'
+            'riskOwner',
+            'aiRiskMethodology',
         ]);
     }
 }
