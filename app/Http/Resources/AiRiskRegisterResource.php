@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\AiRiskRegister;
 use Illuminate\Http\Request;
+use App\Models\AiRiskRegister;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -49,6 +49,7 @@ class AiRiskRegisterResource extends JsonResource
             'likelihood_label_snapshot' => $this->likelihood_label_snapshot,
             'impact_label_snapshot' => $this->impact_label_snapshot,
             'method_name_snapshot' => $this->method_name_snapshot,
+            'aiRiskMethodology' => new RiskMethodologyResource($this->whenLoaded('aiRiskMethodology')),
             'created_by' => $this->created_by,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
