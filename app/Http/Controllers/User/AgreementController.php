@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\Agreement;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AgreementResource;
+use App\Repositories\AgreementRepository;
 use App\Http\Requests\Agreement\StoreAgreementRequest;
 use App\Http\Requests\Agreement\UpdateAgreementRequest;
-use App\Http\Resources\AgreementResource;
-use App\Models\Agreement;
-use App\Repositories\AgreementRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AgreementController extends Controller
 {
@@ -54,6 +54,8 @@ class AgreementController extends Controller
      */
     public function show(Agreement $agreement): JsonResponse
     {
+        $agreement->load('vendor');
+
         return response()->json([
             'error' => false,
             'message' => 'Agreement retrieved successfully',
