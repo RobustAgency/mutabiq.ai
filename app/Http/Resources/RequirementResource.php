@@ -20,6 +20,7 @@ class RequirementResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'framework_id' => $this->framework_id,
             'reference' => $this->reference,
             'requirement_text' => $this->requirement_text,
             'category' => $this->category,
@@ -30,7 +31,7 @@ class RequirementResource extends JsonResource
             'superseded_by_req_id' => $this->superseded_by_req_id,
             'priority' => $this->priority,
             'tags' => $this->tags,
-            'frameworks' => FrameworkResource::collection($this->whenLoaded('frameworks')),
+            'framework' => new FrameworkResource($this->whenLoaded('framework')),
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];
