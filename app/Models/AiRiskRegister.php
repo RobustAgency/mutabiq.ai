@@ -12,6 +12,7 @@ class AiRiskRegister extends Model
     use HasFactory;
 
     protected $fillable = [
+        'risk_methodology_id',
         'organization_id',
         'title',
         'risk_category',
@@ -102,5 +103,15 @@ class AiRiskRegister extends Model
     public function getDisplayIdAttribute(): string
     {
         return 'ARR-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get the risk methodology associated with this risk.
+     *
+     * @return BelongsTo<RiskMethodology, $this>
+     */
+    public function aiRiskMethodology(): BelongsTo
+    {
+        return $this->belongsTo(RiskMethodology::class, 'risk_methodology_id');
     }
 }
