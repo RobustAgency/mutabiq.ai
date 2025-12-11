@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PrivacyIncident extends Model
 {
+    /** @use HasFactory<\Database\Factories\PrivacyIncidentFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'organization_id',
         'incident_code',
