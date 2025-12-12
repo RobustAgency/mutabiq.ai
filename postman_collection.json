@@ -7926,6 +7926,644 @@
 			"description": "Manage Records of Processing Activities (ROPA) for GDPR/privacy compliance including data processing details, legal basis, data recipients, retention periods, and data protection impact assessments"
 		},
 		{
+			"name": "Data Subject Request Accesses",
+			"item": [
+				{
+					"name": "List Data Subject Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-subject-request-accesses?request_type=&status=&date_from=&date_to=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-subject-request-accesses"
+							],
+							"query": [
+								{
+									"key": "request_type",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by request type - access, rectification, erasure, restriction, portability, objection, marketing_objection"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by status - received, acknowledged, in_progress, completed, denied, extended"
+								},
+								{
+									"key": "date_from",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by request date from (YYYY-MM-DD)"
+								},
+								{
+									"key": "date_to",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by request date to (YYYY-MM-DD)"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Results per page (1-100, default 15)"
+								}
+							]
+						},
+						"description": "Retrieve paginated list of Data Subject Request Accesses with optional filtering.\n\n**Query Parameters (Optional):**\n- `request_type` (string): Type of data subject right request\n- `status` (string): Current request status\n- `date_from` (date): Filter from date\n- `date_to` (date): Filter to date\n- `per_page` (integer, 1-100): Results per page, default 15\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Data Subject Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request_code\": \"DSR-2024-001\",\n  \"request_type\": \"access\",\n  \"data_subject_email\": \"john.doe@example.com\",\n  \"data_subject_name\": \"John Doe\",\n  \"request_date\": \"2024-12-10\",\n  \"request_description\": \"Request for access to personal data held\",\n  \"status\": \"received\",\n  \"priority\": \"normal\",\n  \"processing_activity_ids\": [1, 2, 3],\n  \"affected_datasets\": [\"customer_profile\", \"transaction_history\"],\n  \"data_formats_requested\": [\"csv\", \"pdf\"],\n  \"delivery_method\": \"email\",\n  \"deadline_date\": \"2025-01-08\",\n  \"completion_date\": null,\n  \"assigned_to_user_id\": 1,\n  \"notes\": \"Standard access request - customer initiated via web form\",\n  \"requires_verification\": true,\n  \"verification_status\": \"pending\",\n  \"verification_documents\": [\"identity_proof_url\"],\n  \"is_extended\": false,\n  \"extension_reason\": null,\n  \"extended_due_date\": null,\n  \"data_access_log_id\": null,\n  \"response_data_uri\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-subject-request-accesses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-subject-request-accesses"
+							]
+						},
+						"description": "Create a new Data Subject Request Access record for tracking GDPR/privacy rights requests.\n\n**Required Fields:**\n- `request_code` (string, max 255, unique): Unique request identifier\n- `request_type` (enum): Type of request - access, rectification, erasure, restriction, portability, objection, marketing_objection\n- `data_subject_email` (string, email): Data subject email address\n- `data_subject_name` (string, max 255): Data subject full name\n- `request_date` (date): Date request was received\n- `request_description` (string): Description of the request\n- `status` (enum): Current status - received, acknowledged, in_progress, completed, denied, extended\n- `priority` (enum): Request priority - low, normal, high, urgent\n- `processing_activity_ids` (array): IDs of affected processing activities\n- `affected_datasets` (array): Names of affected datasets\n- `data_formats_requested` (array): Requested data formats - csv, json, pdf, xml, other\n- `delivery_method` (enum): How data will be delivered - email, secure_portal, physical_mail, encrypted_file\n- `deadline_date` (date): Legal deadline for response (typically 30-45 days)\n- `assigned_to_user_id` (integer): ID of user assigned to process request\n- `requires_verification` (boolean): Whether identity verification is required\n- `verification_status` (enum): Verification status - pending, completed, failed, not_required\n\n**Optional Fields:**\n- `completion_date` (date): When the request was completed\n- `notes` (string): Additional notes about the request\n- `verification_documents` (array): URIs of verification documents\n- `is_extended` (boolean): Whether deadline was extended\n- `extension_reason` (string): Reason for extension if applicable\n- `extended_due_date` (date): Extended deadline date if applicable\n- `data_access_log_id` (integer): ID of access audit log\n- `response_data_uri` (string): URI/path to response data file\n\n**Request Type Enum Values:**\n- `access` - Right of access to personal data\n- `rectification` - Right to rectify/correct inaccurate data\n- `erasure` - Right to be forgotten/erasure of data\n- `restriction` - Right to restrict processing\n- `portability` - Right to data portability\n- `objection` - Right to object to processing\n- `marketing_objection` - Right to opt out of marketing\n\n**Status Enum Values:**\n- `received` - Request received, awaiting acknowledgment\n- `acknowledged` - Request acknowledged to data subject\n- `in_progress` - Request currently being processed\n- `completed` - Request completed and data provided\n- `denied` - Request denied for valid reasons\n- `extended` - Response deadline extended\n\n**Priority Enum Values:**\n- `low` - Can be processed within standard timeline\n- `normal` - Standard priority (default)\n- `high` - Should be prioritized\n- `urgent` - Requires immediate attention\n\n**Data Format Enum Values:**\n- `csv` - Comma-separated values\n- `json` - JSON format\n- `pdf` - PDF document\n- `xml` - XML format\n- `other` - Other formats\n\n**Delivery Method Enum Values:**\n- `email` - Send via email\n- `secure_portal` - Secure customer portal\n- `physical_mail` - Physical mailed documents\n- `encrypted_file` - Encrypted file delivery\n\n**Verification Status Enum Values:**\n- `pending` - Verification pending\n- `completed` - Identity verified\n- `failed` - Verification failed\n- `not_required` - Verification not required\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Data Subject Request",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-subject-request-accesses/:dataSubjectRequestAccess",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-subject-request-accesses",
+								":dataSubjectRequestAccess"
+							],
+							"variable": [
+								{
+									"key": "dataSubjectRequestAccess",
+									"value": "1",
+									"description": "Data Subject Request Access ID"
+								}
+							]
+						},
+						"description": "Retrieve details of a specific Data Subject Request Access.\n\n**Path Parameters:**\n- `dataSubjectRequestAccess` (integer): Data Subject Request Access ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Data Subject Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\",\n  \"completion_date\": \"2024-12-20\",\n  \"verification_status\": \"completed\",\n  \"response_data_uri\": \"s3://bucket/dsr-2024-001/data.zip\",\n  \"notes\": \"Request completed. Data compiled and sent to data subject via secure portal.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-subject-request-accesses/:dataSubjectRequestAccess",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-subject-request-accesses",
+								":dataSubjectRequestAccess"
+							],
+							"variable": [
+								{
+									"key": "dataSubjectRequestAccess",
+									"value": "1",
+									"description": "Data Subject Request Access ID"
+								}
+							]
+						},
+						"description": "Update a Data Subject Request Access with partial data (only fields provided will be updated).\n\n**Path Parameters:**\n- `dataSubjectRequestAccess` (integer): Data Subject Request Access ID\n\n**All Fields Optional:** Any field from the Create endpoint can be updated\n\n**Common Update Scenarios:**\n- Changing status from in_progress to completed\n- Updating verification status after identity check\n- Recording deadline extension\n- Adding response data URI after compilation\n- Updating assignment to another user\n\n**Conditional Rules:**\n- If updating is_extended to true, must provide extension_reason and extended_due_date\n- If updating status to completed, should include completion_date and response_data_uri\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Data Subject Request",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-subject-request-accesses/:dataSubjectRequestAccess",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-subject-request-accesses",
+								":dataSubjectRequestAccess"
+							],
+							"variable": [
+								{
+									"key": "dataSubjectRequestAccess",
+									"value": "1",
+									"description": "Data Subject Request Access ID"
+								}
+							]
+						},
+						"description": "Delete a Data Subject Request Access record.\n\n**Path Parameters:**\n- `dataSubjectRequestAccess` (integer): Data Subject Request Access ID\n\n**Note:** Ensure request is documented and archived before deletion for compliance records and audit trail purposes.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage Data Subject Request Accesses (GDPR Article 12-22 rights) including access requests, rectification, erasure, portability, and objection tracking with deadline management and verification workflows"
+		},
+		{
+			"name": "Privacy Incidents",
+			"item": [
+				{
+					"name": "List Privacy Incidents",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/privacy-incidents?incident_type=&risk_level=&status=&is_breach=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"privacy-incidents"
+							],
+							"query": [
+								{
+									"key": "incident_type",
+									"value": "",
+									"description": "Filter by incident type - unauthorized_access, data_exposure, lost_device, stolen_device, misdelivery, ransomware, phishing, system_breach, human_error, third_party"
+								},
+								{
+									"key": "risk_level",
+									"value": "",
+									"description": "Filter by risk level - critical, high, medium, low"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status - detected, under_investigation, contained, notified, remediation, resolved, closed"
+								},
+								{
+									"key": "is_breach",
+									"value": "",
+									"description": "Filter by breach status (0 or 1)"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Results per page (1-100, default 15)"
+								}
+							]
+						},
+						"description": "Retrieve paginated list of privacy incidents with optional filtering.\n\n**Query Parameters (Optional):**\n- `incident_type` (string): Type of incident\n- `risk_level` (string): Risk level assessment\n- `status` (string): Current incident status\n- `is_breach` (boolean): Whether it's a data breach\n- `per_page` (integer, 1-100): Results per page, default 15\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Privacy Incident",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"incident_title\": \"Data Exposure Incident\",\n  \"incident_type\": \"data_exposure\",\n  \"risk_level\": \"high\",\n  \"is_breach\": true,\n  \"breach_criteria_met\": [\"high_risk\", \"special_categories\"],\n  \"detected_date\": \"2024-12-10\",\n  \"occurred_date\": \"2024-12-09\",\n  \"incident_description\": \"Unauthorized access to customer database\",\n  \"what_happened\": \"Detailed description of what happened\",\n  \"how_discovered\": \"How the incident was discovered\",\n  \"data_compromised\": \"Customer PII and financial records\",\n  \"data_categories_affected\": [\"name\", \"contact\", \"financial\"],\n  \"estimated_affected_subjects\": 250,\n  \"notification_required\": \"both\",\n  \"notification_status\": \"pending\",\n  \"authority_notified\": false,\n  \"subjects_notified\": false,\n  \"immediate_actions\": \"Secured the exposed endpoint\",\n  \"mitigation_measures\": \"Applied security patches\",\n  \"preventive_measures\": \"Implemented additional monitoring\",\n  \"status\": \"under_investigation\",\n  \"affected_systems\": [\"CRM\", \"Database\", \"API\"],\n  \"third_party_involved\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/privacy-incidents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"privacy-incidents"
+							]
+						},
+						"description": "Create a new privacy incident record.\n\n**Required Fields:**\n- `incident_title` (string, max 255): Title of the incident\n- `incident_type` (enum): Type - unauthorized_access, data_exposure, lost_device, stolen_device, misdelivery, ransomware, phishing, system_breach, human_error, third_party\n- `risk_level` (enum): Level - critical, high, medium, low\n- `is_breach` (boolean): Is this a data breach\n- `detected_date` (date): When the incident was detected\n- `incident_description` (string): Description of the incident\n- `what_happened` (string): Details of what happened\n- `how_discovered` (string): How it was discovered\n- `data_compromised` (string): What data was compromised\n- `data_categories_affected` (array): Data categories - name, contact, identifier, financial, health, biometric, behavioral, sensitive, children, location\n- `estimated_affected_subjects` (integer): Number of affected individuals\n- `notification_required` (enum): none, authority, subjects, both\n- `notification_status` (enum): pending, in_progress, completed\n- `authority_notified` (boolean): Authority notification status\n- `subjects_notified` (boolean): Subject notification status\n- `immediate_actions` (string): Actions taken immediately\n- `mitigation_measures` (string): Measures to mitigate impact\n- `preventive_measures` (string): Measures to prevent recurrence\n- `status` (enum): detected, under_investigation, contained, notified, remediation, resolved, closed\n- `affected_systems` (array): Systems affected\n- `third_party_involved` (boolean): Third party involvement\n\n**Conditional Fields:**\n- `breach_criteria_met` (array): Required if is_breach=true\n- `authority_notification_date` (date): Required if authority_notified=true\n- `supervisory_authority` (string): Required if authority_notified=true\n- `subject_notification_date` (date): Required if subjects_notified=true\n- `notification_method` (enum): Required if subjects_notified=true\n- `root_cause_analysis` (string): Required if status=resolved\n- `lessons_learned` (string): Required if status=resolved\n- `resolution_date` (date): Required if status=resolved\n- `vendor_id` (integer): Required if third_party_involved=true\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Privacy Incident",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/privacy-incidents/:privacyIncident",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"privacy-incidents",
+								":privacyIncident"
+							],
+							"variable": [
+								{
+									"key": "privacyIncident",
+									"value": "1",
+									"description": "Privacy Incident ID"
+								}
+							]
+						},
+						"description": "Retrieve a specific privacy incident by ID.\n\n**Path Parameters:**\n- `privacyIncident` (integer): Privacy Incident ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Privacy Incident",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"resolved\",\n  \"resolution_date\": \"2024-12-15\",\n  \"root_cause_analysis\": \"Insufficient access controls on API endpoints\",\n  \"lessons_learned\": \"Implement stricter API authentication and monitoring\",\n  \"authority_notified\": true,\n  \"authority_notification_date\": \"2024-12-11\",\n  \"supervisory_authority\": \"Local DPA\",\n  \"authority_reference_number\": \"REF-2024-001\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/privacy-incidents/:privacyIncident",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"privacy-incidents",
+								":privacyIncident"
+							],
+							"variable": [
+								{
+									"key": "privacyIncident",
+									"value": "1",
+									"description": "Privacy Incident ID"
+								}
+							]
+						},
+						"description": "Update a privacy incident with partial data (only fields provided will be updated).\n\n**Path Parameters:**\n- `privacyIncident` (integer): Privacy Incident ID\n\n**All Fields Optional:** Any field from the Create endpoint can be updated\n\n**Conditional Rules Maintained:**\n- If updating status to 'resolved', must include root_cause_analysis, lessons_learned, and resolution_date\n- If updating authority_notified to true, must include authority_notification_date and supervisory_authority\n- If updating subjects_notified to true, must include subject_notification_date and notification_method\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Privacy Incident",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/privacy-incidents/:privacyIncident",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"privacy-incidents",
+								":privacyIncident"
+							],
+							"variable": [
+								{
+									"key": "privacyIncident",
+									"value": "1",
+									"description": "Privacy Incident ID"
+								}
+							]
+						},
+						"description": "Delete a privacy incident record.\n\n**Path Parameters:**\n- `privacyIncident` (integer): Privacy Incident ID\n\n**Note:** Ensure incident documentation is archived before deletion for audit trail purposes.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage privacy incidents and data breach reporting including incident classification, impact assessment, notification tracking, and resolution documentation"
+		},
+		{
+			"name": "Data Protection Impact Assessments",
+			"item": [
+				{
+					"name": "List DPIAs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-protection-impact-assessments?status=&risk_level=&likelihood_score=&impact_score=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-protection-impact-assessments"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by status - draft, in_progress, completed, approved, archived"
+								},
+								{
+									"key": "risk_level",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by risk level - critical, high, medium, low, minimal"
+								},
+								{
+									"key": "likelihood_score",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by likelihood score"
+								},
+								{
+									"key": "impact_score",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by impact score"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Results per page (1-100, default 15)"
+								}
+							]
+						},
+						"description": "Retrieve paginated list of Data Protection Impact Assessments with optional filtering.\n\n**Query Parameters (Optional):**\n- `status` (string): Assessment status\n- `risk_level` (string): Risk level assessment\n- `likelihood_score` (number): Likelihood risk score\n- `impact_score` (number): Impact risk score\n- `per_page` (integer, 1-100): Results per page, default 15\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create DPIA",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dpia_code\": \"DPIA-2024-001\",\n  \"dpia_title\": \"Customer Data Processing Assessment\",\n  \"processing_activity_id\": 1,\n  \"processing_purpose\": \"Customer relationship management and marketing\",\n  \"processing_description\": \"Collection and processing of customer data for CRM purposes\",\n  \"data_categories\": [\"name\", \"contact\", \"identifier\", \"behavioral\"],\n  \"estimated_data_subjects\": 5000,\n  \"processing_locations\": [\"EU\", \"US\"],\n  \"recipients\": [\"Marketing Team\", \"Sales Team\", \"Analytics\"],\n  \"retention_period\": \"3 years\",\n  \"data_sources\": \"Website forms, customer service interactions\",\n  \"necessity_assessment\": \"Processing is necessary for contractual obligations and legitimate interests\",\n  \"legal_basis\": \"contract\",\n  \"controller_name\": \"Data Controller Name\",\n  \"processor_name\": \"Data Processor Name\",\n  \"processor_location\": \"EU\",\n  \"dpia_description\": \"Detailed description of the DPIA scope and objectives\",\n  \"processing_necessity\": \"Justified based on business requirements\",\n  \"stakeholder_consultation\": \"Consultation with legal and compliance teams completed\",\n  \"likelihood_score\": 6,\n  \"impact_score\": 8,\n  \"risks_identified\": \"Data breach, unauthorized access, data loss\",\n  \"risk_description\": \"Potential risks and their consequences\",\n  \"risk_mitigation_measures\": \"Encryption, access controls, monitoring\",\n  \"residual_risk_assessment\": \"Residual risks assessed as medium\",\n  \"status\": \"in_progress\",\n  \"approval_status\": \"pending\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-protection-impact-assessments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-protection-impact-assessments"
+							]
+						},
+						"description": "Create a new Data Protection Impact Assessment.\n\n**Required Fields:**\n- `dpia_code` (string, unique): DPIA identifier\n- `dpia_title` (string, max 255): Title of the assessment\n- `processing_activity_id` (integer): Related processing activity ID\n- `processing_purpose` (string): Purpose of data processing\n- `processing_description` (string): Detailed description of processing\n- `data_categories` (array): Categories of personal data\n- `estimated_data_subjects` (integer): Number of affected data subjects\n- `processing_locations` (array): Geographic locations of processing\n- `recipients` (array): Data recipients\n- `retention_period` (string): Data retention period\n- `data_sources` (string): Where data is collected from\n- `necessity_assessment` (string): Assessment of processing necessity\n- `legal_basis` (enum): consent, contract, legal_obligation, vital_interests, public_task, legitimate_interests\n- `controller_name` (string): Data controller details\n- `processor_name` (string, conditional): Data processor name if applicable\n- `processor_location` (string): Where processor is located\n- `dpia_description` (string): Detailed DPIA description\n- `processing_necessity` (string): Justification of necessity\n- `stakeholder_consultation` (string): Consultation activities conducted\n- `likelihood_score` (integer): Risk likelihood score (1-10)\n- `impact_score` (integer): Risk impact score (1-10)\n- `risks_identified` (string): Identified risks summary\n- `risk_description` (string): Detailed risk description\n- `risk_mitigation_measures` (string): Mitigation strategies\n- `residual_risk_assessment` (string): Residual risk after mitigation\n- `status` (enum): draft, in_progress, completed, approved, archived\n- `approval_status` (enum): pending, approved, rejected\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get DPIA",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-protection-impact-assessments/:dataProtectionImpactAssessment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-protection-impact-assessments",
+								":dataProtectionImpactAssessment"
+							],
+							"variable": [
+								{
+									"key": "dataProtectionImpactAssessment",
+									"value": "1",
+									"description": "DPIA ID"
+								}
+							]
+						},
+						"description": "Retrieve a specific Data Protection Impact Assessment by ID.\n\n**Path Parameters:**\n- `dataProtectionImpactAssessment` (integer): DPIA ID\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update DPIA",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\",\n  \"approval_status\": \"approved\",\n  \"likelihood_score\": 4,\n  \"impact_score\": 6,\n  \"residual_risk_assessment\": \"Residual risks assessed as low after implementing all mitigation measures\",\n  \"risk_mitigation_measures\": \"Enhanced encryption, multi-factor authentication, regular security audits\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/data-protection-impact-assessments/:dataProtectionImpactAssessment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-protection-impact-assessments",
+								":dataProtectionImpactAssessment"
+							],
+							"variable": [
+								{
+									"key": "dataProtectionImpactAssessment",
+									"value": "1",
+									"description": "DPIA ID"
+								}
+							]
+						},
+						"description": "Update a Data Protection Impact Assessment with partial data (only fields provided will be updated).\n\n**Path Parameters:**\n- `dataProtectionImpactAssessment` (integer): DPIA ID\n\n**All Fields Optional:** Any field from the Create endpoint can be updated\n\n**Conditional Rules:**\n- If updating status to 'completed', must have comprehensive risk assessment\n- If approving (approval_status='approved'), status must be 'completed'\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete DPIA",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-protection-impact-assessments/:dataProtectionImpactAssessment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-protection-impact-assessments",
+								":dataProtectionImpactAssessment"
+							],
+							"variable": [
+								{
+									"key": "dataProtectionImpactAssessment",
+									"value": "1",
+									"description": "DPIA ID"
+								}
+							]
+						},
+						"description": "Delete a Data Protection Impact Assessment.\n\n**Path Parameters:**\n- `dataProtectionImpactAssessment` (integer): DPIA ID\n\n**Note:** Ensure DPIA is archived and documented before deletion for compliance records.\n\n**Authentication:** Required (Bearer Token)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage Data Protection Impact Assessments (DPIAs) including risk assessment, data flow analysis, mitigation measures, and compliance approval workflows"
+		},
+		{
 			"name": "Consent Records",
 			"item": [
 				{
