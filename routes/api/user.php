@@ -37,6 +37,7 @@ use App\Http\Controllers\IncidentNotificationController;
 use App\Http\Controllers\User\AiRiskTreatmentController;
 use App\Http\Controllers\User\ConsentCoverageController;
 use App\Http\Controllers\User\DatasetSnapshotController;
+use App\Http\Controllers\User\PrivacyIncidentController;
 use App\Http\Controllers\User\RiskMethodologyController;
 use App\Http\Controllers\User\ArtifactAccessLogController;
 use App\Http\Controllers\IncidentRootCauseAnalysisController;
@@ -361,6 +362,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{dataProtectionImpactAssessment}', 'show');
         Route::post('{dataProtectionImpactAssessment}', 'update');
         Route::delete('{dataProtectionImpactAssessment}', 'destroy');
+    });
+
+    Route::prefix('privacy-incidents')->controller(PrivacyIncidentController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{privacyIncident}', 'show');
+        Route::post('{privacyIncident}', 'update');
+        Route::delete('{privacyIncident}', 'destroy');
     });
 
 });
