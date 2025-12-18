@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use App\Enums\GovernancePillar;
+use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProjectRequest extends FormRequest
 {
@@ -24,11 +24,12 @@ class StoreProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'ai_model_id' => 'nullable|exists:ai_models,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'governance_pillar' => [
                 'required',
-                Rule::in(array_map(fn($c) => $c->value, GovernancePillar::cases())),
+                Rule::in(array_map(fn ($c) => $c->value, GovernancePillar::cases())),
             ],
         ];
     }

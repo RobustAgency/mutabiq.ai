@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Enums\GovernancePillar;
+use App\Models\AiModel;
 use App\Models\Framework;
+use App\Models\Organization;
+use App\Enums\GovernancePillar;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +21,8 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
+            'ai_model_id' => AiModel::factory(),
             'name' => $this->faker->sentence(3),
             'framework_id' => Framework::factory(),
             'description' => $this->faker->paragraph,

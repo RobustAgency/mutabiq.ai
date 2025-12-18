@@ -3,16 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Project extends Model
 {
     /** @use \Illuminate\Database\Eloquent\Factories\HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'governance_pillar', 'progress'];
+    protected $fillable = [
+        'organization_id',
+        'ai_model_id',
+        'name',
+        'description',
+        'governance_pillar',
+        'progress',
+    ];
 
     /**
      * The users that belong to the project.
@@ -32,5 +39,25 @@ class Project extends Model
     public function framework(): BelongsTo
     {
         return $this->belongsTo(Framework::class);
+    }
+
+    /**
+     * The organization that the project belongs to.
+     *
+     * @return BelongsTo<Organization, $this>
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * The AI model that the project belongs to.
+     *
+     * @return BelongsTo<AiModel, $this>
+     */
+    public function aiModel(): BelongsTo
+    {
+        return $this->belongsTo(AiModel::class);
     }
 }
