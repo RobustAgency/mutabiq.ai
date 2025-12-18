@@ -31,7 +31,6 @@ class UpdateRecordOfProcessingActivityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'activity_code' => ['sometimes', 'string', 'max:255', Rule::unique('record_of_processing_activities', 'activity_code')->ignore($this->route('recordOfProcessingActivity'))],
             'activity_name' => ['sometimes', 'string', 'max:255'],
             'purpose' => ['sometimes', 'string'],
             'detailed_purpose' => ['nullable', 'string'],

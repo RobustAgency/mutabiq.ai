@@ -106,16 +106,109 @@ class AiRiskTreatmentControllerTest extends TestCase
             ->assertJsonPath('data.id', $treatment->id);
     }
 
-    public function test_update_is_forbidden_by_request_authorization(): void
+    public function test_update_with_full_data(): void
     {
-        $treatment = AiRiskTreatment::factory()->create(['organization_id' => $this->organization->id, 'status' => 'open']);
+        $treatment = AiRiskTreatment::factory()->create(['organization_id' => $this->organization->id]);
+        $stakeholder = Stakeholder::factory()->create(['organization_id' => $this->organization->id]);
 
-        $response = $this->actingAs($this->user)->postJson("/api/ai-risk-treatments/{$treatment->id}", [
+        $payload = [
+            'treatment_type' => TreatmentType::CORRECTIVE,
+            'plan_summary' => 'Updated mitigation strategy',
+            'owner_stakeholder_id' => $stakeholder->id,
+            'assignee' => ['2'],
+            'due_date' => now()->addDays(30)->format('Y-m-d'),
+            'status' => Status::IN_PROGRESS,
+            'expected_residual_level' => 'medium',
+            'result_verification' => ResultVerification::PASSED,
+            'evidence_link' => 'https://example.com/updated-evidence',
+            'linked_capa_id' => 'CAPA-2002',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-risk-treatments/{$treatment->id}", $payload);
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'AI Risk Treatment updated successfully.');
+
+        $this->assertDatabaseHas('ai_risk_treatments', [
+            'id' => $treatment->id,
+            'treatment_type' => 'corrective',
+            'plan_summary' => 'Updated mitigation strategy',
+            'owner_stakeholder_id' => $stakeholder->id,
             'status' => 'in_progress',
+            'expected_residual_level' => 'medium',
+            'linked_capa_id' => 'CAPA-2002',
+        ]);
+    }
+
+    public function test_update_with_partial_data(): void
+    {
+        $treatment = AiRiskTreatment::factory()->create([
+            'organization_id' => $this->organization->id,
+            'status' => Status::NEW,
+            'plan_summary' => 'Original plan',
         ]);
 
-        // Update request currently has authorize() === false so expect 403
-        $response->assertStatus(403);
+        $payload = [
+            'status' => Status::IN_PROGRESS,
+            'plan_summary' => 'Updated plan',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-risk-treatments/{$treatment->id}", $payload);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('ai_risk_treatments', [
+            'id' => $treatment->id,
+            'status' => 'in_progress',
+            'plan_summary' => 'Updated plan',
+        ]);
+    }
+
+    public function test_update_with_status_closed_requires_closed_at(): void
+    {
+        $treatment = AiRiskTreatment::factory()->create(['organization_id' => $this->organization->id]);
+
+        $payload = [
+            'status' => Status::CLOSED,
+            'closed_at' => now()->format('Y-m-d H:i:s'),
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-risk-treatments/{$treatment->id}", $payload);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('ai_risk_treatments', [
+            'id' => $treatment->id,
+            'status' => 'closed',
+        ]);
+    }
+
+    public function test_update_validation_fails_for_invalid_enum(): void
+    {
+        $treatment = AiRiskTreatment::factory()->create(['organization_id' => $this->organization->id]);
+
+        $payload = [
+            'treatment_type' => 'invalid_type',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-risk-treatments/{$treatment->id}", $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['treatment_type']);
+    }
+
+    public function test_update_validation_fails_for_invalid_owner_stakeholder(): void
+    {
+        $treatment = AiRiskTreatment::factory()->create(['organization_id' => $this->organization->id]);
+
+        $payload = [
+            'owner_stakeholder_id' => 99999,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-risk-treatments/{$treatment->id}", $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['owner_stakeholder_id']);
     }
 
     public function test_destroy_deletes_treatment(): void
