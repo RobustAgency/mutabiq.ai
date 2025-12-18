@@ -5,7 +5,7 @@ namespace App\Models;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -43,10 +43,10 @@ class Framework extends Model implements HasMedia
     /**
      * Get the requirements for the framework.
      *
-     * @return HasMany<Requirement, $this>
+     * @return HasOne<Requirement, $this>
      */
-    public function requirements(): HasMany
+    public function requirement(): HasOne
     {
-        return $this->hasMany(Requirement::class, 'framework_id');
+        return $this->hasOne(Requirement::class);
     }
 }

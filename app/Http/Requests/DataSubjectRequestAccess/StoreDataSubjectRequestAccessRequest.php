@@ -90,9 +90,8 @@ class StoreDataSubjectRequestAccessRequest extends FormRequest
                 'url',
             ],
             'response_notes' => ['nullable', 'string'],
-            'rejection_reason' => ['nullable', 'string'],
+            'rejection_reason' => [Rule::requiredIf($isRejected), 'string'],
             'jurisdiction' => [
-                Rule::requiredIf($isRejected),
                 'string',
                 'max:255',
             ],

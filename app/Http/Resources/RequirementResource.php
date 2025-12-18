@@ -31,7 +31,6 @@ class RequirementResource extends JsonResource
             'superseded_by_req_id' => $this->superseded_by_req_id,
             'priority' => $this->priority,
             'tags' => $this->tags,
-            'framework' => new FrameworkResource($this->whenLoaded('framework')),
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

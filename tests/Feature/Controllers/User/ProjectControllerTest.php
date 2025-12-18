@@ -5,11 +5,13 @@ namespace Tests\Feature\Controllers\User;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\AiModel;
+use App\Models\Control;
 use App\Models\Project;
 use App\Models\Framework;
 use App\Models\Requirement;
 use App\Enums\UserProjectRole;
 use App\Enums\GovernancePillar;
+use App\Models\RequirementControl;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -17,15 +19,28 @@ class ProjectControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_user_can_get_project_with_total_requirements_and_controls(): void
+    public function test_user_can_get_project_with_controls(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $framework = Framework::factory()->create();
 
-        Requirement::factory()->count(5)->create([
+        $requirements = Requirement::factory()->create([
             'framework_id' => $framework->id,
+        ]);
+
+        $controls1 = Control::factory()->create();
+        $controls2 = Control::factory()->create();
+
+        RequirementControl::factory()->create([
+            'requirement_id' => $requirements->id,
+            'control_id' => $controls1->id,
+        ]);
+
+        RequirementControl::factory()->create([
+            'requirement_id' => $requirements->id,
+            'control_id' => $controls2->id,
         ]);
 
         $project = Project::factory()->create([
@@ -35,7 +50,7 @@ class ProjectControllerTest extends TestCase
 
         $response = $this->getJson("/api/projects/{$project->id}");
         $response->assertOk();
-        $response->assertJsonPath('data.total_requirements', 5);
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -43,11 +58,15 @@ class ProjectControllerTest extends TestCase
                 'description',
                 'governance_pillar',
                 'progress',
-                'total_requirements',
+                'users',
                 'framework' => [
                     'id',
                     'name',
+                    'requirement' => [
+                        'id',
+                    ],
                 ],
+                'controls_count',
             ],
         ]);
     }

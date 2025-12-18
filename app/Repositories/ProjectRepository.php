@@ -37,8 +37,8 @@ class ProjectRepository
     {
         $project->load([
             'users',
-            'framework' => function ($query) {
-                $query->withCount(['requirements']);
+            'framework.requirement' => function ($query) {
+                $query->withCount('controls');
             },
         ]);
 
