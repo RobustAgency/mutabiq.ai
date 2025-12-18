@@ -25,6 +25,7 @@ class StoreComplianceEvidenceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'project_id' => ['required', 'integer', 'exists:projects,id'],
             'control_id' => ['required', 'integer', 'exists:controls,id'],
             'requirement_id' => ['nullable', 'integer', 'exists:requirements,id'],
             'ai_model_id' => ['nullable', 'integer', 'exists:ai_models,id'],
