@@ -99,10 +99,9 @@ class UpdateDataSubjectRequestAccessRequest extends FormRequest
                 'url',
             ],
             'response_notes' => ['sometimes', 'nullable', 'string'],
-            'rejection_reason' => ['sometimes', 'nullable', 'string'],
+            'rejection_reason' => ['sometimes', Rule::requiredIf($isRejected), 'string'],
             'jurisdiction' => [
                 'sometimes',
-                Rule::requiredIf($isRejected),
                 'string',
                 'max:255',
             ],

@@ -2,9 +2,9 @@
 
 namespace App\Repositories;
 
-use App\Enums\UserProjectRole;
-use App\Models\Project;
 use App\Models\User;
+use App\Models\Project;
+use App\Enums\UserProjectRole;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProjectRepository
@@ -12,18 +12,16 @@ class ProjectRepository
     /**
      * Get filtered projects for a user with optional filters.
      *
-     * @param int $userID
-     * @param array $filters
      * @return LengthAwarePaginator<int, Project>
      */
     public function getFilteredProjects(int $userID, array $filters = []): LengthAwarePaginator
     {
         $query = Project::whereHas('users', function ($q) use ($userID) {
             $q->where('user_id', $userID);
-        })->with('users', 'framework')->withCount('users', 'framework');
+        })->with('users', 'framework');
 
         $query->when(! empty($filters['name']), function ($query) use ($filters) {
-            $query->where('name', 'like', '%' . $filters['name'] . '%');
+            $query->where('name', 'like', '%'.$filters['name'].'%');
         });
 
         $query->when(! empty($filters['governance_pillar']), function ($query) use ($filters) {
@@ -39,13 +37,13 @@ class ProjectRepository
     {
         $project->load([
             'users',
-            'framework' => function ($query) {
-                $query->withCount(['requirements', 'controls']);
-            }
+            'framework.requirement' => function ($query) {
+                $query->withCount('controls');
+            },
         ]);
+
         return $project;
     }
-
 
     public function createProject(User $user, array $projectData): Project
     {
@@ -68,5 +66,12 @@ class ProjectRepository
         $project->save();
 
         return $project;
+    }
+
+    public function updateProject(Project $project, array $data): Project
+    {
+        $project->update($data);
+
+        return $project->fresh();
     }
 }
