@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
 use App\Repositories\ProjectRepository;
 use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Requests\AddFrameworkToProject;
 use App\Http\Requests\SearchProjectsRequest;
 use App\Http\Requests\AddMemberToProjectRequest;
@@ -57,7 +58,7 @@ class ProjectController extends Controller
         ], 201);
     }
 
-    public function update(Project $project, StoreProjectRequest $request): JsonResponse
+    public function update(Project $project, UpdateProjectRequest $request): JsonResponse
     {
         $validated = $request->validated();
 

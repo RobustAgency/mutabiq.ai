@@ -19,6 +19,7 @@ class Project extends Model
         'description',
         'governance_pillar',
         'progress',
+        'framework_id',
     ];
 
     /**

@@ -85,6 +85,7 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
         Route::get('{project}', 'show');
+        Route::post('{project}', 'update');
         Route::post('{project}/add-member', 'addMember')->can('addMember', 'project');
         Route::post('{project}/add-framework', 'addFramework');
     });

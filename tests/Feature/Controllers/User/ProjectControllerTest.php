@@ -2,16 +2,16 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\GovernancePillar;
-use App\Enums\UserProjectRole;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiModel;
 use App\Models\Project;
 use App\Models\Framework;
 use App\Models\Requirement;
-use App\Models\Control;
+use App\Enums\UserProjectRole;
+use App\Enums\GovernancePillar;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectControllerTest extends TestCase
 {
@@ -24,15 +24,9 @@ class ProjectControllerTest extends TestCase
 
         $framework = Framework::factory()->create();
 
-        $requirements1 = Requirement::factory()->count(2)->create();
-        $requirements2 = Requirement::factory()->count(3)->create();
-        $framework->requirements()->attach($requirements1->pluck('id'));
-        $framework->requirements()->attach($requirements2->pluck('id'));
-
-        $controls1 = Control::factory()->count(1)->create();
-        $controls2 = Control::factory()->count(4)->create();
-        $framework->controls()->attach($controls1->pluck('id'));
-        $framework->controls()->attach($controls2->pluck('id'));
+        Requirement::factory()->count(5)->create([
+            'framework_id' => $framework->id,
+        ]);
 
         $project = Project::factory()->create([
             'framework_id' => $framework->id,
@@ -42,7 +36,6 @@ class ProjectControllerTest extends TestCase
         $response = $this->getJson("/api/projects/{$project->id}");
         $response->assertOk();
         $response->assertJsonPath('data.total_requirements', 5);
-        $response->assertJsonPath('data.total_controls', 5);
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -51,7 +44,6 @@ class ProjectControllerTest extends TestCase
                 'governance_pillar',
                 'progress',
                 'total_requirements',
-                'total_controls',
                 'framework' => [
                     'id',
                     'name',
@@ -93,6 +85,7 @@ class ProjectControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
         $projectData = [
+            'ai_model_id' => AiModel::factory()->create()->id,
             'name' => 'Project Name',
             'description' => $this->faker->paragraph,
             'governance_pillar' => GovernancePillar::AI_GOVERNANCE,

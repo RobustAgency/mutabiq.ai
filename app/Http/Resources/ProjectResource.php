@@ -29,7 +29,6 @@ class ProjectResource extends JsonResource
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
             'total_requirements' => $frameworkCounts['requirements'],
-            'total_controls' => $frameworkCounts['controls'],
             'users' => ProjectMemberResource::collection($this->whenLoaded('users')),
             'framework' => $this->framework ? new FrameworkResource($this->whenLoaded('framework')) : null,
         ];
@@ -44,7 +43,7 @@ class ProjectResource extends JsonResource
     {
         $framework = $this->framework;
 
-        if (!$framework) {
+        if (! $framework) {
             return [
                 'requirements' => 0,
                 'controls' => 0,
@@ -54,12 +53,8 @@ class ProjectResource extends JsonResource
         $requirements = $framework->requirements_count
             ?? ($framework->relationLoaded('requirements') ? $framework->requirements->count() : 0);
 
-        $controls = $framework->controls_count
-            ?? ($framework->relationLoaded('controls') ? $framework->controls->count() : 0);
-
         return [
             'requirements' => $requirements,
-            'controls' => $controls,
         ];
     }
 }
