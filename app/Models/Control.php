@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Control extends Model
 {
@@ -47,5 +48,15 @@ class Control extends Model
     public function getDisplayIdAttribute(): string
     {
         return 'CTL-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * The requirements that belong to the control.
+     *
+     * @return BelongsToMany<Requirement, $this>
+     */
+    public function requirements(): BelongsToMany
+    {
+        return $this->belongsToMany(Requirement::class, 'requirement_controls');
     }
 }

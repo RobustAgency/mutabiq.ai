@@ -56,6 +56,7 @@ class DataProtectionImpactAssessment extends Model
         'applicable_jurisdictions' => 'array',
         'stakeholders_consulted' => 'array',
         'data_subjects_consulted' => 'boolean',
+        'dpo_consulted' => 'boolean',
         'dpo_consultation_date' => 'date',
         'next_review_date' => 'date',
         'approval_date' => 'date',

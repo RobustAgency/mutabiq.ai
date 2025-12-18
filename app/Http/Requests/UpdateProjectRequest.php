@@ -6,7 +6,7 @@ use App\Enums\GovernancePillar;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProjectRequest extends FormRequest
+class UpdateProjectRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +24,10 @@ class StoreProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_model_id' => ['required', 'exists:ai_models,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string'],
             'governance_pillar' => [
+                'sometimes',
                 'required',
                 Rule::in(array_map(fn ($c) => $c->value, GovernancePillar::cases())),
             ],

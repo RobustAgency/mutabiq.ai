@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\AddFrameworkToProject;
-use App\Http\Requests\AddMemberToProjectRequest;
-use App\Http\Requests\SearchProjectsRequest;
-use App\Repositories\ProjectRepository;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Project;
-use App\Http\Requests\StoreProjectRequest;
-use App\Http\Resources\ProjectResource;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\ProjectResource;
+use App\Repositories\ProjectRepository;
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Requests\AddFrameworkToProject;
+use App\Http\Requests\SearchProjectsRequest;
+use App\Http\Requests\AddMemberToProjectRequest;
 
 class ProjectController extends Controller
 {
@@ -34,6 +35,7 @@ class ProjectController extends Controller
     public function show(Project $project): JsonResponse
     {
         $projectData = $this->projectRepository->getProjectByID($project);
+
         return response()->json([
             'error' => false,
             'message' => 'Project retrieved successfully',
@@ -45,6 +47,7 @@ class ProjectController extends Controller
     {
         $user = Auth::user();
         $validated = $request->validated();
+        $validated['organization_id'] = $user->organization_id;
 
         $project = $this->projectRepository->createProject($user, $validated);
 
@@ -53,6 +56,19 @@ class ProjectController extends Controller
             'error' => false,
             'message' => 'Project created successfully',
         ], 201);
+    }
+
+    public function update(Project $project, UpdateProjectRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $project = $this->projectRepository->updateProject($project, $validated);
+
+        return response()->json([
+            'data' => new ProjectResource($project),
+            'error' => false,
+            'message' => 'Project updated successfully',
+        ]);
     }
 
     public function addMember(AddMemberToProjectRequest $request, Project $project): JsonResponse

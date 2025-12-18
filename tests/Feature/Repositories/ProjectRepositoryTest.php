@@ -2,17 +2,18 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Enums\UserProjectRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Control;
 use App\Models\Project;
 use App\Models\Framework;
 use App\Models\Requirement;
-use App\Models\Control;
-use App\Repositories\ProjectRepository;
-use App\Models\User;
+use App\Enums\UserProjectRole;
 use App\Enums\GovernancePillar;
+use App\Models\RequirementControl;
+use App\Repositories\ProjectRepository;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectRepositoryTest extends TestCase
 {
@@ -31,25 +32,29 @@ class ProjectRepositoryTest extends TestCase
 
         $framework = Framework::factory()->create();
 
+        $requirements = Requirement::factory()->create([
+            'framework_id' => $framework->id,
+        ]);
 
-        $requirements1 = Requirement::factory()->count(2)->create();
-        $requirements2 = Requirement::factory()->count(3)->create();
-        $framework->requirements()->attach($requirements1->pluck('id'));
-        $framework->requirements()->attach($requirements2->pluck('id'));
+        $controls1 = Control::factory()->create();
+        $controls2 = Control::factory()->create();
 
-        $controls1 = Control::factory()->count(1)->create();
-        $controls2 = Control::factory()->count(4)->create();
-        $framework->controls()->attach($controls1->pluck('id'));
-        $framework->controls()->attach($controls2->pluck('id'));
+        RequirementControl::factory()->create([
+            'requirement_id' => $requirements->id,
+            'control_id' => $controls1->id,
+        ]);
+
+        RequirementControl::factory()->create([
+            'requirement_id' => $requirements->id,
+            'control_id' => $controls2->id,
+        ]);
 
         $project = Project::factory()->create([
             'framework_id' => $framework->id,
         ]);
 
-
         $result = $this->projectRepository->getProjectByID($project);
-        $this->assertEquals(5, $result->framework->requirements_count);
-        $this->assertEquals(5, $result->framework->controls_count);
+        $this->assertEquals(2, $result->framework->requirement->controls_count);
     }
 
     public function test_it_get_project_by_id_with_no_framework(): void

@@ -90,15 +90,15 @@ class StoreDataSubjectRequestAccessRequest extends FormRequest
                 'url',
             ],
             'response_notes' => ['nullable', 'string'],
-            'rejection_reason' => ['nullable', 'string'],
+            'rejection_reason' => [Rule::requiredIf($isRejected), 'string'],
             'jurisdiction' => [
-                Rule::requiredIf($isRejected),
                 'string',
                 'max:255',
             ],
             'processing_activity_ids' => ['nullable', 'array'],
             'processing_activity_ids.*' => ['integer', 'exists:record_of_processing_activities,id'],
-            'systems_checked' => ['required', 'string', 'max:255'],
+            'systems_checked' => ['required', 'array', 'min:1'],
+            'systems_checked.*' => ['string', 'max:255'],
             'records_found' => ['nullable', 'integer'],
         ];
     }
