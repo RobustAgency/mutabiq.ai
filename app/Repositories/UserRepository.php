@@ -2,16 +2,17 @@
 
 namespace App\Repositories;
 
-use App\Clients\SupabaseClient;
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Clients\SupabaseClient;
+use App\Http\Resources\UserResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Http\Resources\UserResource;
 
 class UserRepository
 {
     public function __construct(private SupabaseClient $supabaseClient) {}
+
     /**
      * Search users based on the provided search term.
      *
@@ -23,7 +24,7 @@ class UserRepository
         $role = $searchQuery['role'] ?? null;
 
         return User::with($relations)
-            ->when($role, fn($query) => $query->where('role', $role))
+            ->when($role, fn ($query) => $query->where('role', $role))
             ->where(function ($query) use ($term) {
                 $query->where('name', 'like', "%{$term}%")
                     ->orWhere('email', 'like', "%{$term}%");
@@ -98,10 +99,12 @@ class UserRepository
     /**
      * Get all users by organization ID.
      *
-     * @return Collection<int, User>
+     * @return LengthAwarePaginator<int, User>
      */
-    public function getUsersByOrganizationID(int $organizationID): Collection
+    public function getUsersByOrganizationID(int $organizationID, int $perPage): LengthAwarePaginator
     {
-        return User::where('organization_id', $organizationID)->get();
+        $query = User::where('organization_id', $organizationID);
+
+        return $query->latest()->paginate($perPage);
     }
 }
