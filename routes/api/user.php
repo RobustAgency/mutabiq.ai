@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\User\AiController;
+use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\MemberController;
 use App\Http\Controllers\User\VendorController;
 use App\Http\Controllers\User\AiAssetController;
@@ -49,6 +50,7 @@ use App\Http\Controllers\User\RecordOfProcessingActivityController;
 use App\Http\Controllers\User\DataProtectionImpactAssessmentController;
 
 Route::middleware(['auth:supabase'])->group(function () {
+
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
         Route::get('', 'index');
         Route::get('subscribe/{plan}', 'subscribe');
@@ -73,6 +75,10 @@ Route::middleware(['auth:supabase'])->group(function () {
     Route::prefix('organizations')->controller(OrganizationController::class)->group(function () {
         Route::get('', 'index');
         Route::post('', 'store')->can('create', Organization::class);
+    });
+
+    Route::prefix('organization-users')->controller(UserController::class)->group(function () {
+        Route::get('', 'index');
     });
 
     Route::prefix('members')->controller(MemberController::class)->group(function () {
