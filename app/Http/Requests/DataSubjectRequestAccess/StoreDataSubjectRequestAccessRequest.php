@@ -97,7 +97,8 @@ class StoreDataSubjectRequestAccessRequest extends FormRequest
             ],
             'processing_activity_ids' => ['nullable', 'array'],
             'processing_activity_ids.*' => ['integer', 'exists:record_of_processing_activities,id'],
-            'systems_checked' => ['required', 'string', 'max:255'],
+            'systems_checked' => ['required', 'array', 'min:1'],
+            'systems_checked.*' => ['string', 'max:255'],
             'records_found' => ['nullable', 'integer'],
         ];
     }

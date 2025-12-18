@@ -54,6 +54,7 @@ class DataSubjectRequestAccess extends Model
         'extended_due_date' => 'date',
         'response_date' => 'date',
         'completed_date' => 'date',
+        'systems_checked' => 'array',
         'assigned_date' => 'date',
         'is_overdue' => 'boolean',
     ];
