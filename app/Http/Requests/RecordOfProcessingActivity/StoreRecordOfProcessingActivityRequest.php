@@ -31,7 +31,6 @@ class StoreRecordOfProcessingActivityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'activity_code' => ['required', 'string', 'max:255', 'unique:record_of_processing_activities,activity_code'],
             'activity_name' => ['required', 'string', 'max:255'],
             'purpose' => ['required', 'string'],
             'detailed_purpose' => ['nullable', 'string'],

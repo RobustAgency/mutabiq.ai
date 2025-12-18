@@ -22,7 +22,6 @@ class RecordOfProcessingActivityControllerTest extends TestCase
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
-            'activity_code' => 'RPA-'.rand(1000, 9999),
             'activity_name' => 'Customer Data Processing',
             'purpose' => 'Customer analytics and service improvement',
             'detailed_purpose' => 'Process customer transaction data to improve service offerings',
@@ -130,7 +129,6 @@ class RecordOfProcessingActivityControllerTest extends TestCase
     public function test_user_can_create_activity_with_minimal_fields(): void
     {
         $payload = [
-            'activity_code' => 'RPA-MINIMAL-001',
             'activity_name' => 'Minimal Activity',
             'purpose' => 'Testing',
             'owner_team' => 'finance',
@@ -157,36 +155,6 @@ class RecordOfProcessingActivityControllerTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJson(['error' => false]);
-    }
-
-    /**
-     * Test create validates activity_code is required.
-     */
-    public function test_create_validates_activity_code_required(): void
-    {
-        $payload = $this->validPayload();
-        unset($payload['activity_code']);
-
-        $response = $this->actingAs($this->user)->postJson('/api/record-of-processing-activities', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('activity_code');
-    }
-
-    /**
-     * Test create validates activity_code is unique.
-     */
-    public function test_create_validates_activity_code_unique(): void
-    {
-        $code = 'RPA-UNIQUE-001';
-        RecordOfProcessingActivity::factory()->create(['activity_code' => $code]);
-
-        $payload = $this->validPayload(['activity_code' => $code]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/record-of-processing-activities', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('activity_code');
     }
 
     /**
@@ -441,23 +409,6 @@ class RecordOfProcessingActivityControllerTest extends TestCase
     }
 
     /**
-     * Test update validates activity_code uniqueness ignoring current.
-     */
-    public function test_update_validates_activity_code_unique_ignoring_current(): void
-    {
-        $activity1 = RecordOfProcessingActivity::factory()->create(['activity_code' => 'RPA-001']);
-        $activity2 = RecordOfProcessingActivity::factory()->create(['activity_code' => 'RPA-002']);
-
-        $response = $this->actingAs($this->user)->postJson(
-            "/api/record-of-processing-activities/{$activity2->id}",
-            ['activity_code' => 'RPA-001']
-        );
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('activity_code');
-    }
-
-    /**
      * Test update validates enum values.
      */
     public function test_update_validates_enum_values(): void
@@ -511,9 +462,8 @@ class RecordOfProcessingActivityControllerTest extends TestCase
     {
         $payload = $this->validPayload();
 
-        $response = $this->actingAs($this->user)->postJson('/api/record-of-processing-activities', $payload);
+        $this->actingAs($this->user)->postJson('/api/record-of-processing-activities', $payload);
         $this->assertDatabaseHas('record_of_processing_activities', [
-            'activity_code' => $payload['activity_code'],
             'created_by' => $this->user->id,
             'updated_by' => $this->user->id,
         ]);

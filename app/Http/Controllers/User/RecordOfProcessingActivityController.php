@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +40,8 @@ class RecordOfProcessingActivityController extends Controller
     public function store(StoreRecordOfProcessingActivityRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $uuid = Str::uuid()->toString();
+        $validated['activity_code'] = 'PROC-'.$uuid;
         $validated['created_by'] = Auth::user()->id;
         $validated['updated_by'] = Auth::user()->id;
 
