@@ -21,6 +21,7 @@ use App\Http\Controllers\User\FrameworkController;
 use App\Http\Controllers\AiModelArtifactController;
 use App\Http\Controllers\User\AiIncidentController;
 use App\Http\Controllers\User\DataSourceController;
+use App\Http\Controllers\User\AiCommitteeController;
 use App\Http\Controllers\User\AiModelCardController;
 use App\Http\Controllers\User\DataElementController;
 use App\Http\Controllers\User\StakeholderController;
@@ -395,6 +396,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{regulatorySubmission}', 'show');
         Route::post('{regulatorySubmission}', 'update');
         Route::delete('{regulatorySubmission}', 'destroy');
+    });
+
+    Route::prefix('/ai-committees')->controller(AiCommitteeController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{aiCommittee}', 'show');
+        Route::post('{aiCommittee}', 'update');
+        Route::delete('{aiCommittee}', 'destroy');
     });
 
 });
