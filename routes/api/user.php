@@ -43,6 +43,7 @@ use App\Http\Controllers\User\PrivacyIncidentController;
 use App\Http\Controllers\User\RiskMethodologyController;
 use App\Http\Controllers\User\ArtifactAccessLogController;
 use App\Http\Controllers\User\ComplianceEvidenceController;
+use App\Http\Controllers\User\CommitteeMembershipController;
 use App\Http\Controllers\IncidentRootCauseAnalysisController;
 use App\Http\Controllers\User\RegulatorySubmissionController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
@@ -404,6 +405,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{aiCommittee}', 'show');
         Route::post('{aiCommittee}', 'update');
         Route::delete('{aiCommittee}', 'destroy');
+    });
+
+    Route::prefix('/committee-memberships')->controller(CommitteeMembershipController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{committeeMembership}', 'show');
+        Route::post('{committeeMembership}', 'update');
+        Route::delete('{committeeMembership}', 'destroy');
     });
 
 });
