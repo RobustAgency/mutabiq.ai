@@ -36,7 +36,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/regulatory-submissions');
+        $response = $this->actingAs($this->user)->getJson('/api/regulatory-submissions');
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -68,7 +68,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'documents_uri' => 'https://example.com/documents/REG-2025-001-TEST',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/regulatory-submissions', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/regulatory-submissions', $payload);
 
         $response->assertStatus(201);
         $response->assertJson([
@@ -97,7 +97,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'submission_type' => SubmissionType::NOTIFICATION->value,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/api/admin/regulatory-submissions/{$submission->id}");
+        $response = $this->actingAs($this->user)->getJson("/api/regulatory-submissions/{$submission->id}");
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -134,7 +134,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'documents_uri' => 'https://example.com/submission.pdf',
         ];
 
-        $response = $this->actingAs($this->user)->postJson("/api/admin/regulatory-submissions/{$submission->id}", $payload);
+        $response = $this->actingAs($this->user)->postJson("/api/regulatory-submissions/{$submission->id}", $payload);
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -159,7 +159,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson("/api/admin/regulatory-submissions/{$submission->id}");
+        $response = $this->actingAs($this->user)->deleteJson("/api/regulatory-submissions/{$submission->id}");
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -190,7 +190,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'authority' => 'EMA',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/regulatory-submissions?authority=FDA');
+        $response = $this->actingAs($this->user)->getJson('/api/regulatory-submissions?authority=FDA');
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data.data'));
@@ -213,7 +213,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'submission_type' => SubmissionType::RENEWAL->value,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/regulatory-submissions?submission_type='.SubmissionType::REGISTRATION->value);
+        $response = $this->actingAs($this->user)->getJson('/api/regulatory-submissions?submission_type='.SubmissionType::REGISTRATION->value);
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data.data'));
@@ -236,7 +236,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'status' => Status::SUBMITTED->value,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/regulatory-submissions?status='.Status::SUBMITTED->value);
+        $response = $this->actingAs($this->user)->getJson('/api/regulatory-submissions?status='.Status::SUBMITTED->value);
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data.data'));
@@ -252,7 +252,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/regulatory-submissions?per_page=5');
+        $response = $this->actingAs($this->user)->getJson('/api/regulatory-submissions?per_page=5');
 
         $response->assertStatus(200);
         $this->assertCount(5, $response->json('data.data'));
@@ -273,7 +273,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'tracking_id' => 'REG-2025-001',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/regulatory-submissions', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/regulatory-submissions', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['framework_id']);
@@ -294,7 +294,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'tracking_id' => 'REG-2025-001',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/regulatory-submissions', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/regulatory-submissions', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['submission_type']);
@@ -321,7 +321,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'tracking_id' => 'REG-2025-001-UNIQUE',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/regulatory-submissions', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/regulatory-submissions', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['tracking_id']);
@@ -337,7 +337,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/api/admin/regulatory-submissions/{$submission->id}");
+        $response = $this->actingAs($this->user)->getJson("/api/regulatory-submissions/{$submission->id}");
 
         $response->assertStatus(200);
         $this->assertArrayHasKey('framework', $response->json('data'));
@@ -360,7 +360,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'status' => Status::APPROVED->value,
         ];
 
-        $response = $this->actingAs($this->user)->postJson("/api/admin/regulatory-submissions/{$submission->id}", $payload);
+        $response = $this->actingAs($this->user)->postJson("/api/regulatory-submissions/{$submission->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('regulatory_submissions', [
@@ -383,7 +383,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'status' => 'invalid_status',
         ];
 
-        $response = $this->actingAs($this->user)->postJson("/api/admin/regulatory-submissions/{$submission->id}", $payload);
+        $response = $this->actingAs($this->user)->postJson("/api/regulatory-submissions/{$submission->id}", $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['status']);
@@ -411,7 +411,7 @@ class RegulatorySubmissionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->getJson(
-            '/api/admin/regulatory-submissions?authority=FDA&submission_type='.SubmissionType::REGISTRATION->value.'&status='.Status::DRAFT->value
+            '/api/regulatory-submissions?authority=FDA&submission_type='.SubmissionType::REGISTRATION->value.'&status='.Status::DRAFT->value
         );
 
         $response->assertStatus(200);
@@ -433,7 +433,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'tracking_id' => 'REG-2025-001',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/regulatory-submissions', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/regulatory-submissions', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['jurisdiction']);
@@ -454,7 +454,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'tracking_id' => 'REG-2025-001',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/regulatory-submissions', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/regulatory-submissions', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['jurisdiction']);
@@ -474,7 +474,7 @@ class RegulatorySubmissionControllerTest extends TestCase
             'documents_uri' => 'not-a-url',
         ];
 
-        $response = $this->actingAs($this->user)->postJson("/api/admin/regulatory-submissions/{$submission->id}", $payload);
+        $response = $this->actingAs($this->user)->postJson("/api/regulatory-submissions/{$submission->id}", $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['documents_uri']);

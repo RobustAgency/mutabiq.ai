@@ -14,6 +14,7 @@ class ComplianceEvidence extends Model
     protected $table = 'compliance_evidences';
 
     protected $fillable = [
+        'project_id',
         'control_id',
         'requirement_id',
         'ai_model_id',

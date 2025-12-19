@@ -4,9 +4,9 @@ namespace Tests\Feature\Controllers\Admin;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Enums\UserRole;
 use App\Models\AiModel;
 use App\Models\Control;
+use App\Models\Project;
 use App\Models\Requirement;
 use App\Models\ComplianceEvidence;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -24,10 +24,10 @@ class ComplianceEvidenceControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create(['role' => UserRole::SUPER_ADMIN]);
+        $this->user = User::factory()->create();
     }
 
-    public function test_super_admin_can_list_compliance_evidence(): void
+    public function test_user_can_list_compliance_evidence(): void
     {
         $control = Control::factory()->create();
         $requirement = Requirement::factory()->create();
@@ -39,7 +39,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/compliance-evidences');
+        $response = $this->actingAs($this->user)->getJson('/api/compliance-evidences');
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -49,14 +49,16 @@ class ComplianceEvidenceControllerTest extends TestCase
         $this->assertIsArray($response->json('data.data'));
     }
 
-    public function test_super_admin_can_store_compliance_evidence(): void
+    public function test_user_can_store_compliance_evidence(): void
     {
         $control = Control::factory()->create();
+        $project = Project::factory()->create();
         $requirement = Requirement::factory()->create();
         $aiModel = AiModel::factory()->create();
         $collectedBy = User::factory()->create();
 
         $payload = [
+            'project_id' => $project->id,
             'control_id' => $control->id,
             'requirement_id' => $requirement->id,
             'ai_model_id' => $aiModel->id,
@@ -70,7 +72,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'hash_checksum' => 'abc123def456',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/compliance-evidences', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/compliance-evidences', $payload);
 
         $response->assertStatus(201);
         $response->assertJson([
@@ -86,7 +88,7 @@ class ComplianceEvidenceControllerTest extends TestCase
         ]);
     }
 
-    public function test_super_admin_can_view_single_compliance_evidence(): void
+    public function test_user_can_view_single_compliance_evidence(): void
     {
         $control = Control::factory()->create();
         $requirement = Requirement::factory()->create();
@@ -100,7 +102,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'artifact_uri' => 'https://example.com/logs.txt',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/api/admin/compliance-evidences/{$evidence->id}");
+        $response = $this->actingAs($this->user)->getJson("/api/compliance-evidences/{$evidence->id}");
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -116,7 +118,7 @@ class ComplianceEvidenceControllerTest extends TestCase
         ]);
     }
 
-    public function test_super_admin_can_update_compliance_evidence(): void
+    public function test_user_can_update_compliance_evidence(): void
     {
         $control = Control::factory()->create();
         $requirement = Requirement::factory()->create();
@@ -138,7 +140,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'reviewed_at' => now()->toDateString(),
         ];
 
-        $response = $this->actingAs($this->user)->postJson("/api/admin/compliance-evidences/{$evidence->id}", $payload);
+        $response = $this->actingAs($this->user)->postJson("/api/compliance-evidences/{$evidence->id}", $payload);
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -153,7 +155,7 @@ class ComplianceEvidenceControllerTest extends TestCase
         ]);
     }
 
-    public function test_super_admin_can_delete_compliance_evidence(): void
+    public function test_user_can_delete_compliance_evidence(): void
     {
         $control = Control::factory()->create();
         $requirement = Requirement::factory()->create();
@@ -165,7 +167,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson("/api/admin/compliance-evidences/{$evidence->id}");
+        $response = $this->actingAs($this->user)->deleteJson("/api/compliance-evidences/{$evidence->id}");
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -199,7 +201,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'artifact_type' => ArtifactType::LOG->value,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/compliance-evidences?artifact_type='.ArtifactType::DOCUMENT->value);
+        $response = $this->actingAs($this->user)->getJson('/api/compliance-evidences?artifact_type='.ArtifactType::DOCUMENT->value);
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data.data'));
@@ -225,7 +227,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'review_outcome' => ReviewOutcome::FAIL->value,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/compliance-evidences?review_outcome='.ReviewOutcome::PASS->value);
+        $response = $this->actingAs($this->user)->getJson('/api/compliance-evidences?review_outcome='.ReviewOutcome::PASS->value);
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data.data'));
@@ -243,7 +245,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/admin/compliance-evidences?per_page=5');
+        $response = $this->actingAs($this->user)->getJson('/api/compliance-evidences?per_page=5');
 
         $response->assertStatus(200);
         $this->assertCount(5, $response->json('data.data'));
@@ -265,7 +267,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'hash_checksum' => 'abc123',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/compliance-evidences', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/compliance-evidences', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['control_id']);
@@ -287,7 +289,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'hash_checksum' => 'abc123',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/compliance-evidences', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/compliance-evidences', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['artifact_type']);
@@ -309,7 +311,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'hash_checksum' => 'abc123',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/admin/compliance-evidences', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/compliance-evidences', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['artifact_uri']);
@@ -327,7 +329,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'ai_model_id' => $aiModel->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/api/admin/compliance-evidences/{$evidence->id}");
+        $response = $this->actingAs($this->user)->getJson("/api/compliance-evidences/{$evidence->id}");
 
         $response->assertStatus(200);
         $this->assertArrayHasKey('control', $response->json('data'));
@@ -352,7 +354,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'review_outcome' => ReviewOutcome::PASS->value,
         ];
 
-        $response = $this->actingAs($this->user)->postJson("/api/admin/compliance-evidences/{$evidence->id}", $payload);
+        $response = $this->actingAs($this->user)->postJson("/api/compliance-evidences/{$evidence->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('compliance_evidences', [
@@ -377,7 +379,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'review_outcome' => 'invalid_outcome',
         ];
 
-        $response = $this->actingAs($this->user)->postJson("/api/admin/compliance-evidences/{$evidence->id}", $payload);
+        $response = $this->actingAs($this->user)->postJson("/api/compliance-evidences/{$evidence->id}", $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['review_outcome']);
@@ -406,7 +408,7 @@ class ComplianceEvidenceControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->getJson(
-            '/api/admin/compliance-evidences?artifact_type='.ArtifactType::DOCUMENT->value.'&review_outcome='.ReviewOutcome::PASS->value
+            '/api/compliance-evidences?artifact_type='.ArtifactType::DOCUMENT->value.'&review_outcome='.ReviewOutcome::PASS->value
         );
 
         $response->assertStatus(200);
