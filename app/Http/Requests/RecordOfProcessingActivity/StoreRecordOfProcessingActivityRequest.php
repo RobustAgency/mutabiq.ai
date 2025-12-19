@@ -47,7 +47,7 @@ class StoreRecordOfProcessingActivityRequest extends FormRequest
             'consent_coverage_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
             'dpia_required' => ['nullable', 'boolean'],
             'dpia_status' => ['nullable', 'string', Rule::enum(DPIAStatus::class)],
-            'dpia_id' => ['nullable', 'integer'],
+            'dpia_id' => ['nullable', 'integer', 'exists:data_protection_impact_assessments,id'],
             'retention_period' => ['required', 'string', 'max:255'],
             'retention_justification' => ['required', 'string'],
             'has_international_transfers' => ['nullable', 'boolean'],

@@ -47,7 +47,7 @@ class UpdateRecordOfProcessingActivityRequest extends FormRequest
             'consent_coverage_percent' => ['sometimes', 'integer', 'min:0', 'max:100'],
             'dpia_required' => ['sometimes', 'boolean'],
             'dpia_status' => ['sometimes', 'string', Rule::enum(DPIAStatus::class)],
-            'dpia_id' => ['nullable', 'string', 'uuid'],
+            'dpia_id' => ['nullable', 'integer', 'exists:data_protection_impact_assessments,id'],
             'retention_period' => ['sometimes', 'string', 'max:255'],
             'retention_justification' => ['sometimes', 'string'],
             'has_international_transfers' => ['sometimes', 'boolean'],
