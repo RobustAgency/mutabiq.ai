@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\User;
 use App\Models\AiModel;
 use App\Models\Control;
+use App\Models\Project;
 use App\Models\Requirement;
 use App\Enums\ComplianceEvidence\ArtifactType;
 use App\Enums\ComplianceEvidence\ReviewOutcome;
@@ -23,6 +24,7 @@ class ComplianceEvidenceFactory extends Factory
     public function definition(): array
     {
         return [
+            'project_id' => Project::factory(),
             'control_id' => Control::factory(),
             'requirement_id' => Requirement::factory(),
             'ai_model_id' => AiModel::factory(),

@@ -25,6 +25,7 @@ class UpdateComplianceEvidenceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'project_id' => ['sometimes', 'required', 'integer', 'exists:projects,id'],
             'control_id' => ['sometimes', 'required', 'integer', 'exists:controls,id'],
             'requirement_id' => ['sometimes', 'nullable', 'integer', 'exists:requirements,id'],
             'ai_model_id' => ['sometimes', 'nullable', 'integer', 'exists:ai_models,id'],

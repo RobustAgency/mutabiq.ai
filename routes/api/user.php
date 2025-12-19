@@ -41,7 +41,9 @@ use App\Http\Controllers\User\DatasetSnapshotController;
 use App\Http\Controllers\User\PrivacyIncidentController;
 use App\Http\Controllers\User\RiskMethodologyController;
 use App\Http\Controllers\User\ArtifactAccessLogController;
+use App\Http\Controllers\User\ComplianceEvidenceController;
 use App\Http\Controllers\IncidentRootCauseAnalysisController;
+use App\Http\Controllers\User\RegulatorySubmissionController;
 use App\Http\Controllers\CorrectivePreventiveActionController;
 use App\Http\Controllers\User\PdpProcessingRegisterController;
 use App\Http\Controllers\User\DatasetSubjectPopulationController;
@@ -377,6 +379,22 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{privacyIncident}', 'show');
         Route::post('{privacyIncident}', 'update');
         Route::delete('{privacyIncident}', 'destroy');
+    });
+
+    Route::prefix('/compliance-evidences')->controller(ComplianceEvidenceController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{complianceEvidence}', 'show');
+        Route::post('{complianceEvidence}', 'update');
+        Route::delete('{complianceEvidence}', 'destroy');
+    });
+
+    Route::prefix('/regulatory-submissions')->controller(RegulatorySubmissionController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{regulatorySubmission}', 'show');
+        Route::post('{regulatorySubmission}', 'update');
+        Route::delete('{regulatorySubmission}', 'destroy');
     });
 
 });
