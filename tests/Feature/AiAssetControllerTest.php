@@ -68,14 +68,14 @@ class AiAssetControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('data.per_page', 15);
     }
-
     public function test_index_accepts_custom_per_page(): void
     {
-        AiAsset::factory()->count(20)->create();
+        AiAsset::factory()->count(20)->create([
+            'organization_id' => $this->organization->id,
+        ]);
 
         $response = $this->actingAs($this->user, 'supabase')
             ->getJson('/api/ai-assets?per_page=5');
-
         $response->assertStatus(200)
             ->assertJsonPath('data.per_page', 5)
             ->assertJsonCount(5, 'data.data');

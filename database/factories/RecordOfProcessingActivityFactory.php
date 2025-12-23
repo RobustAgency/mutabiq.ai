@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use App\Models\RecordOfProcessingActivity;
 use App\Enums\RecordOfProcessingActivity\Status;
 use App\Enums\RecordOfProcessingActivity\OwnerTeam;
@@ -29,9 +30,10 @@ class RecordOfProcessingActivityFactory extends Factory
     public function definition(): array
     {
         $user = User::factory();
+        $uuid = Str::uuid()->toString();
 
         return [
-            'activity_code' => 'RPA-'.$this->faker->unique()->randomNumber(5),
+            'activity_code' => 'RPA-'.$uuid,
             'activity_name' => $this->faker->sentence(3),
             'purpose' => $this->faker->sentence(),
             'detailed_purpose' => $this->faker->paragraph(),
@@ -50,19 +52,15 @@ class RecordOfProcessingActivityFactory extends Factory
             'consent_coverage_percent' => $this->faker->numberBetween(0, 100),
             'dpia_required' => $this->faker->boolean(40),
             'dpia_status' => $this->faker->randomElement(array_map(fn ($case) => $case->value, DPIAStatus::cases())),
-            'dpia_id' => $this->faker->boolean(30) ? $this->faker->uuid() : null,
+            'dpia_id' => null,
             'retention_period' => $this->faker->randomElement(['1 year', '2 years', '3 years', '5 years', '7 years']),
             'retention_justification' => $this->faker->sentence(),
             'has_international_transfers' => $this->faker->boolean(30),
             'applicable_jurisdictions' => [
                 $this->faker->randomElement(array_map(fn ($case) => $case->value, ApplicableJurisdiction::cases())),
             ],
-            'linked_dataset_ids' => function () {
-                return \App\Models\Dataset::inRandomOrder()->take($this->faker->numberBetween(0, 3))->pluck('id')->toArray();
-            },
-            'linked_ai_models_ids' => function () {
-                return \App\Models\AIModel::inRandomOrder()->take($this->faker->numberBetween(0, 2))->pluck('id')->toArray();
-            },
+            'linked_dataset_ids' => [],
+            'linked_ai_models_ids' => [],
             'security_measures' => $this->faker->sentence(),
             'internal_recipients' => [
                 $this->faker->randomElement(['IT Department', 'HR Department', 'Finance Team']),

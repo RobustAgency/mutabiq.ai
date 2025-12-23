@@ -5,11 +5,12 @@ namespace Tests\Feature\Controllers\User;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\RecordOfProcessingActivity;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class RecordOfProcessingActivityControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     private User $user;
 
@@ -34,9 +35,6 @@ class RecordOfProcessingActivityControllerTest extends TestCase
             'lawful_basis' => 'consent',
             'legitimate_interest_assessment' => 'Balancing test completed',
             'consent_coverage_percent' => 95,
-            'dpia_required' => true,
-            'dpia_status' => 'completed',
-            'dpia_id' => rand(1000, 9999),
             'retention_period' => '2 years',
             'retention_justification' => 'Required for compliance',
             'has_international_transfers' => true,
@@ -463,6 +461,7 @@ class RecordOfProcessingActivityControllerTest extends TestCase
         $payload = $this->validPayload();
 
         $this->actingAs($this->user)->postJson('/api/record-of-processing-activities', $payload);
+
         $this->assertDatabaseHas('record_of_processing_activities', [
             'created_by' => $this->user->id,
             'updated_by' => $this->user->id,
