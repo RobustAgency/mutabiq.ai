@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Validation\Rule;
 use App\Enums\Requirement\Category;
 use App\Enums\Requirement\Priority;
+use App\Rules\UniqueRequirementReference;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateRequirementRequest extends FormRequest
@@ -25,7 +26,7 @@ class UpdateRequirementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reference' => ['sometimes', 'string', 'max:255', 'unique:requirements,reference,'.$this->requirement->id],
+            'reference' => ['sometimes', 'string', 'max:255', new UniqueRequirementReference($this->framework_id ?? $this->requirement->framework_id, $this->requirement->id)],
             'requirement_text' => ['sometimes', 'nullable', 'string'],
             'category' => ['sometimes', Rule::in(array_map(fn ($c) => $c->value, Category::cases()))],
             'applicability' => ['sometimes', 'string', 'max:255'],
@@ -36,7 +37,7 @@ class UpdateRequirementRequest extends FormRequest
             'priority' => ['sometimes', Rule::in(array_map(fn ($c) => $c->value, Priority::cases()))],
             'tags' => ['sometimes', 'nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
-            'framework_id' => ['sometimes', 'required', 'exists:frameworks,id', 'unique:requirements,framework_id,'.$this->requirement->id],
+            'framework_id' => ['sometimes', 'exists:frameworks,id'],
         ];
     }
 }

@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Models\Organization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use App\Models\User;
-use App\Repositories\UserRepository;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Organization;
+use App\Repositories\UserRepository;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UserRepositoryTest extends TestCase
 {
@@ -29,7 +29,7 @@ class UserRepositoryTest extends TestCase
 
         User::factory()->count(3)->create(['organization_id' => $organizationID]);
 
-        $users = $this->userRepository->getUsersByOrganizationID($organizationID);
+        $users = $this->userRepository->getUsersByOrganizationID($organizationID, 10);
 
         $this->assertCount(3, $users);
         foreach ($users as $user) {
