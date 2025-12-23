@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\User;
 use App\Models\AiModel;
 use App\Models\Framework;
+use Illuminate\Support\Str;
 use App\Enums\RegulatorySubmission\Status;
 use App\Enums\RegulatorySubmission\SubmissionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -28,7 +29,7 @@ class RegulatorySubmissionFactory extends Factory
             'jurisdiction' => json_encode([$this->faker->countryCode()]),
             'submission_type' => $this->faker->randomElement(SubmissionType::cases())->value,
             'content_summary' => $this->faker->paragraphs(2, true),
-            'tracking_id' => $this->faker->unique()->bothify('REG-####-????'),
+            'tracking_id' => Str::uuid()->toString(),
             'status' => Status::DRAFT->value,
             'submitted_at' => now(),
             'commitments' => json_encode([

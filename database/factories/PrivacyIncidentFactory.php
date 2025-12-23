@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\User;
 use App\Models\Vendor;
+use Illuminate\Support\Str;
 use App\Models\Organization;
 use App\Models\PrivacyIncident;
 use App\Enums\PrivacyIncident\Status;
@@ -27,10 +28,11 @@ class PrivacyIncidentFactory extends Factory
         $detectedDate = $this->faker->dateTimeBetween('-30 days', 'now');
         $notificationDeadline = $this->faker->dateTimeBetween($detectedDate, '+5 days');
         $isDeadlinePassed = now() > $notificationDeadline;
+        $uuid = Str::uuid()->toString();
 
         return [
             'organization_id' => Organization::factory(),
-            'incident_code' => 'INC-'.strtoupper($this->faker->unique()->bothify('????-####')),
+            'incident_code' => 'INC-'.$uuid,
             'incident_title' => $this->faker->sentence(),
             'incident_type' => $this->faker->randomElement(IncidentType::cases())->value,
             'risk_level' => $this->faker->randomElement(RiskLevel::cases())->value,

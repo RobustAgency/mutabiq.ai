@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Framework;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +20,7 @@ class RequirementFactory extends Factory
     {
         return [
             'framework_id' => Framework::factory(),
-            'reference' => $this->faker->unique()->bothify('REQ-####'),
+            'reference' => Str::uuid()->toString(),
             'requirement_text' => $this->faker->paragraph(),
             'category' => $this->faker->randomElement(['security', 'human_rights', 'privacy']),
             'applicability' => $this->faker->sentence(),

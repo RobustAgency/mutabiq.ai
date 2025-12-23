@@ -2,15 +2,14 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Tests\TestCase;
 use App\Models\User;
 use App\Enums\UserRole;
 use App\Models\Organization;
-use Tests\TestCase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Notification;
-
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class MemberControllerTest extends TestCase
 {
@@ -115,15 +114,18 @@ class MemberControllerTest extends TestCase
             'error',
             'message',
             'data' => [
-                '*' => [
-                    'id',
-                    'name',
-                    'email',
-                    'organization_id',
-                    'role',
-                    'created_at',
-                    'updated_at',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'email',
+                        'organization_id',
+                        'role',
+                        'created_at',
+                        'updated_at',
+                    ],
                 ],
+                'current_page',
             ],
         ]);
 
@@ -131,9 +133,9 @@ class MemberControllerTest extends TestCase
 
         $this->assertFalse($responseData['error']);
         $this->assertEquals('Members retrieved successfully', $responseData['message']);
-        $this->assertCount(3, $responseData['data']);
+        $this->assertCount(3, $responseData['data']['data']);
 
-        foreach ($responseData['data'] as $member) {
+        foreach ($responseData['data']['data'] as $member) {
             $this->assertArrayHasKey('id', $member);
             $this->assertArrayHasKey('name', $member);
             $this->assertArrayHasKey('email', $member);

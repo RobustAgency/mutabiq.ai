@@ -62,7 +62,10 @@ class DataSubjectRequestAccessFactory extends Factory
             'rejection_reason' => $this->faker->optional(0.2)->sentence(),
             'jurisdiction' => $this->faker->randomElement(['EU', 'UAE', 'UK', 'KSA', 'DIFC']),
             'processing_activity_ids' => $this->faker->optional(0.5)->randomElements([1, 2, 3, 4, 5], $this->faker->numberBetween(1, 3)),
-            'systems_checked' => $this->faker->sentence(),
+            'systems_checked' => $this->faker->randomElements(
+                ['CRM', 'Email System', 'Marketing Database', 'Support Tickets', 'Analytics Platform'],
+                $this->faker->numberBetween(1, 3)
+            ),
             'records_found' => $this->faker->optional(0.7)->numberBetween(0, 500),
         ];
     }

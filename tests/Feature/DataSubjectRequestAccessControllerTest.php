@@ -162,7 +162,7 @@ class DataSubjectRequestAccessControllerTest extends TestCase
             'assigned_to' => $this->user->id,
             'assigned_date' => now()->toDateString(),
             'jurisdiction' => 'EU',
-            'systems_checked' => 'CRM',
+            'systems_checked' => ['CRM'],
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/data-subject-request-accesses', $data);
@@ -197,7 +197,7 @@ class DataSubjectRequestAccessControllerTest extends TestCase
             'assigned_to' => $this->user->id,
             'assigned_date' => now()->toDateString(),
             'jurisdiction' => 'EU',
-            'systems_checked' => 'CRM',
+            'systems_checked' => ['CRM'],
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/data-subject-request-accesses', $data);
@@ -232,7 +232,7 @@ class DataSubjectRequestAccessControllerTest extends TestCase
             'assigned_to' => $this->user->id,
             'assigned_date' => now()->toDateString(),
             'jurisdiction' => 'EU',
-            'systems_checked' => 'CRM',
+            'systems_checked' => ['CRM'],
 
         ];
 
