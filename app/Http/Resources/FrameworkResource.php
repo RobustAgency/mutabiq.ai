@@ -29,8 +29,7 @@ class FrameworkResource extends JsonResource
             'source_url' => $this->source_url,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
-            'requirement' => new RequirementResource($this->whenLoaded('requirement')),
-
+            'requirements' => RequirementResource::collection($this->whenLoaded('requirements')),
         ];
     }
 }

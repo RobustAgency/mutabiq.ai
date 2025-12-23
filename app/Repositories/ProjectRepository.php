@@ -40,7 +40,7 @@ class ProjectRepository
             'framework' => function ($query) {
                 $query->withCount('requirements')
                     ->with(['requirements' => function ($reqQuery) {
-                        $reqQuery->withCount('controls');
+                        $reqQuery->with('controls')->withCount('controls');
                     }]);
             },
         ]);

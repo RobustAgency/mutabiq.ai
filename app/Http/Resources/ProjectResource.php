@@ -29,9 +29,6 @@ class ProjectResource extends JsonResource
             'updated_at' => $this->updated_at->toDateTimeString(),
             'users' => ProjectMemberResource::collection($this->whenLoaded('users')),
             'framework' => new FrameworkResource($this->whenLoaded('framework')),
-            'controls_count' => $this->whenLoaded('framework', function () {
-                return $this->framework->requirement->controls_count ?? 0;
-            }),
         ];
     }
 }

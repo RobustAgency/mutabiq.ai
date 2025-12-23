@@ -50,7 +50,6 @@ class ProjectControllerTest extends TestCase
 
         $response = $this->getJson("/api/projects/{$project->id}");
         $response->assertOk();
-
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -62,11 +61,13 @@ class ProjectControllerTest extends TestCase
                 'framework' => [
                     'id',
                     'name',
-                    'requirement' => [
-                        'id',
+                    'requirements' => [
+                        '*' => [
+                            'id',
+                            'controls',
+                        ],
                     ],
                 ],
-                'controls_count',
             ],
         ]);
     }

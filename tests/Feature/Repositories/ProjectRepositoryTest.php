@@ -54,7 +54,7 @@ class ProjectRepositoryTest extends TestCase
         ]);
 
         $result = $this->projectRepository->getProjectByID($project);
-        $this->assertEquals(2, $result->framework->requirement->controls_count);
+        $this->assertEquals(2, $result->framework->requirements[0]->controls_count);
     }
 
     public function test_it_get_project_by_id_with_no_framework(): void
