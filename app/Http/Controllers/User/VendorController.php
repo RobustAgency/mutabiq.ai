@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\Vendor;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\VendorResource;
+use App\Repositories\VendorRepository;
 use App\Http\Requests\Vendor\ListVendorRequest;
 use App\Http\Requests\Vendor\StoreVendorRequest;
 use App\Http\Requests\Vendor\UpdateVendorRequest;
-use App\Http\Resources\VendorResource;
-use App\Models\Vendor;
-use App\Repositories\VendorRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class VendorController extends Controller
 {
@@ -31,6 +31,20 @@ class VendorController extends Controller
             'error' => false,
             'message' => 'Vendors retrieved successfully',
             'data' => $vendors,
+        ]);
+    }
+
+    /**
+     * Get vendor statistics for the organization.
+     */
+    public function statistics(): JsonResponse
+    {
+        $stats = $this->repository->getStatistics(Auth::user()->organization_id);
+
+        return response()->json([
+            'error' => false,
+            'message' => 'Vendor statistics retrieved successfully',
+            'data' => $stats,
         ]);
     }
 
@@ -65,10 +79,8 @@ class VendorController extends Controller
     /**
      * Update the specified vendor.
      */
-    public function update(
-        UpdateVendorRequest $request,
-        Vendor $vendor
-    ): JsonResponse {
+    public function update(UpdateVendorRequest $request, Vendor $vendor): JsonResponse
+    {
         $vendor = $this->repository->updateVendor($vendor, $request->validated());
 
         return response()->json([

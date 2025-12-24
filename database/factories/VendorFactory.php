@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Vendor;
+use App\Enums\Vendor\Type;
 use App\Enums\Vendor\RiskTier;
 use App\Enums\Vendor\VendorStatus;
-use App\Models\Stakeholder;
-use App\Models\Vendor;
+use App\Enums\Vendor\DataProcessingRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -35,19 +36,26 @@ class VendorFactory extends Factory
         $metadata = $this->faker->boolean(60) ? [
             'website' => $this->faker->url(),
             'sub_processors_url' => $this->faker->boolean(50) ? $this->faker->url() : null,
+            'parent_company' => $this->faker->boolean(50) ? $this->faker->company() : null,
             'residency_options' => $this->faker->randomElements(['US', 'EU', 'UK', 'AE'], $this->faker->numberBetween(1, 3)),
         ] : null;
 
         return [
             'organization_id' => \App\Models\Organization::factory(),
             'vendor_name' => $this->faker->company(),
-            'legal_name' => $this->faker->company() . ' ' . $this->faker->randomElement(['Inc.', 'Ltd.', 'LLC', 'Corp.']),
+            'legal_name' => $this->faker->company().' '.$this->faker->randomElement(['Inc.', 'Ltd.', 'LLC', 'Corp.']),
             'hq_country' => $this->faker->randomElement(['US', 'GB', 'DE', 'FR', 'AE', 'SG', 'CA']),
             'risk_tier' => $this->faker->randomElement(RiskTier::cases())->value,
             'status' => $this->faker->randomElement(VendorStatus::cases())->value,
-            'stakeholder_id' => Stakeholder::factory(),
+            'type' => array_map(fn ($type) => $type->value, $this->faker->randomElements(Type::cases(), $this->faker->numberBetween(1, 3), false)),
+            'data_processing_role' => $this->faker->randomElement(DataProcessingRole::cases())->value,
+            'service_provided' => $this->faker->boolean(80) ? $this->faker->sentence(6) : null,
             'primary_contacts' => $primaryContacts,
             'metadata' => $metadata,
+            'duns_number' => $this->faker->boolean(50) ? $this->faker->unique()->numerify('#########') : null,
+            'lei_number' => $this->faker->boolean(50) ? $this->faker->unique()->bothify('??????????????????') : null,
+            'tax_id' => $this->faker->boolean(50) ? $this->faker->unique()->bothify('??########') : null,
+            'stock_ticker' => $this->faker->boolean(50) ? strtoupper($this->faker->bothify('???')) : null,
             'notes' => $this->faker->boolean(40) ? $this->faker->sentence() : null,
         ];
     }

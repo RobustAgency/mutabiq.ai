@@ -228,6 +228,7 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('vendors')->controller(VendorController::class)->group(function () {
         Route::get('', 'index');
+        Route::get('statistics', 'statistics');
         Route::post('', 'store');
         Route::get('{vendor}', 'show');
         Route::post('{vendor}', 'update');
