@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests\Vendor;
 
+use App\Enums\Vendor\Type;
 use App\Enums\Vendor\RiskTier;
-use App\Enums\Vendor\VendorStatus;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\Vendor\VendorStatus;
+use App\Enums\Vendor\DataProcessingRole;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreVendorRequest extends FormRequest
 {
@@ -30,7 +32,10 @@ class StoreVendorRequest extends FormRequest
             'hq_country' => ['required', 'string', 'size:2', 'regex:/^[A-Z]{2}$/'],
             'risk_tier' => ['required', 'string', Rule::enum(RiskTier::class)],
             'status' => ['required', 'string', Rule::enum(VendorStatus::class)],
-            'stakeholder_id' => ['required', 'integer', 'exists:stakeholders,id'],
+            'type' => ['required', 'array'],
+            'type.*' => ['string', Rule::enum(Type::class)],
+            'data_processing_role' => ['required', 'string', Rule::enum(DataProcessingRole::class)],
+            'service_provided' => ['nullable', 'string', 'max:500'],
             'primary_contacts' => ['nullable', 'array'],
             'primary_contacts.*.name' => ['required', 'string'],
             'primary_contacts.*.email' => ['required', 'email'],
@@ -38,6 +43,10 @@ class StoreVendorRequest extends FormRequest
             'primary_contacts.*.phone' => ['nullable', 'string'],
             'primary_contacts.*.primary' => ['nullable', 'boolean'],
             'metadata' => ['nullable', 'array'],
+            'duns_number' => ['nullable', 'string', 'max:50'],
+            'lei_number' => ['nullable', 'string', 'max:50'],
+            'tax_id' => ['nullable', 'string', 'max:50'],
+            'stock_ticker' => ['nullable', 'string', 'max:20'],
             'notes' => ['nullable', 'string'],
         ];
     }
