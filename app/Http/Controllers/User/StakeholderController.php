@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\Stakeholder;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\StakeholderResource;
+use App\Repositories\StakeholderRepository;
 use App\Http\Requests\ListStakeholderRequest;
 use App\Http\Requests\StoreStakeholderRequest;
-use App\Models\Stakeholder;
-use App\Repositories\StakeholderRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\UpdateStakeholderRequest;
 
 class StakeholderController extends Controller
 {
@@ -27,6 +29,17 @@ class StakeholderController extends Controller
         ]);
     }
 
+    public function statistics(): JsonResponse
+    {
+        $stats = $this->stakeholderRepository->getStatistics(Auth::user()->organization_id);
+
+        return response()->json([
+            'error' => false,
+            'message' => 'Stakeholder statistics retrieved successfully.',
+            'data' => $stats,
+        ]);
+    }
+
     public function store(StoreStakeholderRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -36,7 +49,7 @@ class StakeholderController extends Controller
         return response()->json([
             'error' => false,
             'message' => 'Stakeholder created successfully.',
-            'data' => $stakeholder,
+            'data' => new StakeholderResource($stakeholder),
         ]);
     }
 
@@ -45,11 +58,11 @@ class StakeholderController extends Controller
         return response()->json([
             'error' => false,
             'message' => 'Stakeholder retrieved successfully.',
-            'data' => $stakeholder,
+            'data' => new StakeholderResource($stakeholder),
         ]);
     }
 
-    public function update(StoreStakeholderRequest $request, Stakeholder $stakeholder): JsonResponse
+    public function update(UpdateStakeholderRequest $request, Stakeholder $stakeholder): JsonResponse
     {
         $validated = $request->validated();
         $stakeholder = $this->stakeholderRepository->update($stakeholder, $validated);
@@ -57,7 +70,7 @@ class StakeholderController extends Controller
         return response()->json([
             'error' => false,
             'message' => 'Stakeholder updated successfully.',
-            'data' => null,
+            'data' => new StakeholderResource($stakeholder),
         ]);
     }
 

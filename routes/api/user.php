@@ -136,6 +136,7 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('stakeholders')->controller(StakeholderController::class)->group(function () {
         Route::get('', 'index');
+        Route::get('statistics', 'statistics');
         Route::post('', 'store');
         Route::get('{stakeholder}', 'show');
         Route::post('{stakeholder}', 'update');
