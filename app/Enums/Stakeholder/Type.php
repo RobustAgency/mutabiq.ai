@@ -10,4 +10,6 @@ enum Type: string
     case REGULATOR = 'regulator';
     case CUSTOMER_GROUP = 'customer_group';
     case COMMITTEE_SECRETARIAT = 'committee_secretariat';
+    case DEPARTMENT = 'department';
+    case EXTERNAL_PARTNER = 'external_partner';
 }

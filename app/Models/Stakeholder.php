@@ -14,22 +14,32 @@ class Stakeholder extends Model
         'organization_id',
         'type',
         'display_name',
-        'legal_name',
+        'first_name',
+        'last_name',
         'org_unit',
         'email',
+        'secondary_email',
         'phone',
-        'vendor_id',
+        'mobile',
         'role_tags',
         'timezone',
         'classification',
         'country',
         'external_ref',
-        'active',
+        'employee_id',
+        'cost_center',
+        'manager',
+        'delegate',
+        'status',
+        'notes',
+        'start_date',
+        'end_date',
     ];
 
     protected $casts = [
         'role_tags' => 'array',
-        'active' => 'boolean',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     protected $appends = [

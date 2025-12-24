@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Models\Stakeholder;
-use App\Repositories\StakeholderRepository;
-use App\Models\Organization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Stakeholder;
+use App\Models\Organization;
+use App\Enums\Stakeholder\Classification;
+use App\Repositories\StakeholderRepository;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class StakeholderRepositoryTest extends TestCase
 {
@@ -17,7 +18,7 @@ class StakeholderRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new StakeholderRepository();
+        $this->repository = new StakeholderRepository;
     }
 
     public function test_get_filtered_stakeholders_returns_paginated_results(): void
@@ -165,46 +166,6 @@ class StakeholderRepositoryTest extends TestCase
         }
     }
 
-    public function test_filter_by_legal_name(): void
-    {
-        Stakeholder::factory()->create([
-            'display_name' => 'Person A',
-            'legal_name' => 'Tech Corporation',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Person B',
-            'legal_name' => 'Finance Solutions',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Person C',
-            'legal_name' => 'Tech Innovations',
-        ]);
-
-        $result = $this->repository->getFilteredStakeholders(['name' => 'Tech']);
-
-        $this->assertCount(2, $result->items());
-    }
-
-    public function test_filter_by_name_searches_both_display_and_legal_names(): void
-    {
-        Stakeholder::factory()->create([
-            'display_name' => 'Alpha Solutions',
-            'legal_name' => 'Beta Corp',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Beta Innovations',
-            'legal_name' => 'Gamma LLC',
-        ]);
-        Stakeholder::factory()->create([
-            'display_name' => 'Delta Systems',
-            'legal_name' => 'Beta Holdings',
-        ]);
-
-        $result = $this->repository->getFilteredStakeholders(['name' => 'Beta']);
-
-        $this->assertCount(3, $result->items());
-    }
-
     public function test_filter_by_name_is_case_insensitive(): void
     {
         Stakeholder::factory()->create(['display_name' => 'JOHN SMITH']);
@@ -336,5 +297,68 @@ class StakeholderRepositoryTest extends TestCase
         $this->assertEquals($newest->id, $items[0]->id);
         $this->assertEquals($middle->id, $items[1]->id);
         $this->assertEquals($oldest->id, $items[2]->id);
+    }
+
+    public function test_get_statistics_returns_correct_total_count(): void
+    {
+        $organization = Organization::factory()->create();
+        Stakeholder::factory()->count(10)->create(['organization_id' => $organization->id]);
+
+        $stats = $this->repository->getStatistics($organization->id);
+
+        $this->assertEquals(10, $stats['total_count']);
+    }
+
+    public function test_get_statistics_counts_internal_stakeholders(): void
+    {
+        $organization = Organization::factory()->create();
+        Stakeholder::factory()->count(7)->create([
+            'organization_id' => $organization->id,
+            'classification' => Classification::INTERNAL->value,
+        ]);
+        Stakeholder::factory()->count(3)->create([
+            'organization_id' => $organization->id,
+            'classification' => Classification::EXTERNAL->value,
+        ]);
+
+        $stats = $this->repository->getStatistics($organization->id);
+
+        $this->assertEquals(7, $stats['internal_count']);
+    }
+
+    public function test_get_statistics_counts_external_stakeholders(): void
+    {
+        $organization = Organization::factory()->create();
+        Stakeholder::factory()->count(5)->create([
+            'organization_id' => $organization->id,
+            'classification' => Classification::INTERNAL->value,
+        ]);
+        Stakeholder::factory()->count(8)->create([
+            'organization_id' => $organization->id,
+            'classification' => Classification::EXTERNAL->value,
+        ]);
+
+        $stats = $this->repository->getStatistics($organization->id);
+
+        $this->assertEquals(8, $stats['external_count']);
+    }
+
+    public function test_get_statistics_returns_all_counts(): void
+    {
+        $organization = Organization::factory()->create();
+        Stakeholder::factory()->count(6)->create([
+            'organization_id' => $organization->id,
+            'classification' => Classification::INTERNAL->value,
+        ]);
+        Stakeholder::factory()->count(4)->create([
+            'organization_id' => $organization->id,
+            'classification' => Classification::EXTERNAL->value,
+        ]);
+
+        $stats = $this->repository->getStatistics($organization->id);
+
+        $this->assertEquals(10, $stats['total_count']);
+        $this->assertEquals(6, $stats['internal_count']);
+        $this->assertEquals(4, $stats['external_count']);
     }
 }

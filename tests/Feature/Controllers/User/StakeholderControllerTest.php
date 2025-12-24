@@ -6,6 +6,9 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Stakeholder;
 use App\Models\Organization;
+use App\Enums\Stakeholder\Type;
+use App\Enums\Stakeholder\Status;
+use App\Enums\Stakeholder\Classification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class StakeholderControllerTest extends TestCase
@@ -43,20 +46,21 @@ class StakeholderControllerTest extends TestCase
                     'data' => [
                         '*' => [
                             'id',
+                            'display_id',
                             'organization_id',
                             'type',
                             'display_name',
-                            'legal_name',
+                            'first_name',
+                            'last_name',
                             'email',
                             'phone',
                             'org_unit',
-                            'vendor_id',
                             'role_tags',
                             'timezone',
                             'classification',
                             'country',
                             'external_ref',
-                            'active',
+                            'status',
                             'created_at',
                             'updated_at',
                         ],
@@ -95,17 +99,18 @@ class StakeholderControllerTest extends TestCase
     public function test_store_creates_stakeholder(): void
     {
         $data = [
-            'type' => 'vendor_org',
+            'type' => Type::PERSON->value,
             'display_name' => 'John Smith',
-            'legal_name' => 'Tech Company',
+            'first_name' => 'John',
+            'last_name' => 'Smith',
             'email' => 'john@example.com',
             'phone' => '+1234567890',
             'org_unit' => 'Engineering',
             'role_tags' => ['admin', 'developer'],
             'timezone' => 'America/New_York',
-            'classification' => 'internal',
+            'classification' => Classification::INTERNAL->value,
             'country' => 'US',
-            'active' => true,
+            'status' => Status::ACTIVE->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -204,5 +209,81 @@ class StakeholderControllerTest extends TestCase
             ->deleteJson('/api/stakeholders/99999');
 
         $response->assertStatus(404);
+    }
+
+    public function test_statistics_returns_correct_counts(): void
+    {
+        Stakeholder::factory()->count(6)->create([
+            'organization_id' => $this->organization->id,
+            'classification' => Classification::INTERNAL->value,
+        ]);
+        Stakeholder::factory()->count(4)->create([
+            'organization_id' => $this->organization->id,
+            'classification' => Classification::EXTERNAL->value,
+        ]);
+
+        $response = $this->actingAs($this->user, 'supabase')
+            ->getJson('/api/stakeholders/statistics');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'error' => false,
+                'message' => 'Stakeholder statistics retrieved successfully.',
+                'data' => [
+                    'total_count' => 10,
+                    'internal_count' => 6,
+                    'external_count' => 4,
+                ],
+            ]);
+    }
+
+    public function test_statistics_requires_authentication(): void
+    {
+        $response = $this->getJson('/api/stakeholders/statistics');
+
+        $response->assertStatus(401);
+    }
+
+    public function test_statistics_returns_only_organization_data(): void
+    {
+        $anotherOrg = Organization::factory()->create();
+
+        Stakeholder::factory()->count(5)->create([
+            'organization_id' => $this->organization->id,
+            'classification' => Classification::INTERNAL->value,
+        ]);
+        Stakeholder::factory()->count(3)->create([
+            'organization_id' => $anotherOrg->id,
+            'classification' => Classification::INTERNAL->value,
+        ]);
+
+        $response = $this->actingAs($this->user, 'supabase')
+            ->getJson('/api/stakeholders/statistics');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'total_count' => 5,
+                    'internal_count' => 5,
+                    'external_count' => 0,
+                ],
+            ]);
+    }
+
+    public function test_statistics_with_empty_organization(): void
+    {
+        $response = $this->actingAs($this->user, 'supabase')
+            ->getJson('/api/stakeholders/statistics');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'error' => false,
+                'message' => 'Stakeholder statistics retrieved successfully.',
+                'data' => [
+                    'total_count' => 0,
+                    'internal_count' => 0,
+                    'external_count' => 0,
+                ],
+            ]);
     }
 }
