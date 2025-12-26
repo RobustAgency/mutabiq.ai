@@ -237,6 +237,7 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('agreements')->controller(AgreementController::class)->group(function () {
         Route::get('', 'index');
+        Route::get('statistics', 'statistics');
         Route::post('', 'store');
         Route::get('{agreement}', 'show');
         Route::post('{agreement}', 'update');

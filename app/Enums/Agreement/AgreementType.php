@@ -9,5 +9,7 @@ enum AgreementType: string
     case ORDER_FORM = 'order_form';
     case ADDENDUM = 'addendum';
     case SLA = 'sla';
+    case NDA = 'nda';
+    case SOW = 'sow';
     case OTHER = 'other';
 }

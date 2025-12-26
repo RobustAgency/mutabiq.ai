@@ -16,6 +16,24 @@ class Agreement extends Model
         'vendor_id',
         'agreement_type',
         'status',
+        'agreement_owner_id',
+        'asset_types_covered',
+        'renewal_type',
+        'notice_period_days',
+        'termination_for_convenience',
+        'sub_processing_rights',
+        'contract_value',
+        'liability_cap',
+        'insurance_requirements',
+        'indemnification',
+        'internal_reference_number',
+        'vendor_contract_id',
+        'dispute_resolution',
+        'confidentiality_term',
+        'parent_agreement',
+        'governing_law',
+        'replaces_agreement',
+        'notes',
         'effective_from',
         'effective_to',
         'training_opt_out',
@@ -23,12 +41,16 @@ class Agreement extends Model
         'transfer_mechanism',
         'sla_terms',
         'doc_ref',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
         'effective_from' => 'datetime',
         'effective_to' => 'datetime',
         'sla_terms' => 'array',
+        'asset_types_covered' => 'array',
+        'notice_period_days' => 'integer',
     ];
 
     protected $appends = [
