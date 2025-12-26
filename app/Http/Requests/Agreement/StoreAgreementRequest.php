@@ -2,12 +2,21 @@
 
 namespace App\Http\Requests\Agreement;
 
+use Illuminate\Validation\Rule;
+use App\Enums\Agreement\AuditRights;
+use App\Enums\Agreement\RenewalType;
+use App\Enums\Agreement\GoverningLaw;
 use App\Enums\Agreement\AgreementType;
 use App\Enums\Agreement\TrainingOptOut;
-use App\Enums\Agreement\AuditRights;
+use App\Enums\Agreement\AgreementStatus;
+use App\Enums\Agreement\Indemnification;
+use App\Enums\Agreement\ParentAgreement;
+use App\Enums\Agreement\DisputeResolution;
+use App\Enums\Agreement\ReplacesAgreement;
 use App\Enums\Agreement\TransferMechanism;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Enums\Agreement\ConfidentialityTerm;
+use App\Enums\Agreement\SubProcessingRights;
 
 class StoreAgreementRequest extends FormRequest
 {
@@ -22,26 +31,53 @@ class StoreAgreementRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
             'vendor_id' => ['required', 'integer', 'exists:vendors,id'],
-            'agreement_type' => ['required', 'string', Rule::in(array_map(fn($type) => $type, AgreementType::cases()))],
-            'status' => ['required', 'string', Rule::in(['draft', 'active', 'lapsed', 'terminated'])],
+
+            'agreement_type' => ['required', Rule::enum(AgreementType::class)],
+            'status' => ['required', Rule::enum(AgreementStatus::class)],
+
+            'agreement_owner_id' => ['required', 'integer', 'exists:stakeholders,id'],
+
+            'asset_types_covered' => ['required', 'array', 'min:1'],
+            'asset_types_covered.*' => ['string'],
+
+            'renewal_type' => ['nullable', Rule::enum(RenewalType::class)],
+            'notice_period_days' => ['nullable', 'integer', 'min:0'],
+
+            'termination_for_convenience' => ['nullable', 'boolean'],
+
+            'governing_law' => ['nullable', Rule::enum(GoverningLaw::class)],
+
             'effective_from' => ['required', 'date'],
             'effective_to' => ['required', 'date', 'after:effective_from'],
-            'training_opt_out' => ['nullable', 'string', Rule::in(array_map(fn($option) => $option, TrainingOptOut::cases()))],
-            'audit_rights' => ['nullable', 'string', Rule::in(array_map(fn($option) => $option, AuditRights::cases()))],
-            'transfer_mechanism' => ['nullable', 'string', Rule::in(array_map(fn($option) => $option, TransferMechanism::cases()))],
-            'sla_terms' => ['nullable', 'array'],
-            'sla_terms.availability_target_pct' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'sla_terms.latency_p95_ms' => ['nullable', 'integer', 'min:0'],
-            'sla_terms.support_tier' => ['nullable', 'string'],
-            'sla_terms.breach_definition' => ['nullable', 'string'],
-            'sla_terms.credit_schedule_ref' => ['nullable', 'string'],
-            'sla_terms.monitoring_ref' => ['nullable', 'string'],
+
+            'training_opt_out' => ['nullable', Rule::enum(TrainingOptOut::class)],
+            'audit_rights' => ['nullable', Rule::enum(AuditRights::class)],
+            'transfer_mechanism' => ['nullable', Rule::enum(TransferMechanism::class)],
+            'sub_processing_rights' => ['nullable', Rule::enum(SubProcessingRights::class)],
+
+            'contract_value' => ['nullable', 'numeric', 'min:0'],
+            'liability_cap' => ['nullable', 'numeric', 'min:0'],
+            'insurance_requirements' => ['nullable', 'string'],
+
+            'indemnification' => ['nullable', Rule::enum(Indemnification::class)],
+
+            'internal_reference_number' => ['nullable', 'string', 'max:255'],
+            'vendor_contract_id' => ['nullable', 'string', 'max:255'],
+
+            'dispute_resolution' => ['nullable', Rule::enum(DisputeResolution::class)],
+            'confidentiality_term' => ['nullable', Rule::enum(ConfidentialityTerm::class)],
+
+            'parent_agreement' => ['nullable', Rule::enum(ParentAgreement::class)],
+            'replaces_agreement' => ['nullable', Rule::enum(ReplacesAgreement::class)],
+
+            'notes' => ['nullable', 'string'],
+
             'doc_ref' => ['required', 'string', 'max:500'],
         ];
     }

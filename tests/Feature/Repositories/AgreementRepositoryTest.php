@@ -5,6 +5,7 @@ namespace Tests\Feature\Repositories;
 use Tests\TestCase;
 use App\Models\Vendor;
 use App\Models\Agreement;
+use App\Models\Stakeholder;
 use App\Models\Organization;
 use App\Repositories\AgreementRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -101,15 +102,18 @@ class AgreementRepositoryTest extends TestCase
     public function test_create_agreement_creates_new_record_with_all_fields(): void
     {
         $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
+        $stakeholder = Stakeholder::factory()->create();
         $data = [
             'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
+            'agreement_owner_id' => $stakeholder->id,
             'agreement_type' => 'dpa',
             'status' => 'active',
+            'asset_types_covered' => ['data', 'systems'],
             'effective_from' => now(),
             'effective_to' => now()->addYear(),
-            'training_opt_out' => 'yes',
-            'audit_rights' => 'yes',
+            'training_opt_out' => 'allowed_with_consent',
+            'audit_rights' => 'full_audit_rights',
             'transfer_mechanism' => 'sccs',
             'sla_terms' => [
                 'availability_target_pct' => 99.9,
@@ -123,8 +127,10 @@ class AgreementRepositoryTest extends TestCase
 
         $this->assertInstanceOf(Agreement::class, $agreement);
         $this->assertEquals($data['vendor_id'], $agreement->vendor_id);
+        $this->assertEquals($data['agreement_owner_id'], $agreement->agreement_owner_id);
         $this->assertEquals($data['agreement_type'], $agreement->agreement_type);
         $this->assertEquals($data['status'], $agreement->status);
+        $this->assertEquals($data['asset_types_covered'], $agreement->asset_types_covered);
         $this->assertEquals($data['training_opt_out'], $agreement->training_opt_out);
         $this->assertEquals($data['audit_rights'], $agreement->audit_rights);
         $this->assertEquals($data['transfer_mechanism'], $agreement->transfer_mechanism);
@@ -138,11 +144,14 @@ class AgreementRepositoryTest extends TestCase
     public function test_create_agreement_creates_record_with_only_required_fields(): void
     {
         $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
+        $stakeholder = Stakeholder::factory()->create();
         $data = [
             'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
+            'agreement_owner_id' => $stakeholder->id,
             'agreement_type' => 'msa',
             'status' => 'draft',
+            'asset_types_covered' => ['data'],
             'effective_from' => now(),
             'effective_to' => now()->addYear(),
             'doc_ref' => 'https://example.com/msa.pdf',
@@ -164,14 +173,17 @@ class AgreementRepositoryTest extends TestCase
     public function test_create_agreement_stores_datetime_fields_correctly(): void
     {
         $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
+        $stakeholder = Stakeholder::factory()->create();
         $effectiveFrom = now()->subMonth();
         $effectiveTo = now()->addYear();
 
         $data = [
             'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
+            'agreement_owner_id' => $stakeholder->id,
             'agreement_type' => 'dpa',
             'status' => 'active',
+            'asset_types_covered' => ['data'],
             'effective_from' => $effectiveFrom,
             'effective_to' => $effectiveTo,
             'doc_ref' => 'https://example.com/dpa.pdf',
@@ -189,6 +201,7 @@ class AgreementRepositoryTest extends TestCase
     public function test_create_agreement_stores_sla_terms_json_correctly(): void
     {
         $vendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
+        $stakeholder = Stakeholder::factory()->create();
         $slaTerms = [
             'availability_target_pct' => 99.95,
             'latency_p95_ms' => 150,
@@ -201,8 +214,10 @@ class AgreementRepositoryTest extends TestCase
         $data = [
             'organization_id' => $this->organization->id,
             'vendor_id' => $vendor->id,
+            'agreement_owner_id' => $stakeholder->id,
             'agreement_type' => 'sla',
             'status' => 'active',
+            'asset_types_covered' => ['systems'],
             'effective_from' => now(),
             'effective_to' => now()->addYear(),
             'sla_terms' => $slaTerms,
@@ -223,14 +238,17 @@ class AgreementRepositoryTest extends TestCase
     {
         $agreement = Agreement::factory()->create(['organization_id' => $this->organization->id]);
         $newVendor = Vendor::factory()->create(['organization_id' => $this->organization->id]);
+        $newStakeholder = Stakeholder::factory()->create();
 
         $updateData = [
             'vendor_id' => $newVendor->id,
+            'agreement_owner_id' => $newStakeholder->id,
             'agreement_type' => 'order_form',
-            'status' => 'lapsed',
+            'status' => 'terminated',
+            'asset_types_covered' => ['data', 'infrastructure'],
             'effective_from' => now()->subYear(),
             'effective_to' => now(),
-            'training_opt_out' => 'no',
+            'training_opt_out' => 'prohibited',
             'audit_rights' => 'limited',
             'transfer_mechanism' => 'adequacy',
             'sla_terms' => ['new' => 'terms'],
@@ -240,8 +258,10 @@ class AgreementRepositoryTest extends TestCase
         $updatedAgreement = $this->repository->updateAgreement($agreement, $updateData);
 
         $this->assertEquals($updateData['vendor_id'], $updatedAgreement->vendor_id);
+        $this->assertEquals($updateData['agreement_owner_id'], $updatedAgreement->agreement_owner_id);
         $this->assertEquals($updateData['agreement_type'], $updatedAgreement->agreement_type);
         $this->assertEquals($updateData['status'], $updatedAgreement->status);
+        $this->assertEquals($updateData['asset_types_covered'], $updatedAgreement->asset_types_covered);
         $this->assertEquals($updateData['training_opt_out'], $updatedAgreement->training_opt_out);
         $this->assertEquals($updateData['audit_rights'], $updatedAgreement->audit_rights);
         $this->assertEquals($updateData['transfer_mechanism'], $updatedAgreement->transfer_mechanism);
@@ -314,8 +334,8 @@ class AgreementRepositoryTest extends TestCase
     public function test_update_agreement_can_clear_optional_fields(): void
     {
         $agreement = Agreement::factory()->create([
-            'training_opt_out' => 'yes',
-            'audit_rights' => 'yes',
+            'training_opt_out' => 'allowed_with_consent',
+            'audit_rights' => 'full_audit_rights',
             'transfer_mechanism' => 'sccs',
         ]);
 
@@ -356,5 +376,107 @@ class AgreementRepositoryTest extends TestCase
         $result = $this->repository->deleteAgreement($agreement);
 
         $this->assertTrue($result);
+    }
+
+    /**
+     * Test get statistics returns correct counts.
+     */
+    public function test_get_statistics_returns_correct_counts(): void
+    {
+        Agreement::factory()->count(5)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'active',
+        ]);
+        Agreement::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'pending_signature',
+        ]);
+        Agreement::factory()->count(2)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'draft',
+        ]);
+
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(10, $stats['total_agreements']);
+        $this->assertEquals(5, $stats['active_agreements']);
+        $this->assertEquals(3, $stats['pending_signature_count']);
+    }
+
+    /**
+     * Test get statistics counts expiring in 90 days correctly.
+     */
+    public function test_get_statistics_counts_expiring_in_90_days_correctly(): void
+    {
+        // Active agreements expiring within 90 days
+        Agreement::factory()->count(2)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'active',
+            'effective_to' => now()->addDays(30)->format('Y-m-d'),
+        ]);
+        Agreement::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'active',
+            'effective_to' => now()->addDays(60)->format('Y-m-d'),
+        ]);
+        // Active agreements NOT expiring within 90 days
+        Agreement::factory()->count(2)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'active',
+            'effective_to' => now()->addDays(100)->format('Y-m-d'),
+        ]);
+        // Already expired
+        Agreement::factory()->count(1)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'active',
+            'effective_to' => now()->subDays(10)->format('Y-m-d'),
+        ]);
+
+        // signature pending agreements
+        Agreement::factory()->count(2)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'pending_signature',
+        ]);
+
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(10, $stats['total_agreements']);
+        $this->assertEquals(8, $stats['active_agreements']);
+        $this->assertEquals(5, $stats['expiring_in_90_days']);
+        $this->assertEquals(2, $stats['pending_signature_count']);
+    }
+
+    /**
+     * Test get statistics returns zero for empty organization.
+     */
+    public function test_get_statistics_returns_zero_for_empty_organization(): void
+    {
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(0, $stats['total_agreements']);
+        $this->assertEquals(0, $stats['active_agreements']);
+        $this->assertEquals(0, $stats['expiring_in_90_days']);
+        $this->assertEquals(0, $stats['pending_signature_count']);
+    }
+
+    /**
+     * Test get statistics only counts agreements from specified organization.
+     */
+    public function test_get_statistics_only_counts_specified_organization(): void
+    {
+        $otherOrganization = Organization::factory()->create();
+        Agreement::factory()->count(5)->create([
+            'organization_id' => $this->organization->id,
+            'status' => 'active',
+        ]);
+        Agreement::factory()->count(10)->create([
+            'organization_id' => $otherOrganization->id,
+            'status' => 'active',
+        ]);
+
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(5, $stats['total_agreements']);
+        $this->assertEquals(5, $stats['active_agreements']);
     }
 }
