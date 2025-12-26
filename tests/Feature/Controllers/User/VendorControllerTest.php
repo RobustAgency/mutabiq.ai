@@ -5,8 +5,11 @@ namespace Tests\Feature\Controllers\User;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Enums\Vendor\Type;
 use App\Models\Stakeholder;
 use App\Models\Organization;
+use App\Enums\Vendor\RiskTier;
+use App\Enums\Vendor\VendorStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class VendorControllerTest extends TestCase
@@ -29,7 +32,6 @@ class VendorControllerTest extends TestCase
 
     private function validPayload(array $overrides = []): array
     {
-        $stakeholder = Stakeholder::factory()->create();
 
         return array_merge([
             'vendor_name' => 'Test Vendor',
@@ -37,7 +39,8 @@ class VendorControllerTest extends TestCase
             'hq_country' => 'US',
             'risk_tier' => 'tier_1',
             'status' => 'approved',
-            'stakeholder_id' => $stakeholder->id,
+            'type' => [Type::API_SERVICE->value, Type::DATASET_PROVIDER->value],
+            'data_processing_role' => 'processor',
             'primary_contacts' => [
                 [
                     'name' => 'John Doe',
@@ -79,7 +82,6 @@ class VendorControllerTest extends TestCase
                             'hq_country',
                             'risk_tier',
                             'status',
-                            'stakeholder_id',
                             'created_at',
                             'updated_at',
                         ],
@@ -134,7 +136,6 @@ class VendorControllerTest extends TestCase
                     'hq_country',
                     'risk_tier',
                     'status',
-                    'stakeholder_id',
                     'primary_contacts',
                     'metadata',
                     'notes',
@@ -161,14 +162,14 @@ class VendorControllerTest extends TestCase
      */
     public function test_user_can_create_vendor_with_only_required_fields(): void
     {
-        $stakeholder = Stakeholder::factory()->create();
         $payload = [
             'vendor_name' => 'Minimal Vendor',
             'legal_name' => 'Minimal Vendor LLC',
             'hq_country' => 'GB',
             'risk_tier' => 'tier_2',
             'status' => 'evaluating',
-            'stakeholder_id' => $stakeholder->id,
+            'type' => [Type::HARDWARE_PROVIDER->value],
+            'data_processing_role' => 'controller',
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/vendors', $payload);
@@ -292,6 +293,8 @@ class VendorControllerTest extends TestCase
                 'hq_country' => 'US',
                 'risk_tier' => $tier,
                 'status' => 'approved',
+                'type' => [Type::API_SERVICE->value, Type::DATASET_PROVIDER->value],
+                'data_processing_role' => 'processor',
                 'stakeholder_id' => $stakeholder->id,
             ];
 
@@ -342,6 +345,8 @@ class VendorControllerTest extends TestCase
                 'hq_country' => 'US',
                 'risk_tier' => 'tier_1',
                 'status' => $status,
+                'type' => [Type::API_SERVICE->value, Type::DATASET_PROVIDER->value],
+                'data_processing_role' => 'processor',
                 'stakeholder_id' => $stakeholder->id,
             ];
 
@@ -349,33 +354,6 @@ class VendorControllerTest extends TestCase
 
             $response->assertStatus(201);
         }
-    }
-
-    /**
-     * Test create vendor requires stakeholder_id.
-     */
-    public function test_create_vendor_requires_stakeholder_id(): void
-    {
-        $payload = $this->validPayload();
-        unset($payload['stakeholder_id']);
-
-        $response = $this->actingAs($this->user)->postJson('/api/vendors', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('stakeholder_id');
-    }
-
-    /**
-     * Test create vendor validates stakeholder_id exists.
-     */
-    public function test_create_vendor_validates_stakeholder_id_exists(): void
-    {
-        $payload = $this->validPayload(['stakeholder_id' => 99999]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/vendors', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('stakeholder_id');
     }
 
     /**
@@ -592,21 +570,6 @@ class VendorControllerTest extends TestCase
     }
 
     /**
-     * Test update vendor validates stakeholder_id exists.
-     */
-    public function test_update_vendor_validates_stakeholder_id_exists(): void
-    {
-        $vendor = Vendor::factory()->create();
-
-        $response = $this->actingAs($this->user)->postJson("/api/vendors/{$vendor->id}", [
-            'stakeholder_id' => 99999,
-        ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('stakeholder_id');
-    }
-
-    /**
      * Test guest cannot update vendor.
      */
     public function test_guest_cannot_update_vendor(): void
@@ -712,6 +675,89 @@ class VendorControllerTest extends TestCase
                     'primary_contacts' => null,
                     'metadata' => null,
                     'notes' => null,
+                ],
+            ]);
+    }
+
+    /**
+     * Test user can get vendor statistics.
+     */
+    public function test_user_can_get_vendor_statistics(): void
+    {
+        Vendor::factory()->count(15)->create(['organization_id' => $this->organization->id]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/vendors/statistics');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'error',
+                'message',
+                'data' => [
+                    'total_count',
+                    'high_risk_count',
+                    'approved_count',
+                    'evaluating_count',
+                ],
+            ])
+            ->assertJson(['error' => false])
+            ->assertJsonPath('data.total_count', 15);
+    }
+
+    /**
+     * Test vendor statistics returns correct counts by risk tier.
+     */
+    public function test_vendor_statistics_returns_correct_counts_by_risk_tier(): void
+    {
+        Vendor::factory()->count(5)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_1->value,
+        ]);
+        Vendor::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_2->value,
+        ]);
+        Vendor::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_3->value,
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/vendors/statistics');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'total_count' => 11,
+                    'high_risk_count' => 8,
+                ],
+            ]);
+    }
+
+    /**
+     * Test vendor statistics returns correct counts by status.
+     */
+    public function test_vendor_statistics_returns_correct_counts_by_status(): void
+    {
+        Vendor::factory()->count(8)->create([
+            'organization_id' => $this->organization->id,
+            'status' => VendorStatus::APPROVED->value,
+        ]);
+        Vendor::factory()->count(4)->create([
+            'organization_id' => $this->organization->id,
+            'status' => VendorStatus::EVALUATING->value,
+        ]);
+        Vendor::factory()->count(2)->create([
+            'organization_id' => $this->organization->id,
+            'status' => VendorStatus::SUSPENDED->value,
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/vendors/statistics');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'total_count' => 14,
+                    'approved_count' => 8,
+                    'evaluating_count' => 4,
                 ],
             ]);
     }

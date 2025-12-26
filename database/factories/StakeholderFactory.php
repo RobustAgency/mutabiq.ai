@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\Stakeholder\Type;
 use App\Models\Stakeholder;
 use App\Models\Organization;
+use App\Enums\Stakeholder\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -30,17 +30,26 @@ class StakeholderFactory extends Factory
             'organization_id' => Organization::factory(),
             'type' => fake()->randomElement(Type::cases())->value,
             'display_name' => fake()->name(),
-            'legal_name' => fake()->optional()->company(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'org_unit' => fake()->optional()->randomElement(['Engineering', 'Sales', 'Marketing', 'Operations']),
             'email' => fake()->safeEmail(),
+            'secondary_email' => fake()->optional()->safeEmail(),
             'phone' => fake()->optional()->phoneNumber(),
-            'vendor_id' => fake()->optional()->numerify('VND-####'),
+            'mobile' => fake()->optional()->phoneNumber(),
             'role_tags' => fake()->randomElements(['admin', 'user', 'manager'], rand(1, 2)),
             'timezone' => fake()->timezone(),
             'classification' => fake()->randomElement(['internal', 'external']),
             'country' => fake()->countryCode(),
             'external_ref' => fake()->optional()->uuid(),
-            'active' => true,
+            'employee_id' => fake()->optional()->numerify('EMP#####'),
+            'cost_center' => fake()->optional()->numerify('CC#####'),
+            'manager' => fake()->optional()->name(),
+            'delegate' => fake()->optional()->name(),
+            'status' => 'active',
+            'notes' => fake()->optional()->paragraph(),
+            'start_date' => fake()->optional()->date(),
+            'end_date' => fake()->optional()->date(),
         ];
     }
 }

@@ -18,15 +18,22 @@ class Vendor extends Model
         'hq_country',
         'risk_tier',
         'status',
-        'stakeholder_id',
+        'type',
+        'data_processing_role',
+        'service_provided',
         'primary_contacts',
         'metadata',
+        'duns_number',
+        'lei_number',
+        'tax_id',
+        'stock_ticker',
         'notes',
     ];
 
     protected $casts = [
         'primary_contacts' => 'array',
         'metadata' => 'array',
+        'type' => 'array',
     ];
 
     protected $appends = [

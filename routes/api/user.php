@@ -136,6 +136,7 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('stakeholders')->controller(StakeholderController::class)->group(function () {
         Route::get('', 'index');
+        Route::get('statistics', 'statistics');
         Route::post('', 'store');
         Route::get('{stakeholder}', 'show');
         Route::post('{stakeholder}', 'update');
@@ -227,6 +228,7 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('vendors')->controller(VendorController::class)->group(function () {
         Route::get('', 'index');
+        Route::get('statistics', 'statistics');
         Route::post('', 'store');
         Route::get('{vendor}', 'show');
         Route::post('{vendor}', 'update');
@@ -235,6 +237,7 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('agreements')->controller(AgreementController::class)->group(function () {
         Route::get('', 'index');
+        Route::get('statistics', 'statistics');
         Route::post('', 'store');
         Route::get('{agreement}', 'show');
         Route::post('{agreement}', 'update');

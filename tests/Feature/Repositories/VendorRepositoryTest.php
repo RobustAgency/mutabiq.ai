@@ -2,24 +2,27 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Models\Stakeholder;
+use Tests\TestCase;
 use App\Models\Vendor;
+use App\Models\Stakeholder;
+use App\Models\Organization;
+use App\Enums\Vendor\RiskTier;
+use App\Enums\Vendor\VendorStatus;
 use App\Repositories\VendorRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\Organization;
 
 class VendorRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     private VendorRepository $repository;
+
     private $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new VendorRepository();
+        $this->repository = new VendorRepository;
         $this->organization = Organization::factory()->create();
     }
 
@@ -91,9 +94,10 @@ class VendorRepositoryTest extends TestCase
             'hq_country' => 'US',
             'risk_tier' => 'tier_1',
             'status' => 'approved',
-            'stakeholder_id' => $stakeholder->id,
+            'type' => ['software_provider', 'cloud_services'],
+            'data_processing_role' => 'processor',
             'primary_contacts' => [
-                ['name' => 'John Doe', 'email' => 'john@test.com', 'role' => 'Account Manager', 'primary' => true]
+                ['name' => 'John Doe', 'email' => 'john@test.com', 'role' => 'Account Manager', 'primary' => true],
             ],
             'metadata' => ['website' => 'https://test.com'],
             'notes' => 'Test notes',
@@ -107,7 +111,8 @@ class VendorRepositoryTest extends TestCase
         $this->assertEquals($data['hq_country'], $vendor->hq_country);
         $this->assertEquals($data['risk_tier'], $vendor->risk_tier);
         $this->assertEquals($data['status'], $vendor->status);
-        $this->assertEquals($data['stakeholder_id'], $vendor->stakeholder_id);
+        $this->assertEquals($data['type'], $vendor->type);
+        $this->assertEquals($data['data_processing_role'], $vendor->data_processing_role);
         $this->assertEquals($data['primary_contacts'], $vendor->primary_contacts);
         $this->assertEquals($data['metadata'], $vendor->metadata);
         $this->assertEquals($data['notes'], $vendor->notes);
@@ -126,6 +131,8 @@ class VendorRepositoryTest extends TestCase
             'hq_country' => 'GB',
             'risk_tier' => 'tier_2',
             'status' => 'evaluating',
+            'type' => ['software_provider'],
+            'data_processing_role' => 'controller',
             'stakeholder_id' => $stakeholder->id,
         ];
 
@@ -161,6 +168,8 @@ class VendorRepositoryTest extends TestCase
             'hq_country' => 'US',
             'risk_tier' => 'tier_3',
             'status' => 'approved',
+            'type' => ['software_provider', 'saas_provider'],
+            'data_processing_role' => 'processor',
             'stakeholder_id' => $stakeholder->id,
             'primary_contacts' => $contacts,
             'metadata' => $metadata,
@@ -188,9 +197,10 @@ class VendorRepositoryTest extends TestCase
             'hq_country' => 'CA',
             'risk_tier' => 'tier_4',
             'status' => 'suspended',
-            'stakeholder_id' => $newStakeholder->id,
+            'type' => ['consulting_services', 'software_provider'],
+            'data_processing_role' => 'controller',
             'primary_contacts' => [
-                ['name' => 'New Contact', 'email' => 'new@test.com', 'primary' => true]
+                ['name' => 'New Contact', 'email' => 'new@test.com', 'primary' => true],
             ],
             'metadata' => ['updated' => true],
             'notes' => 'Updated notes',
@@ -203,7 +213,8 @@ class VendorRepositoryTest extends TestCase
         $this->assertEquals($updateData['hq_country'], $updatedVendor->hq_country);
         $this->assertEquals($updateData['risk_tier'], $updatedVendor->risk_tier);
         $this->assertEquals($updateData['status'], $updatedVendor->status);
-        $this->assertEquals($updateData['stakeholder_id'], $updatedVendor->stakeholder_id);
+        $this->assertEquals($updateData['type'], $updatedVendor->type);
+        $this->assertEquals($updateData['data_processing_role'], $updatedVendor->data_processing_role);
         $this->assertEquals($updateData['primary_contacts'], $updatedVendor->primary_contacts);
         $this->assertEquals($updateData['metadata'], $updatedVendor->metadata);
         $this->assertEquals($updateData['notes'], $updatedVendor->notes);
@@ -217,7 +228,7 @@ class VendorRepositoryTest extends TestCase
         $vendor = Vendor::factory()->create(['vendor_name' => 'Original Name']);
 
         $updatedVendor = $this->repository->updateVendor($vendor, [
-            'vendor_name' => 'Updated Name'
+            'vendor_name' => 'Updated Name',
         ]);
 
         $this->assertNotSame($vendor, $updatedVendor);
@@ -240,7 +251,7 @@ class VendorRepositoryTest extends TestCase
         ]);
 
         $updatedVendor = $this->repository->updateVendor($vendor, [
-            'status' => 'approved'
+            'status' => 'approved',
         ]);
 
         $this->assertEquals('Original Name', $updatedVendor->vendor_name);
@@ -255,7 +266,7 @@ class VendorRepositoryTest extends TestCase
     {
         $vendor = Vendor::factory()->create([
             'primary_contacts' => [
-                ['name' => 'Old Contact', 'email' => 'old@test.com', 'primary' => true]
+                ['name' => 'Old Contact', 'email' => 'old@test.com', 'primary' => true],
             ],
             'metadata' => ['old' => 'data'],
         ]);
@@ -381,34 +392,6 @@ class VendorRepositoryTest extends TestCase
         foreach ($result->items() as $vendor) {
             $this->assertEquals('approved', $vendor->status);
         }
-    }
-
-    /**
-     * Test filter by owner stakeholder.
-     */
-    public function test_filter_by_owner(): void
-    {
-        $stakeholder1 = Stakeholder::factory()->create(['display_name' => 'John Smith']);
-        $stakeholder2 = Stakeholder::factory()->create(['display_name' => 'Jane Doe']);
-        $stakeholder3 = Stakeholder::factory()->create(['display_name' => 'John Williams']);
-
-        Vendor::factory()->create([
-            'organization_id' => $this->organization->id,
-            'stakeholder_id' => $stakeholder1->id,
-        ]);
-        Vendor::factory()->create([
-            'organization_id' => $this->organization->id,
-            'stakeholder_id' => $stakeholder2->id,
-        ]);
-        Vendor::factory()->create([
-            'organization_id' => $this->organization->id,
-            'stakeholder_id' => $stakeholder3->id,
-        ]);
-
-        $filters = ['organization_id' => $this->organization->id, 'owner' => 'John'];
-        $result = $this->repository->getFilteredVendors($filters);
-
-        $this->assertCount(2, $result->items());
     }
 
     /**
@@ -592,5 +575,84 @@ class VendorRepositoryTest extends TestCase
         foreach ($result->items() as $vendor) {
             $this->assertTrue($vendor->relationLoaded('stakeholder'));
         }
+    }
+
+    /**
+     * Test get statistics returns correct total count.
+     */
+    public function test_get_statistics_returns_correct_total_count(): void
+    {
+        Vendor::factory()->count(15)->create(['organization_id' => $this->organization->id]);
+
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(15, $stats['total_count']);
+    }
+
+    /**
+     * Test get statistics counts vendors by high risk.
+     */
+    public function test_get_statistics_counts_vendors_by_high_risk(): void
+    {
+        Vendor::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_1->value,
+        ]);
+        Vendor::factory()->count(5)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_2->value,
+        ]);
+        Vendor::factory()->count(4)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_3->value,
+        ]);
+
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(8, $stats['high_risk_count']);
+    }
+
+    /**
+     * Test get statistics counts vendors by status.
+     */
+    public function test_get_statistics_counts_vendors_by_status(): void
+    {
+        Vendor::factory()->count(8)->create([
+            'organization_id' => $this->organization->id,
+            'status' => VendorStatus::APPROVED->value,
+        ]);
+        Vendor::factory()->count(3)->create([
+            'organization_id' => $this->organization->id,
+            'status' => VendorStatus::EVALUATING->value,
+        ]);
+
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(8, $stats['approved_count']);
+        $this->assertEquals(3, $stats['evaluating_count']);
+    }
+
+    /**
+     * Test get statistics returns all counts.
+     */
+    public function test_get_statistics_returns_all_counts(): void
+    {
+        Vendor::factory()->count(10)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_1->value,
+            'status' => VendorStatus::APPROVED->value,
+        ]);
+        Vendor::factory()->count(5)->create([
+            'organization_id' => $this->organization->id,
+            'risk_tier' => RiskTier::TIER_2->value,
+            'status' => VendorStatus::EVALUATING->value,
+        ]);
+
+        $stats = $this->repository->getStatistics($this->organization->id);
+
+        $this->assertEquals(15, $stats['total_count']);
+        $this->assertEquals(15, $stats['high_risk_count']);
+        $this->assertEquals(10, $stats['approved_count']);
+        $this->assertEquals(5, $stats['evaluating_count']);
     }
 }

@@ -25,7 +25,7 @@ class VendorRepository
         }
         if (isset($filters['owner'])) {
             $query->whereHas('stakeholder', function ($q) use ($filters) {
-                $q->where('display_name', 'like', '%' . $filters['owner'] . '%');
+                $q->where('display_name', 'like', '%'.$filters['owner'].'%');
             });
         }
 
@@ -54,6 +54,7 @@ class VendorRepository
     public function updateVendor(Vendor $vendor, array $data): Vendor
     {
         $vendor->update($data);
+
         return $vendor->fresh();
     }
 
@@ -63,5 +64,24 @@ class VendorRepository
     public function deleteVendor(Vendor $vendor): bool
     {
         return $vendor->delete();
+    }
+
+    public function getStatistics(int $organizationId): array
+    {
+        $stats = Vendor::where('organization_id', $organizationId)
+            ->selectRaw('COUNT(*) as total_count')
+            ->selectRaw('SUM(risk_tier IN ("tier_1", "tier_2")) as high_risk_count')
+            ->selectRaw('SUM(status = "approved") as approved_count')
+            ->selectRaw('SUM(status = "evaluating") as evaluating_count')
+            ->first();
+
+        $stats = $stats->toArray();
+
+        return [
+            'total_count' => (int) $stats['total_count'],
+            'high_risk_count' => (int) $stats['high_risk_count'],
+            'approved_count' => (int) $stats['approved_count'],
+            'evaluating_count' => (int) $stats['evaluating_count'],
+        ];
     }
 }

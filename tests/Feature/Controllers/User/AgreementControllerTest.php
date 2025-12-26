@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\Agreement;
+use App\Models\Stakeholder;
 use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -29,24 +30,19 @@ class AgreementControllerTest extends TestCase
     private function validPayload(array $overrides = []): array
     {
         $vendor = Vendor::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
 
         return array_merge([
             'vendor_id' => $vendor->id,
+            'agreement_owner_id' => $stakeholder->id,
             'agreement_type' => 'dpa',
             'status' => 'active',
-            'effective_from' => now()->format('Y-m-d H:i:s'),
-            'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
-            'training_opt_out' => 'yes',
-            'audit_rights' => 'yes',
+            'asset_types_covered' => ['data', 'systems', 'infrastructure'],
+            'effective_from' => now()->format('Y-m-d'),
+            'effective_to' => now()->addYear()->format('Y-m-d'),
+            'training_opt_out' => 'allowed_with_consent',
+            'audit_rights' => 'full_audit_rights',
             'transfer_mechanism' => 'sccs',
-            'sla_terms' => [
-                'availability_target_pct' => 99.9,
-                'latency_p95_ms' => 200,
-                'support_tier' => 'premium',
-                'breach_definition' => 'Service unavailable for more than 1 hour',
-                'credit_schedule_ref' => 'SLA-CREDIT-2024',
-                'monitoring_ref' => 'MON-2024',
-            ],
             'doc_ref' => 'https://example.com/agreement.pdf',
         ], $overrides);
     }
@@ -130,7 +126,6 @@ class AgreementControllerTest extends TestCase
                     'training_opt_out',
                     'audit_rights',
                     'transfer_mechanism',
-                    'sla_terms',
                     'doc_ref',
                 ],
             ])
@@ -155,12 +150,15 @@ class AgreementControllerTest extends TestCase
     public function test_user_can_create_agreement_with_only_required_fields(): void
     {
         $vendor = Vendor::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $payload = [
             'vendor_id' => $vendor->id,
+            'agreement_owner_id' => $stakeholder->id,
             'agreement_type' => 'msa',
             'status' => 'draft',
-            'effective_from' => now()->format('Y-m-d H:i:s'),
-            'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
+            'asset_types_covered' => ['data'],
+            'effective_from' => now()->format('Y-m-d'),
+            'effective_to' => now()->addYear()->format('Y-m-d'),
             'doc_ref' => 'https://example.com/msa.pdf',
         ];
 
@@ -180,7 +178,61 @@ class AgreementControllerTest extends TestCase
     }
 
     /**
-     * Test create agreement requires vendor_id.
+     * Test create agreement requires agreement_owner_id.
+     */
+    public function test_create_agreement_requires_agreement_owner_id(): void
+    {
+        $payload = $this->validPayload();
+        unset($payload['agreement_owner_id']);
+
+        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('agreement_owner_id');
+    }
+
+    /**
+     * Test create agreement validates agreement_owner_id exists.
+     */
+    public function test_create_agreement_validates_agreement_owner_id_exists(): void
+    {
+        $payload = $this->validPayload(['agreement_owner_id' => 99999]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('agreement_owner_id');
+    }
+
+    /**
+     * Test create agreement requires asset_types_covered.
+     */
+    public function test_create_agreement_requires_asset_types_covered(): void
+    {
+        $payload = $this->validPayload();
+        unset($payload['asset_types_covered']);
+
+        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('asset_types_covered');
+    }
+
+    /**
+     * Test create agreement requires asset_types_covered to be non-empty array.
+     */
+    public function test_create_agreement_requires_asset_types_covered_non_empty(): void
+    {
+        $payload = $this->validPayload(['asset_types_covered' => []]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('asset_types_covered');
+    }
+
+    /**
+     * Test create agreement validates vendor_id.
      */
     public function test_create_agreement_requires_vendor_id(): void
     {
@@ -238,15 +290,18 @@ class AgreementControllerTest extends TestCase
     public function test_create_agreement_accepts_valid_agreement_type_values(): void
     {
         $vendor = Vendor::factory()->create();
-        $validTypes = ['msa', 'dpa', 'order_form', 'addendum', 'sla', 'other'];
+        $stakeholder = Stakeholder::factory()->create();
+        $validTypes = ['msa', 'dpa', 'order_form', 'addendum', 'sla', 'nda', 'sow', 'other'];
 
         foreach ($validTypes as $type) {
             $payload = [
                 'vendor_id' => $vendor->id,
+                'agreement_owner_id' => $stakeholder->id,
                 'agreement_type' => $type,
                 'status' => 'active',
-                'effective_from' => now()->format('Y-m-d H:i:s'),
-                'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
+                'asset_types_covered' => ['data'],
+                'effective_from' => now()->format('Y-m-d'),
+                'effective_to' => now()->addYear()->format('Y-m-d'),
                 'doc_ref' => "https://example.com/{$type}.pdf",
             ];
 
@@ -288,15 +343,18 @@ class AgreementControllerTest extends TestCase
     public function test_create_agreement_accepts_valid_status_values(): void
     {
         $vendor = Vendor::factory()->create();
-        $validStatuses = ['draft', 'active', 'lapsed', 'terminated'];
+        $stakeholder = Stakeholder::factory()->create();
+        $validStatuses = ['draft', 'under_review', 'pending_signature', 'active', 'expired', 'terminated', 'suspended'];
 
         foreach ($validStatuses as $index => $status) {
             $payload = [
                 'vendor_id' => $vendor->id,
+                'agreement_owner_id' => $stakeholder->id,
                 'agreement_type' => 'msa',
                 'status' => $status,
-                'effective_from' => now()->format('Y-m-d H:i:s'),
-                'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
+                'asset_types_covered' => ['data'],
+                'effective_from' => now()->format('Y-m-d'),
+                'effective_to' => now()->addYear()->format('Y-m-d'),
                 'doc_ref' => "https://example.com/status-{$index}.pdf",
             ];
 
@@ -340,8 +398,8 @@ class AgreementControllerTest extends TestCase
     public function test_create_agreement_validates_effective_to_is_after_effective_from(): void
     {
         $payload = $this->validPayload([
-            'effective_from' => now()->addYear()->format('Y-m-d H:i:s'),
-            'effective_to' => now()->format('Y-m-d H:i:s'),
+            'effective_from' => now()->addYear()->format('Y-m-d'),
+            'effective_to' => now()->format('Y-m-d'),
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
@@ -369,15 +427,18 @@ class AgreementControllerTest extends TestCase
     public function test_create_agreement_accepts_valid_training_opt_out_values(): void
     {
         $vendor = Vendor::factory()->create();
-        $validValues = ['yes', 'no', 'not_applicable'];
+        $stakeholder = Stakeholder::factory()->create();
+        $validValues = ['prohibited', 'allowed_with_consent', 'allowed_with_pre_terms', 'not_applicable', 'not_specified'];
 
         foreach ($validValues as $index => $value) {
             $payload = [
                 'vendor_id' => $vendor->id,
+                'agreement_owner_id' => $stakeholder->id,
                 'agreement_type' => 'dpa',
                 'status' => 'active',
-                'effective_from' => now()->format('Y-m-d H:i:s'),
-                'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
+                'asset_types_covered' => ['data'],
+                'effective_from' => now()->format('Y-m-d'),
+                'effective_to' => now()->addYear()->format('Y-m-d'),
                 'training_opt_out' => $value,
                 'doc_ref' => "https://example.com/training-{$index}.pdf",
             ];
@@ -407,15 +468,18 @@ class AgreementControllerTest extends TestCase
     public function test_create_agreement_accepts_valid_audit_rights_values(): void
     {
         $vendor = Vendor::factory()->create();
-        $validValues = ['yes', 'no', 'limited'];
+        $stakeholder = Stakeholder::factory()->create();
+        $validValues = ['full_audit_rights', 'third_party_audit_only', 'soc_2_iso_reports_only', 'none', 'limited'];
 
         foreach ($validValues as $index => $value) {
             $payload = [
                 'vendor_id' => $vendor->id,
+                'agreement_owner_id' => $stakeholder->id,
                 'agreement_type' => 'dpa',
                 'status' => 'active',
-                'effective_from' => now()->format('Y-m-d H:i:s'),
-                'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
+                'asset_types_covered' => ['data'],
+                'effective_from' => now()->format('Y-m-d'),
+                'effective_to' => now()->addYear()->format('Y-m-d'),
                 'audit_rights' => $value,
                 'doc_ref' => "https://example.com/audit-{$index}.pdf",
             ];
@@ -445,15 +509,18 @@ class AgreementControllerTest extends TestCase
     public function test_create_agreement_accepts_valid_transfer_mechanism_values(): void
     {
         $vendor = Vendor::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $validValues = ['adequacy', 'sccs', 'bcrs', 'dpa_addendum', 'derogation', 'none'];
 
         foreach ($validValues as $index => $value) {
             $payload = [
                 'vendor_id' => $vendor->id,
+                'agreement_owner_id' => $stakeholder->id,
                 'agreement_type' => 'dpa',
                 'status' => 'active',
-                'effective_from' => now()->format('Y-m-d H:i:s'),
-                'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
+                'asset_types_covered' => ['data'],
+                'effective_from' => now()->format('Y-m-d'),
+                'effective_to' => now()->addYear()->format('Y-m-d'),
                 'transfer_mechanism' => $value,
                 'doc_ref' => "https://example.com/transfer-{$index}.pdf",
             ];
@@ -462,76 +529,6 @@ class AgreementControllerTest extends TestCase
 
             $response->assertStatus(201);
         }
-    }
-
-    /**
-     * Test create agreement validates sla_terms array structure.
-     */
-    public function test_create_agreement_validates_sla_terms_array_structure(): void
-    {
-        $payload = $this->validPayload([
-            'sla_terms' => 'not-an-array',
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('sla_terms');
-    }
-
-    /**
-     * Test create agreement validates sla_terms availability_target_pct range.
-     */
-    public function test_create_agreement_validates_sla_terms_availability_target_pct_range(): void
-    {
-        $payload = $this->validPayload([
-            'sla_terms' => [
-                'availability_target_pct' => 150, // Invalid: > 100
-            ],
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('sla_terms.availability_target_pct');
-    }
-
-    /**
-     * Test create agreement validates sla_terms latency_p95_ms is positive.
-     */
-    public function test_create_agreement_validates_sla_terms_latency_p95_ms_is_positive(): void
-    {
-        $payload = $this->validPayload([
-            'sla_terms' => [
-                'latency_p95_ms' => -100, // Invalid: negative
-            ],
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('sla_terms.latency_p95_ms');
-    }
-
-    /**
-     * Test create agreement accepts valid sla_terms.
-     */
-    public function test_create_agreement_accepts_valid_sla_terms(): void
-    {
-        $payload = $this->validPayload([
-            'sla_terms' => [
-                'availability_target_pct' => 99.95,
-                'latency_p95_ms' => 150,
-                'support_tier' => 'enterprise',
-                'breach_definition' => 'Service down > 1 hour',
-                'credit_schedule_ref' => 'SLA-2024',
-                'monitoring_ref' => 'MON-2024',
-            ],
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
-
-        $response->assertStatus(201);
     }
 
     /**
@@ -626,9 +623,9 @@ class AgreementControllerTest extends TestCase
         $updateData = [
             'vendor_id' => $newVendor->id,
             'agreement_type' => 'order_form',
-            'status' => 'lapsed',
-            'effective_from' => now()->subYear()->format('Y-m-d H:i:s'),
-            'effective_to' => now()->format('Y-m-d H:i:s'),
+            'status' => 'active',
+            'effective_from' => now()->subYear()->format('Y-m-d'),
+            'effective_to' => now()->format('Y-m-d'),
             'doc_ref' => 'https://updated.com/agreement.pdf',
         ];
 
@@ -728,8 +725,8 @@ class AgreementControllerTest extends TestCase
         $agreement = Agreement::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson("/api/agreements/{$agreement->id}", [
-            'effective_from' => now()->addYear()->format('Y-m-d H:i:s'),
-            'effective_to' => now()->format('Y-m-d H:i:s'),
+            'effective_from' => now()->addYear()->format('Y-m-d'),
+            'effective_to' => now()->format('Y-m-d'),
         ]);
 
         $response->assertStatus(422)
@@ -794,34 +791,6 @@ class AgreementControllerTest extends TestCase
     }
 
     /**
-     * Test agreement sla_terms json fields are properly returned.
-     */
-    public function test_agreement_sla_terms_json_fields_are_properly_returned(): void
-    {
-        $slaTerms = [
-            'availability_target_pct' => 99.95,
-            'latency_p95_ms' => 150,
-            'support_tier' => 'premium',
-            'breach_definition' => 'Service unavailable > 1 hour',
-            'credit_schedule_ref' => 'SLA-2024',
-            'monitoring_ref' => 'MON-2024',
-        ];
-
-        $agreement = Agreement::factory()->create([
-            'sla_terms' => $slaTerms,
-        ]);
-
-        $response = $this->actingAs($this->user)->getJson("/api/agreements/{$agreement->id}");
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'data' => [
-                    'sla_terms' => $slaTerms,
-                ],
-            ]);
-    }
-
-    /**
      * Test agreement with null optional fields returns null.
      */
     public function test_agreement_with_null_optional_fields_returns_null(): void
@@ -830,7 +799,6 @@ class AgreementControllerTest extends TestCase
             'training_opt_out' => null,
             'audit_rights' => null,
             'transfer_mechanism' => null,
-            'sla_terms' => null,
         ]);
 
         $response = $this->actingAs($this->user)->getJson("/api/agreements/{$agreement->id}");
@@ -841,35 +809,55 @@ class AgreementControllerTest extends TestCase
                     'training_opt_out' => null,
                     'audit_rights' => null,
                     'transfer_mechanism' => null,
-                    'sla_terms' => null,
                 ],
             ]);
     }
 
     /**
-     * Test create agreement with SLA type and sla_terms.
+     * Test user can get agreement statistics.
      */
-    public function test_create_agreement_with_sla_type_and_sla_terms(): void
+    public function test_user_can_get_agreement_statistics(): void
     {
-        $vendor = Vendor::factory()->create();
-        $payload = [
-            'vendor_id' => $vendor->id,
-            'agreement_type' => 'sla',
+        Agreement::factory()->count(5)->create(['organization_id' => $this->organization->id, 'status' => 'active']);
+        Agreement::factory()->count(3)->create(['organization_id' => $this->organization->id, 'status' => 'pending_signature']);
+        Agreement::factory()->count(2)->create([
+            'organization_id' => $this->organization->id,
             'status' => 'active',
-            'effective_from' => now()->format('Y-m-d H:i:s'),
-            'effective_to' => now()->addYear()->format('Y-m-d H:i:s'),
-            'sla_terms' => [
-                'availability_target_pct' => 99.9,
-                'latency_p95_ms' => 100,
-                'support_tier' => 'enterprise',
-            ],
-            'doc_ref' => 'https://example.com/sla.pdf',
-        ];
+            'effective_to' => now()->addDays(30)->format('Y-m-d'),
+        ]);
 
-        $response = $this->actingAs($this->user)->postJson('/api/agreements', $payload);
+        $response = $this->actingAs($this->user)->getJson('/api/agreements/statistics');
 
-        $response->assertStatus(201)
-            ->assertJsonPath('data.agreement_type', 'sla')
-            ->assertJsonPath('data.sla_terms.availability_target_pct', 99.9);
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'error',
+                'message',
+                'data' => [
+                    'total_agreements',
+                    'active_agreements',
+                    'expiring_in_90_days',
+                    'pending_signature_count',
+                ],
+            ])
+            ->assertJson([
+                'error' => false,
+                'message' => 'Agreement statistics retrieved successfully',
+                'data' => [
+                    'total_agreements' => 10,
+                    'active_agreements' => 7,
+                    'expiring_in_90_days' => 2,
+                    'pending_signature_count' => 3,
+                ],
+            ]);
+    }
+
+    /**
+     * Test guest cannot access agreement statistics.
+     */
+    public function test_guest_cannot_access_agreement_statistics(): void
+    {
+        $response = $this->getJson('/api/agreements/statistics');
+
+        $response->assertStatus(401);
     }
 }
