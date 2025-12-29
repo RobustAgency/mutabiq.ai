@@ -2,15 +2,15 @@
 
 namespace App\Http\Requests\DataSource;
 
-use App\Enums\DataSource\AccessMethod;
-use App\Enums\DataSource\CloudProvider;
-use App\Enums\DataSource\DataClassification;
-use App\Enums\DataSource\DataResidency;
-use App\Enums\DataSource\HostingModel;
-use App\Enums\DataSource\ServiceModel;
-use App\Enums\DataSource\SystemType;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\DataSource\Status;
+use App\Enums\DataSource\OwnerTeam;
+use App\Enums\DataSource\DataDomain;
+use App\Enums\DataSource\SystemType;
+use App\Enums\DataSource\HostingModel;
+use App\Enums\DataSource\DataResidency;
+use App\Enums\DataSource\CriticalityLevel;
+use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDataSourceRequest extends FormRequest
 {
@@ -23,21 +23,19 @@ class UpdateDataSourceRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'system_type' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, SystemType::cases()))],
-            'owner_team' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'string'],
+            'system_type' => ['sometimes', Rule::enum(SystemType::class)],
+            'owner_team' => ['sometimes', Rule::enum(OwnerTeam::class)],
             'data_domains' => ['sometimes', 'array'],
-            'data_domains.*' => ['string'],
-            'access_method' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, AccessMethod::cases()))],
-            'residency' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, DataResidency::cases()))],
-            'classification' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, DataClassification::cases()))],
-            'hosting_model' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, HostingModel::cases()))],
-            'service_model' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, ServiceModel::cases()))],
-            'cloud_provider' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, CloudProvider::cases()))],
-            'primary_region' => ['nullable', 'string', 'max:255'],
-            'secondary_region' => ['nullable', 'string', 'max:255'],
-            'network_ref' => ['nullable', 'string', 'max:255'],
-            'retention_policy_ref' => ['nullable', 'string', 'max:255'],
-            'catalog_uri' => ['nullable', 'string', 'max:255', 'url'],
+            'data_domains.*' => ['required', Rule::enum(DataDomain::class)],
+            'residency' => ['sometimes', Rule::enum(DataResidency::class)],
+            'criticality_level' => ['sometimes', Rule::enum(CriticalityLevel::class)],
+            'hosting_model' => ['sometimes', Rule::enum(HostingModel::class)],
+            'technical_owner' => ['sometimes', Rule::enum(OwnerTeam::class)],
+            'business_owner' => ['sometimes', Rule::enum(OwnerTeam::class)],
+            'last_review_date' => ['sometimes', 'date'],
+            'next_review_date' => ['sometimes', 'date', 'after_or_equal:last_review_date'],
+            'status' => ['sometimes', Rule::enum(Status::class)],
         ];
     }
 }

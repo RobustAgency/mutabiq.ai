@@ -2,15 +2,15 @@
 
 namespace App\Http\Requests\DataSource;
 
-use App\Enums\DataSource\AccessMethod;
-use App\Enums\DataSource\CloudProvider;
-use App\Enums\DataSource\DataClassification;
-use App\Enums\DataSource\DataResidency;
-use App\Enums\DataSource\HostingModel;
-use App\Enums\DataSource\ServiceModel;
-use App\Enums\DataSource\SystemType;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\DataSource\Status;
+use App\Enums\DataSource\OwnerTeam;
+use App\Enums\DataSource\DataDomain;
+use App\Enums\DataSource\SystemType;
+use App\Enums\DataSource\HostingModel;
+use App\Enums\DataSource\DataResidency;
+use App\Enums\DataSource\CriticalityLevel;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDataSourceRequest extends FormRequest
 {
@@ -23,21 +23,19 @@ class StoreDataSourceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'system_type' => ['required', Rule::in(array_map(fn($c) => $c->value, SystemType::cases()))],
-            'owner_team' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'system_type' => ['required', Rule::enum(SystemType::class)],
+            'owner_team' => ['required', Rule::enum(OwnerTeam::class)],
             'data_domains' => ['required', 'array'],
-            'data_domains.*' => ['string'],
-            'access_method' => ['required', Rule::in(array_map(fn($c) => $c->value, AccessMethod::cases()))],
-            'residency' => ['required', Rule::in(array_map(fn($c) => $c->value, DataResidency::cases()))],
-            'classification' => ['required', Rule::in(array_map(fn($c) => $c->value, DataClassification::cases()))],
-            'hosting_model' => ['required', Rule::in(array_map(fn($c) => $c->value, HostingModel::cases()))],
-            'service_model' => ['required', Rule::in(array_map(fn($c) => $c->value, ServiceModel::cases()))],
-            'cloud_provider' => ['required', Rule::in(array_map(fn($c) => $c->value, CloudProvider::cases()))],
-            'primary_region' => ['nullable', 'string', 'max:255'],
-            'secondary_region' => ['nullable', 'string', 'max:255'],
-            'network_ref' => ['nullable', 'string', 'max:255'],
-            'retention_policy_ref' => ['nullable', 'string', 'max:255'],
-            'catalog_uri' => ['nullable', 'string', 'max:255', 'url'],
+            'data_domains.*' => ['required', Rule::enum(DataDomain::class)],
+            'residency' => ['required', Rule::enum(DataResidency::class)],
+            'criticality_level' => ['nullable', Rule::enum(CriticalityLevel::class)],
+            'hosting_model' => ['required', Rule::enum(HostingModel::class)],
+            'technical_owner' => ['required', Rule::enum(OwnerTeam::class)],
+            'business_owner' => ['required', Rule::enum(OwnerTeam::class)],
+            'last_review_date' => ['nullable', 'date'],
+            'next_review_date' => ['nullable', 'date', 'after_or_equal:last_review_date'],
+            'status' => ['required', 'string', Rule::enum(Status::class)],
         ];
     }
 }

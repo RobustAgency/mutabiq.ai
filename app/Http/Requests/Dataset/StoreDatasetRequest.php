@@ -6,6 +6,7 @@ use App\Enums\Dataset\Status;
 use App\Enums\Dataset\Purpose;
 use App\Enums\Dataset\SizeUnit;
 use Illuminate\Validation\Rule;
+use App\Enums\Dataset\OwnerTeam;
 use App\Enums\Dataset\DataSteward;
 use App\Enums\Dataset\LicenseType;
 use App\Enums\Dataset\Sensitivity;
@@ -27,7 +28,7 @@ class StoreDatasetRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'purpose' => ['required', Rule::enum(Purpose::class)],
-            'owner_team' => ['required', 'string', 'max:255'],
+            'owner_team' => ['required', Rule::enum(OwnerTeam::class)],
             'data_steward' => ['required', Rule::enum(DataSteward::class)],
             'source_ids' => ['required', 'array'],
             'source_ids.*' => ['required', 'integer', 'exists:data_sources,id'],
