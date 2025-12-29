@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\DataSource;
 
+use Illuminate\Validation\Rule;
+use App\Enums\DataSource\SystemType;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ListDataSourceRequest extends FormRequest
@@ -14,13 +16,11 @@ class ListDataSourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
-            'from' => ['sometimes', 'date'],
-            'to' => ['sometimes', 'date'],
-            'name' => ['sometimes', 'string', 'max:255'],
-            'system_type' => ['sometimes', 'string', 'max:255'],
-            'access_method' => ['sometimes', 'string', 'max:255'],
-            'classification' => ['sometimes', 'string', 'max:255'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'system_type' => ['nullable', Rule::enum(SystemType::class)],
         ];
     }
 }

@@ -2,19 +2,19 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Enums\DataSource\AccessMethod;
-use App\Enums\DataSource\CloudProvider;
-use App\Enums\DataSource\DataClassification;
-use App\Enums\DataSource\DataResidency;
-use App\Enums\DataSource\HostingModel;
-use App\Enums\DataSource\ServiceModel;
-use App\Enums\DataSource\SystemType;
+use Tests\TestCase;
 use App\Models\DataSource;
 use App\Models\Organization;
+use App\Enums\DataSource\Status;
+use App\Enums\DataSource\OwnerTeam;
+use App\Enums\DataSource\DataDomain;
+use App\Enums\DataSource\SystemType;
+use App\Enums\DataSource\HostingModel;
+use App\Enums\DataSource\DataResidency;
+use App\Enums\DataSource\CriticalityLevel;
 use App\Repositories\DataSourceRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DataSourceRepositoryTest extends TestCase
 {
@@ -36,23 +36,24 @@ class DataSourceRepositoryTest extends TestCase
     protected function validPayload(array $overrides = []): array
     {
         $organization = Organization::factory()->create();
+
         return array_merge([
             'organization_id' => $organization->id,
             'name' => 'Customer Database',
+            'description' => 'Central customer database',
             'system_type' => $this->enumFirstValue(SystemType::class),
-            'owner_team' => 'Engineering',
-            'data_domains' => ['Customer', 'Finance'],
-            'access_method' => $this->enumFirstValue(AccessMethod::class),
+            'owner_team' => $this->enumFirstValue(OwnerTeam::class),
+            'data_domains' => [
+                $this->enumFirstValue(DataDomain::class),
+            ],
             'residency' => $this->enumFirstValue(DataResidency::class),
-            'classification' => $this->enumFirstValue(DataClassification::class),
+            'criticality_level' => $this->enumFirstValue(CriticalityLevel::class),
             'hosting_model' => $this->enumFirstValue(HostingModel::class),
-            'service_model' => $this->enumFirstValue(ServiceModel::class),
-            'cloud_provider' => $this->enumFirstValue(CloudProvider::class),
-            'primary_region' => 'us-east-1',
-            'secondary_region' => 'us-west-2',
-            'network_ref' => 'vpc-12345678',
-            'retention_policy_ref' => 'policy-90d',
-            'catalog_uri' => 'https://catalog.example.com',
+            'technical_owner' => $this->enumFirstValue(OwnerTeam::class),
+            'business_owner' => $this->enumFirstValue(OwnerTeam::class),
+            'last_review_date' => now()->format('Y-m-d'),
+            'next_review_date' => now()->addMonths(3)->format('Y-m-d'),
+            'status' => $this->enumFirstValue(Status::class),
         ], $overrides);
     }
 
@@ -95,7 +96,7 @@ class DataSourceRepositoryTest extends TestCase
         $this->assertDatabaseHas('data_sources', [
             'id' => $result->id,
             'name' => 'Customer Database',
-            'owner_team' => 'Engineering',
+            'description' => 'Central customer database',
         ]);
     }
 
@@ -151,21 +152,19 @@ class DataSourceRepositoryTest extends TestCase
     public function test_it_handles_nullable_fields(): void
     {
         $payload = $this->validPayload([
-            'primary_region' => null,
-            'secondary_region' => null,
-            'network_ref' => null,
-            'retention_policy_ref' => null,
-            'catalog_uri' => null,
+            'description' => null,
+            'criticality_level' => null,
+            'last_review_date' => null,
+            'next_review_date' => null,
         ]);
 
         $result = $this->dataSourceRepository->createDataSource($payload);
 
         $this->assertInstanceOf(DataSource::class, $result);
-        $this->assertNull($result->primary_region);
-        $this->assertNull($result->secondary_region);
-        $this->assertNull($result->network_ref);
-        $this->assertNull($result->retention_policy_ref);
-        $this->assertNull($result->catalog_uri);
+        $this->assertNull($result->description);
+        $this->assertNull($result->criticality_level);
+        $this->assertNull($result->last_review_date);
+        $this->assertNull($result->next_review_date);
     }
 
     public function test_filter_by_name(): void
@@ -252,61 +251,61 @@ class DataSourceRepositoryTest extends TestCase
         }
     }
 
-    public function test_filter_by_access_method(): void
+    public function test_filter_by_criticality_level(): void
     {
         $organization = Organization::factory()->create();
 
         DataSource::factory()->create([
             'organization_id' => $organization->id,
-            'access_method' => AccessMethod::API->value,
+            'criticality_level' => CriticalityLevel::CRITICAL->value,
         ]);
         DataSource::factory()->create([
             'organization_id' => $organization->id,
-            'access_method' => AccessMethod::JDBC->value,
+            'criticality_level' => CriticalityLevel::HIGH->value,
         ]);
         DataSource::factory()->create([
             'organization_id' => $organization->id,
-            'access_method' => AccessMethod::API->value,
+            'criticality_level' => CriticalityLevel::CRITICAL->value,
         ]);
 
         $filters = [
             'organization_id' => $organization->id,
-            'access_method' => AccessMethod::API->value,
+            'criticality_level' => CriticalityLevel::CRITICAL->value,
         ];
         $result = $this->dataSourceRepository->getFilteredDataSources($filters);
 
         $this->assertCount(2, $result->items());
         foreach ($result->items() as $dataSource) {
-            $this->assertEquals(AccessMethod::API->value, $dataSource->access_method);
+            $this->assertEquals(CriticalityLevel::CRITICAL->value, $dataSource->criticality_level);
         }
     }
 
-    public function test_filter_by_classification(): void
+    public function test_filter_by_status(): void
     {
         $organization = Organization::factory()->create();
 
         DataSource::factory()->create([
             'organization_id' => $organization->id,
-            'classification' => DataClassification::CONFIDENTIAL->value,
+            'status' => Status::ACTIVE->value,
         ]);
         DataSource::factory()->create([
             'organization_id' => $organization->id,
-            'classification' => DataClassification::PUBLIC->value,
+            'status' => Status::DRAFT->value,
         ]);
         DataSource::factory()->create([
             'organization_id' => $organization->id,
-            'classification' => DataClassification::CONFIDENTIAL->value,
+            'status' => Status::ACTIVE->value,
         ]);
 
         $filters = [
             'organization_id' => $organization->id,
-            'classification' => DataClassification::CONFIDENTIAL->value,
+            'status' => Status::ACTIVE->value,
         ];
         $result = $this->dataSourceRepository->getFilteredDataSources($filters);
 
         $this->assertCount(2, $result->items());
         foreach ($result->items() as $dataSource) {
-            $this->assertEquals(DataClassification::CONFIDENTIAL->value, $dataSource->classification);
+            $this->assertEquals(Status::ACTIVE->value, $dataSource->status);
         }
     }
 
@@ -397,30 +396,26 @@ class DataSourceRepositoryTest extends TestCase
             'organization_id' => $organization->id,
             'name' => 'Customer Database',
             'system_type' => SystemType::APPLICATION_DB->value,
-            'access_method' => AccessMethod::API->value,
-            'classification' => DataClassification::CONFIDENTIAL->value,
+            'status' => Status::ACTIVE->value,
         ]);
         DataSource::factory()->create([
             'organization_id' => $organization->id,
             'name' => 'Customer API',
             'system_type' => SystemType::OPERATIONAL_API->value,
-            'access_method' => AccessMethod::API->value,
-            'classification' => DataClassification::CONFIDENTIAL->value,
+            'status' => Status::ACTIVE->value,
         ]);
         DataSource::factory()->create([
             'organization_id' => $organization->id,
             'name' => 'Customer Analytics',
             'system_type' => SystemType::APPLICATION_DB->value,
-            'access_method' => AccessMethod::JDBC->value,
-            'classification' => DataClassification::PUBLIC->value,
+            'status' => Status::DRAFT->value,
         ]);
 
         $filters = [
             'organization_id' => $organization->id,
             'name' => 'Customer',
             'system_type' => SystemType::APPLICATION_DB->value,
-            'access_method' => AccessMethod::API->value,
-            'classification' => DataClassification::CONFIDENTIAL->value,
+            'status' => Status::ACTIVE->value,
         ];
         $result = $this->dataSourceRepository->getFilteredDataSources($filters);
 
@@ -428,8 +423,7 @@ class DataSourceRepositoryTest extends TestCase
         $dataSource = $result->items()[0];
         $this->assertStringContainsString('Customer', $dataSource->name);
         $this->assertEquals(SystemType::APPLICATION_DB->value, $dataSource->system_type);
-        $this->assertEquals(AccessMethod::API->value, $dataSource->access_method);
-        $this->assertEquals(DataClassification::CONFIDENTIAL->value, $dataSource->classification);
+        $this->assertEquals(Status::ACTIVE->value, $dataSource->status);
     }
 
     public function test_filter_by_different_system_types(): void

@@ -13,20 +13,18 @@ class DataSource extends Model
     protected $fillable = [
         'organization_id',
         'name',
+        'description',
         'system_type',
         'owner_team',
         'data_domains',
-        'access_method',
         'residency',
-        'classification',
+        'criticality_level',
         'hosting_model',
-        'service_model',
-        'cloud_provider',
-        'primary_region',
-        'secondary_region',
-        'network_ref',
-        'retention_policy_ref',
-        'catalog_uri',
+        'technical_owner',
+        'business_owner',
+        'last_review_date',
+        'next_review_date',
+        'status',
     ];
 
     protected function casts(): array

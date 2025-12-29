@@ -6,6 +6,7 @@ use App\Enums\Dataset\Status;
 use App\Enums\Dataset\Purpose;
 use App\Enums\Dataset\SizeUnit;
 use Illuminate\Validation\Rule;
+use App\Enums\Dataset\OwnerTeam;
 use App\Enums\Dataset\DataSteward;
 use App\Enums\Dataset\LicenseType;
 use App\Enums\Dataset\Sensitivity;
@@ -27,7 +28,7 @@ class UpdateDatasetRequest extends FormRequest
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'purpose' => ['sometimes', Rule::enum(Purpose::class)],
-            'owner_team' => ['sometimes', 'string', 'max:255'],
+            'owner_team' => ['sometimes', Rule::enum(OwnerTeam::class)],
             'data_steward' => ['sometimes', Rule::enum(DataSteward::class)],
             'source_ids' => ['sometimes', 'array'],
             'source_ids.*' => ['required', 'integer', 'exists:data_sources,id'],

@@ -4,14 +4,14 @@ namespace App\Enums\DataSource;
 
 enum DataResidency: string
 {
-    case AE = 'AE'; // United Arab Emirates
-    case EU = 'EU'; // European Union
-    case KSA = 'KSA'; // Kingdom of Saudi Arabia
-    case US = 'US'; // United States
-    case UK = 'UK'; // United Kingdom
-    case QA = 'QA'; // Qatar
-    case JO = 'JO'; // Jordan
-    case MA = 'MA'; // Morocco
-    case BH = 'BH'; // Bahrain
-    case OTHER = 'Other';
+    case AE = 'ae'; // United Arab Emirates
+    case EU = 'eu'; // European Union
+    case KSA = 'ksa'; // Kingdom of Saudi Arabia
+    case US = 'us'; // United States
+    case UK = 'uk'; // United Kingdom
+    case QA = 'qa'; // Qatar
+    case JO = 'jo'; // Jordan
+    case MA = 'ma'; // Morocco
+    case BH = 'bh'; // Bahrain
+    case OTHER = 'other';
 }

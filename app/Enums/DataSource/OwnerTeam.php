@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Enums\Dataset;
+namespace App\Enums\DataSource;
 
-enum OwnerType: string
+enum OwnerTeam: string
 {
     case DATA_ENGINEERING_TEAM = 'data_engineering_team';
     case ML_PLATFORM_TEAM = 'ml_platform_team';
