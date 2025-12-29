@@ -4,9 +4,10 @@ namespace App\Enums\Dataset;
 
 enum LicenseType: string
 {
-    case PROPRIETARY = 'Proprietary';
-    case OPEN_PERMISSIVE = 'Open (permissive)';
-    case OPEN_COPYLEFT = 'Open (copyleft)';
-    case COMMERCIAL = 'Commercial';
-    case DATASET_EULA = 'Dataset EULA';
+    case PROPRIETARY = 'proprietary';
+    case OPEN_SOURCE = 'open_source';
+    case PURCHASES = 'purchased';
+    case COMMERCIAL_LICENSE = 'commercial_license';
+    case RESEARCH_USE_ONLY = 'research_use_only';
+    case NO_RESTRICTIONS = 'no_restrictions';
 }

@@ -2,28 +2,28 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\Dataset\ContainsPii;
-use App\Enums\Dataset\ControllerRole;
-use App\Enums\Dataset\CrossBorderTransfer;
-use App\Enums\Dataset\DataStructure;
-use App\Enums\Dataset\DataSubjectCategory;
-use App\Enums\Dataset\LawfulBasis;
-use App\Enums\Dataset\LicenseType;
-use App\Enums\Dataset\Purpose;
-use App\Enums\Dataset\Sensitivity;
-use App\Enums\Dataset\StorageFormat;
+use Tests\TestCase;
+use App\Models\User;
 use App\Models\Dataset;
 use App\Models\DataSource;
 use App\Models\Organization;
-use App\Models\User;
+use App\Enums\Dataset\Status;
+use App\Enums\Dataset\Purpose;
+use App\Enums\Dataset\SizeUnit;
+use App\Enums\Dataset\DataSteward;
+use App\Enums\Dataset\LicenseType;
+use App\Enums\Dataset\Sensitivity;
+use App\Enums\Dataset\PrimaryLanguage;
+use App\Enums\Dataset\ContainPersonalData;
+use App\Enums\Dataset\CrossBorderTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class DatasetControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -43,37 +43,24 @@ class DatasetControllerTest extends TestCase
         $dataSources = DataSource::factory()->count(2)->create(['organization_id' => $this->organization->id]);
 
         return array_merge([
-            'dataset_id' => 'DS-' . fake()->unique()->numerify('######'),
             'name' => 'Customer Analytics Dataset',
+            'description' => 'Contains customer demographic and transaction data',
             'source_ids' => $dataSources->pluck('id')->toArray(),
-            'purpose' => [
-                $this->enumFirstValue(Purpose::class),
-            ],
-            'schema_summary' => 'Contains customer demographic and transaction data',
-            'sensitivity' => $this->enumFirstValue(Sensitivity::class),
-            'contains_pii' => $this->enumFirstValue(ContainsPii::class),
-            'data_subject_categories' => [$this->enumFirstValue(DataSubjectCategory::class)],
-            'controller_role' => $this->enumFirstValue(ControllerRole::class),
-            'lawful_basis' => $this->enumFirstValue(LawfulBasis::class),
-            'lawful_basis_detail' => 'Necessary for legitimate business interests',
-            'consent_required' => true,
-            'consent_coverage_pct' => 95,
-            'consent_source_ref' => 'consent-2024-001',
-            'licensing_basis' => 'Internal use only',
-            'license_type' => $this->enumFirstValue(LicenseType::class),
-            'privacy_notice_ref' => 'PN-2024-001',
-            'cross_border_transfer' => $this->enumFirstValue(CrossBorderTransfer::class),
-            'data_structure' => $this->enumFirstValue(DataStructure::class),
-            'storage_format' => $this->enumFirstValue(StorageFormat::class),
-            'content_types' => ['text', 'structured'],
-            'retention_policy_ref' => 'policy-90d',
-            'dpia_ref' => 'DPIA-2024-001',
-            'aia_ref' => 'AIA-2024-001',
+            'purpose' => $this->enumFirstValue(Purpose::class),
             'owner_team' => 'Data Science',
-            'refresh_cadence' => 'daily',
-            'quality_SLA' => '99.9%',
-            'catalog_asset_id' => 'CAT-123456',
-            'catalog_uri' => 'https://catalog.example.com/dataset/123456',
+            'data_steward' => $this->enumFirstValue(DataSteward::class),
+            'status' => $this->enumFirstValue(Status::class),
+            'estimated_row_count' => 1000000,
+            'estimated_size' => 50,
+            'size_unit' => $this->enumFirstValue(SizeUnit::class),
+            'retention_period' => '90 days',
+            'primary_languages' => [
+                $this->enumFirstValue(PrimaryLanguage::class),
+            ],
+            'contains_personal_data' => $this->enumFirstValue(ContainPersonalData::class),
+            'sensitivity' => $this->enumFirstValue(Sensitivity::class),
+            'cross_border_transfer' => $this->enumFirstValue(CrossBorderTransfer::class),
+            'license_type' => $this->enumFirstValue(LicenseType::class),
         ], $overrides);
     }
 
@@ -126,8 +113,8 @@ class DatasetControllerTest extends TestCase
                 'data' => [
                     'name' => 'Customer Analytics Dataset',
                     'owner_team' => 'Data Science',
-                    'consent_required' => true,
-                    'consent_coverage_pct' => 95,
+                    'estimated_row_count' => 1000000,
+                    'retention_period' => '90 days',
                 ],
             ]);
 
@@ -142,13 +129,13 @@ class DatasetControllerTest extends TestCase
         $data = $this->validPayload([
             'purpose' => 'invalid_purpose',
             'sensitivity' => 'invalid_sensitivity',
-            'storage_format' => 'invalid_format',
+            'status' => 'invalid_status',
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['purpose', 'sensitivity', 'storage_format']);
+            ->assertJsonValidationErrors(['purpose', 'sensitivity', 'status']);
     }
 
     public function test_user_cannot_create_dataset_with_invalid_source_ids(): void
@@ -170,7 +157,7 @@ class DatasetControllerTest extends TestCase
             'name' => 'Test Dataset',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/datasets/' . $dataset->id);
+        $response = $this->actingAs($this->user)->getJson('/api/datasets/'.$dataset->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -186,34 +173,23 @@ class DatasetControllerTest extends TestCase
                 'message',
                 'data' => [
                     'id',
+                    'display_id',
                     'name',
+                    'description',
                     'source_ids',
                     'purpose',
-                    'schema_summary',
-                    'sensitivity',
-                    'contains_pii',
-                    'data_subject_categories',
-                    'controller_role',
-                    'lawful_basis',
-                    'lawful_basis_detail',
-                    'consent_required',
-                    'consent_coverage_pct',
-                    'consent_source_ref',
-                    'licensing_basis',
-                    'license_type',
-                    'privacy_notice_ref',
-                    'cross_border_transfer',
-                    'data_structure',
-                    'storage_format',
-                    'content_types',
-                    'retention_policy_ref',
-                    'dpia_ref',
-                    'aia_ref',
                     'owner_team',
-                    'refresh_cadence',
-                    'quality_SLA',
-                    'catalog_asset_id',
-                    'catalog_uri',
+                    'data_steward',
+                    'status',
+                    'estimated_row_count',
+                    'estimated_size',
+                    'size_unit',
+                    'retention_period',
+                    'primary_languages',
+                    'contains_personal_data',
+                    'sensitivity',
+                    'cross_border_transfer',
+                    'license_type',
                     'created_at',
                     'updated_at',
                 ],
@@ -226,16 +202,16 @@ class DatasetControllerTest extends TestCase
             'organization_id' => $this->organization->id,
             'name' => 'Old Dataset Name',
             'owner_team' => 'Old Team',
-            'consent_coverage_pct' => 75,
+            'retention_period' => '30 days',
         ]);
 
         $updateData = [
             'name' => 'Updated Dataset Name',
             'owner_team' => 'Updated Team',
-            'consent_coverage_pct' => 90,
+            'retention_period' => '90 days',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/datasets/' . $dataset->id, $updateData);
+        $response = $this->actingAs($this->user)->postJson('/api/datasets/'.$dataset->id, $updateData);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -244,7 +220,7 @@ class DatasetControllerTest extends TestCase
                 'data' => [
                     'name' => 'Updated Dataset Name',
                     'owner_team' => 'Updated Team',
-                    'consent_coverage_pct' => 90,
+                    'retention_period' => '90 days',
                 ],
             ]);
 
@@ -263,7 +239,7 @@ class DatasetControllerTest extends TestCase
             'sensitivity' => 'invalid_sensitivity',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/datasets/' . $dataset->id, $updateData);
+        $response = $this->actingAs($this->user)->postJson('/api/datasets/'.$dataset->id, $updateData);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['sensitivity']);
@@ -273,7 +249,7 @@ class DatasetControllerTest extends TestCase
     {
         $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/api/datasets/' . $dataset->id);
+        $response = $this->actingAs($this->user)->deleteJson('/api/datasets/'.$dataset->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -302,12 +278,12 @@ class DatasetControllerTest extends TestCase
         $this->assertCount(3, $dataset->source_ids);
     }
 
-    public function test_data_subject_categories_are_stored_as_array(): void
+    public function test_primary_languages_are_stored_as_array(): void
     {
         $data = $this->validPayload([
-            'data_subject_categories' => [
-                DataSubjectCategory::cases()[0]->value,
-                DataSubjectCategory::cases()[1]->value,
+            'primary_languages' => [
+                PrimaryLanguage::cases()[0]->value,
+                PrimaryLanguage::cases()[1]->value,
             ],
         ]);
 
@@ -316,43 +292,17 @@ class DatasetControllerTest extends TestCase
         $response->assertStatus(201);
 
         $dataset = Dataset::find($response->json('data.id'));
-        $this->assertIsArray($dataset->data_subject_categories);
-        $this->assertCount(2, $dataset->data_subject_categories);
-    }
-
-    public function test_content_types_are_stored_as_array(): void
-    {
-        $data = $this->validPayload([
-            'content_types' => ['text', 'image', 'video'],
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
-
-        $response->assertStatus(201);
-
-        $dataset = Dataset::find($response->json('data.id'));
-        $this->assertIsArray($dataset->content_types);
-        $this->assertCount(3, $dataset->content_types);
+        $this->assertIsArray($dataset->primary_languages);
+        $this->assertCount(2, $dataset->primary_languages);
     }
 
     public function test_nullable_fields_can_be_null(): void
     {
         $data = $this->validPayload([
-            'schema_summary' => null,
-            'lawful_basis_detail' => null,
-            'consent_coverage_pct' => null,
-            'consent_source_ref' => null,
-            'licensing_basis' => null,
+            'description' => null,
+            'estimated_size' => null,
+            'size_unit' => null,
             'license_type' => null,
-            'privacy_notice_ref' => null,
-            'content_types' => null,
-            'retention_policy_ref' => null,
-            'dpia_ref' => null,
-            'aia_ref' => null,
-            'refresh_cadence' => null,
-            'quality_SLA' => null,
-            'catalog_asset_id' => null,
-            'catalog_uri' => null,
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
@@ -360,65 +310,33 @@ class DatasetControllerTest extends TestCase
         $response->assertStatus(201);
 
         $dataset = Dataset::find($response->json('data.id'));
-        $this->assertNull($dataset->schema_summary);
-        $this->assertNull($dataset->lawful_basis_detail);
-        $this->assertNull($dataset->consent_coverage_pct);
-        $this->assertNull($dataset->consent_source_ref);
-        $this->assertNull($dataset->licensing_basis);
+        $this->assertNull($dataset->description);
+        $this->assertNull($dataset->estimated_size);
+        $this->assertNull($dataset->size_unit);
         $this->assertNull($dataset->license_type);
-        $this->assertNull($dataset->privacy_notice_ref);
-        $this->assertNull($dataset->content_types);
-        $this->assertNull($dataset->retention_policy_ref);
-        $this->assertNull($dataset->dpia_ref);
-        $this->assertNull($dataset->aia_ref);
-        $this->assertNull($dataset->refresh_cadence);
-        $this->assertNull($dataset->quality_SLA);
-        $this->assertNull($dataset->catalog_asset_id);
-        $this->assertNull($dataset->catalog_uri);
     }
 
-    public function test_catalog_uri_must_be_valid_url(): void
+    public function test_estimated_row_count_must_be_integer(): void
     {
         $data = $this->validPayload([
-            'catalog_uri' => 'not-a-valid-url',
+            'estimated_row_count' => 'not_an_integer',
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['catalog_uri']);
+            ->assertJsonValidationErrors(['estimated_row_count']);
     }
 
-    public function test_consent_coverage_pct_must_be_between_0_and_100(): void
+    public function test_retention_period_must_be_string(): void
     {
         $data = $this->validPayload([
-            'consent_coverage_pct' => 150, // Invalid: > 100
+            'retention_period' => 123, // Invalid: not a string
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['consent_coverage_pct']);
-
-        $data = $this->validPayload([
-            'consent_coverage_pct' => -10, // Invalid: < 0
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['consent_coverage_pct']);
-    }
-
-    public function test_consent_required_must_be_boolean(): void
-    {
-        $data = $this->validPayload([
-            'consent_required' => 'yes', // Invalid: not a boolean
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['consent_required']);
+            ->assertJsonValidationErrors(['retention_period']);
     }
 }
