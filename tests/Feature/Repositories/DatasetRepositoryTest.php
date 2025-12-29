@@ -2,11 +2,20 @@
 
 namespace Tests\Unit\Repositories;
 
+use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\Organization;
+use App\Enums\Dataset\Status;
+use App\Enums\Dataset\Purpose;
+use App\Enums\Dataset\SizeUnit;
+use App\Enums\Dataset\DataSteward;
+use App\Enums\Dataset\LicenseType;
+use App\Enums\Dataset\Sensitivity;
+use App\Enums\Dataset\PrimaryLanguage;
 use App\Repositories\DatasetRepository;
+use App\Enums\Dataset\ContainPersonalData;
+use App\Enums\Dataset\CrossBorderTransfer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class DatasetRepositoryTest extends TestCase
 {
@@ -17,7 +26,7 @@ class DatasetRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new DatasetRepository();
+        $this->repository = new DatasetRepository;
     }
 
     public function test_get_paginated_datasets_returns_paginated_results(): void
@@ -65,18 +74,21 @@ class DatasetRepositoryTest extends TestCase
         $data = [
             'organization_id' => $organization->id,
             'name' => 'New Test Dataset',
+            'description' => 'Test dataset description',
             'source_ids' => [1, 2, 3],
-            'purpose' => 'training',
-            'sensitivity' => 'high',
-            'contains_pii' => 'yes',
-            'data_subject_categories' => ['customers', 'employees'],
-            'controller_role' => 'controller',
-            'lawful_basis' => 'consent',
-            'consent_required' => true,
-            'cross_border_transfer' => 'none',
-            'data_structure' => 'tabular',
-            'storage_format' => 'table',
+            'purpose' => Purpose::AI_ML_TRAINING->value,
             'owner_team' => 'Data Science',
+            'data_steward' => DataSteward::DATA_ENGINEER->value,
+            'status' => Status::ACTIVE->value,
+            'estimated_row_count' => 100000,
+            'estimated_size' => 500,
+            'size_unit' => SizeUnit::MEGABYTES->value,
+            'retention_period' => '7 years',
+            'primary_languages' => [PrimaryLanguage::ENGLISH->value],
+            'contains_personal_data' => ContainPersonalData::YES->value,
+            'sensitivity' => Sensitivity::CONFIDENTIAL->value,
+            'cross_border_transfer' => CrossBorderTransfer::ADEQUACY_DECISION->value,
+            'license_type' => LicenseType::PROPRIETARY->value,
         ];
 
         $dataset = $this->repository->createDataset($data);
@@ -84,7 +96,8 @@ class DatasetRepositoryTest extends TestCase
         $this->assertInstanceOf(Dataset::class, $dataset);
         $this->assertEquals('New Test Dataset', $dataset->name);
         $this->assertEquals('Data Science', $dataset->owner_team);
-        $this->assertTrue($dataset->consent_required);
+        $this->assertEquals(Status::ACTIVE->value, $dataset->status);
+        $this->assertEquals(ContainPersonalData::YES->value, $dataset->contains_personal_data);
         $this->assertDatabaseHas('datasets', ['name' => 'New Test Dataset']);
     }
 
@@ -125,29 +138,25 @@ class DatasetRepositoryTest extends TestCase
         $data = [
             'organization_id' => $organization->id,
             'name' => 'Array Fields Dataset',
+            'description' => 'Dataset with array fields',
             'source_ids' => [1, 2, 3],
-            'data_subject_categories' => ['customers', 'employees'],
-            'content_types' => ['text', 'image', 'video'],
-            'purpose' => 'training',
-            'sensitivity' => 'medium',
-            'contains_pii' => 'no',
-            'controller_role' => 'controller',
-            'lawful_basis' => 'legitimate_interest',
-            'consent_required' => false,
-            'cross_border_transfer' => 'none',
-            'data_structure' => 'tabular',
-            'storage_format' => 'table',
+            'primary_languages' => [PrimaryLanguage::ENGLISH->value, PrimaryLanguage::SPANISH->value],
+            'purpose' => Purpose::ANALYTIC_BUSINESS_INTELLIGENCE->value,
             'owner_team' => 'Engineering',
+            'data_steward' => DataSteward::DATA_SCIENTIST->value,
+            'status' => Status::ACTIVE->value,
+            'sensitivity' => Sensitivity::INTERNAL->value,
+            'contains_personal_data' => ContainPersonalData::NO->value,
+            'cross_border_transfer' => CrossBorderTransfer::NONE->value,
+            'license_type' => LicenseType::OPEN_SOURCE->value,
         ];
 
         $dataset = $this->repository->createDataset($data);
 
         $this->assertIsArray($dataset->source_ids);
-        $this->assertIsArray($dataset->data_subject_categories);
-        $this->assertIsArray($dataset->content_types);
+        $this->assertIsArray($dataset->primary_languages);
         $this->assertCount(3, $dataset->source_ids);
-        $this->assertCount(2, $dataset->data_subject_categories);
-        $this->assertCount(3, $dataset->content_types);
+        $this->assertCount(2, $dataset->primary_languages);
     }
 
     public function test_filter_by_name(): void
@@ -211,92 +220,30 @@ class DatasetRepositoryTest extends TestCase
 
         Dataset::factory()->create([
             'organization_id' => $organization->id,
-            'sensitivity' => 'high',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
         ]);
         Dataset::factory()->create([
             'organization_id' => $organization->id,
-            'sensitivity' => 'low',
+            'sensitivity' => Sensitivity::PUBLIC->value,
         ]);
         Dataset::factory()->create([
             'organization_id' => $organization->id,
-            'sensitivity' => 'high',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
         ]);
         Dataset::factory()->create([
             'organization_id' => $organization->id,
-            'sensitivity' => 'medium',
+            'sensitivity' => Sensitivity::INTERNAL->value,
         ]);
 
         $filters = [
             'organization_id' => $organization->id,
-            'sensitivity' => 'high',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
         ];
         $result = $this->repository->getFilteredDatasets($filters);
 
         $this->assertCount(2, $result->items());
         foreach ($result->items() as $dataset) {
-            $this->assertEquals('high', $dataset->sensitivity);
-        }
-    }
-
-    public function test_filter_by_contains_pii(): void
-    {
-        $organization = Organization::factory()->create();
-
-        Dataset::factory()->create([
-            'organization_id' => $organization->id,
-            'contains_pii' => 'yes',
-        ]);
-        Dataset::factory()->create([
-            'organization_id' => $organization->id,
-            'contains_pii' => 'no',
-        ]);
-        Dataset::factory()->create([
-            'organization_id' => $organization->id,
-            'contains_pii' => 'yes',
-        ]);
-
-        $filters = [
-            'organization_id' => $organization->id,
-            'contains_pii' => 'yes',
-        ];
-        $result = $this->repository->getFilteredDatasets($filters);
-
-        $this->assertCount(2, $result->items());
-        foreach ($result->items() as $dataset) {
-            $this->assertEquals('yes', $dataset->contains_pii);
-        }
-    }
-
-    public function test_filter_by_controller_role(): void
-    {
-        $organization = Organization::factory()->create();
-
-        Dataset::factory()->create([
-            'organization_id' => $organization->id,
-            'controller_role' => 'controller',
-        ]);
-        Dataset::factory()->create([
-            'organization_id' => $organization->id,
-            'controller_role' => 'processor',
-        ]);
-        Dataset::factory()->create([
-            'organization_id' => $organization->id,
-            'controller_role' => 'controller',
-        ]);
-        Dataset::factory()->create([
-            'organization_id' => $organization->id,
-            'controller_role' => 'joint_controller',
-        ]);
-
-        $filters = [
-            'organization_id' => $organization->id,
-            'controller_role' => 'controller',
-        ];
-        $result = $this->repository->getFilteredDatasets($filters);
-
-        $this->assertCount(2, $result->items());
-        foreach ($result->items() as $dataset) {
-            $this->assertEquals('controller', $dataset->controller_role);
+            $this->assertEquals(Sensitivity::RESTRICTED->value, $dataset->sensitivity);
         }
     }
 
@@ -307,76 +254,56 @@ class DatasetRepositoryTest extends TestCase
         Dataset::factory()->create([
             'organization_id' => $organization->id,
             'name' => 'Customer Training Data',
-            'sensitivity' => 'high',
-            'contains_pii' => 'yes',
-            'controller_role' => 'controller',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
+            'contains_personal_data' => ContainPersonalData::YES->value,
+            'status' => Status::ACTIVE->value,
         ]);
         Dataset::factory()->create([
             'organization_id' => $organization->id,
             'name' => 'Customer Analytics Data',
-            'sensitivity' => 'low',
-            'contains_pii' => 'yes',
-            'controller_role' => 'controller',
+            'sensitivity' => Sensitivity::PUBLIC->value,
+            'contains_personal_data' => ContainPersonalData::YES->value,
+            'status' => Status::ACTIVE->value,
         ]);
         Dataset::factory()->create([
             'organization_id' => $organization->id,
             'name' => 'Customer Production Data',
-            'sensitivity' => 'high',
-            'contains_pii' => 'no',
-            'controller_role' => 'processor',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
+            'contains_personal_data' => ContainPersonalData::NO->value,
+            'status' => Status::DRAFT->value,
         ]);
 
         $filters = [
             'organization_id' => $organization->id,
             'name' => 'Customer',
-            'sensitivity' => 'high',
-            'contains_pii' => 'yes',
-            'controller_role' => 'controller',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
+            'contains_personal_data' => ContainPersonalData::YES->value,
         ];
         $result = $this->repository->getFilteredDatasets($filters);
 
         $this->assertCount(1, $result->items());
         $dataset = $result->items()[0];
         $this->assertStringContainsString('Customer', $dataset->name);
-        $this->assertEquals('high', $dataset->sensitivity);
-        $this->assertEquals('yes', $dataset->contains_pii);
-        $this->assertEquals('controller', $dataset->controller_role);
+        $this->assertEquals(Sensitivity::RESTRICTED->value, $dataset->sensitivity);
+        $this->assertEquals(ContainPersonalData::YES->value, $dataset->contains_personal_data);
     }
 
     public function test_filter_by_different_sensitivity_levels(): void
     {
         $organization = Organization::factory()->create();
 
-        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => 'low']);
-        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => 'medium']);
-        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => 'high']);
-        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => 'low']);
+        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => Sensitivity::PUBLIC->value]);
+        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => Sensitivity::INTERNAL->value]);
+        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => Sensitivity::RESTRICTED->value]);
+        Dataset::factory()->create(['organization_id' => $organization->id, 'sensitivity' => Sensitivity::PUBLIC->value]);
 
-        $lowResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'sensitivity' => 'low']);
-        $mediumResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'sensitivity' => 'medium']);
-        $highResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'sensitivity' => 'high']);
+        $publicResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'sensitivity' => Sensitivity::PUBLIC->value]);
+        $internalResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'sensitivity' => Sensitivity::INTERNAL->value]);
+        $restrictedResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'sensitivity' => Sensitivity::RESTRICTED->value]);
 
-        $this->assertCount(2, $lowResult->items());
-        $this->assertCount(1, $mediumResult->items());
-        $this->assertCount(1, $highResult->items());
-    }
-
-    public function test_filter_by_different_controller_roles(): void
-    {
-        $organization = Organization::factory()->create();
-
-        Dataset::factory()->create(['organization_id' => $organization->id, 'controller_role' => 'controller']);
-        Dataset::factory()->create(['organization_id' => $organization->id, 'controller_role' => 'processor']);
-        Dataset::factory()->create(['organization_id' => $organization->id, 'controller_role' => 'joint_controller']);
-        Dataset::factory()->create(['organization_id' => $organization->id, 'controller_role' => 'controller']);
-
-        $controllerResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'controller_role' => 'controller']);
-        $processorResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'controller_role' => 'processor']);
-        $jointResult = $this->repository->getFilteredDatasets(['organization_id' => $organization->id, 'controller_role' => 'joint_controller']);
-
-        $this->assertCount(2, $controllerResult->items());
-        $this->assertCount(1, $processorResult->items());
-        $this->assertCount(1, $jointResult->items());
+        $this->assertCount(2, $publicResult->items());
+        $this->assertCount(1, $internalResult->items());
+        $this->assertCount(1, $restrictedResult->items());
     }
 
     public function test_filter_returns_empty_when_no_matches(): void
@@ -386,13 +313,13 @@ class DatasetRepositoryTest extends TestCase
         Dataset::factory()->create([
             'organization_id' => $organization->id,
             'name' => 'Test Dataset',
-            'sensitivity' => 'low',
+            'sensitivity' => Sensitivity::PUBLIC->value,
         ]);
 
         $filters = [
             'organization_id' => $organization->id,
             'name' => 'NonExistent',
-            'sensitivity' => 'high',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
         ];
         $result = $this->repository->getFilteredDatasets($filters);
 
@@ -405,12 +332,12 @@ class DatasetRepositoryTest extends TestCase
 
         Dataset::factory()->count(20)->create([
             'organization_id' => $organization->id,
-            'sensitivity' => 'high',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
         ]);
 
         $filters = [
             'organization_id' => $organization->id,
-            'sensitivity' => 'high',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
             'per_page' => 7,
         ];
         $result = $this->repository->getFilteredDatasets($filters);
@@ -426,10 +353,10 @@ class DatasetRepositoryTest extends TestCase
 
         Dataset::factory()->count(3)->create([
             'organization_id' => $organization->id,
-            'sensitivity' => 'high',
+            'sensitivity' => Sensitivity::RESTRICTED->value,
         ]);
 
-        $filters = ['organization_id' => $organization->id, 'sensitivity' => 'high'];
+        $filters = ['organization_id' => $organization->id, 'sensitivity' => Sensitivity::RESTRICTED->value];
         $result = $this->repository->getFilteredDatasets($filters);
 
         foreach ($result->items() as $dataset) {
