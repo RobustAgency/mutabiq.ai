@@ -2,19 +2,27 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\DatasetSnapshot\ResidencyZone;
-use App\Models\Dataset;
-use App\Models\DatasetSnapshot;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Dataset;
+use App\Models\Organization;
+use App\Models\DatasetSnapshot;
+use App\Enums\DatasetSnapshot\Status;
+use App\Enums\DatasetSnapshot\ApprovedBy;
+use App\Enums\DatasetSnapshot\FileFormat;
+use App\Enums\DatasetSnapshot\Compression;
+use App\Enums\DatasetSnapshot\StorageTier;
+use App\Enums\DatasetSnapshot\MaskingMethod;
+use App\Enums\DatasetSnapshot\ResidencyZone;
+use App\Enums\DatasetSnapshot\EncryptionStatus;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetSnapshotControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -31,19 +39,31 @@ class DatasetSnapshotControllerTest extends TestCase
         return array_merge([
             'dataset_id' => $dataset->id,
             'version_tag' => 'v1.0',
+            'description' => 'Test dataset snapshot',
             'time_range_start' => '2024-01-01',
             'time_range_end' => '2024-12-31',
             'row_count' => 50000,
-            'quality_checksums' => hash('sha256', 'test'),
+            'file_count' => 120,
+            'total_size' => 5242880,
+            'size_unit' => 'MB',
+            'file_format' => FileFormat::PARQUET->value,
             'pii_element_count' => 10,
-            'special_category_element_count' => 5,
-            'masking_anonymization_method' => 'Tokenization',
-            'privacy_transform_evidence_ref' => 'PTE-123456',
+            'consent_coverage_at_creation' => 95,
             'residency_zone' => ResidencyZone::EU->value,
             'storage_uri' => 'https://storage.example.com/snapshots/abc123',
-            'source_created_at' => '2024-01-15',
+            'storage_tier' => StorageTier::HOT->value,
+            'compression' => Compression::GZIP->value,
+            'encryption_status' => EncryptionStatus::ENCRYPTED_AT_REST->value,
+            'masking_method_applied' => MaskingMethod::TOKENIZATION->value,
+            'quality_checksums' => hash('sha256', 'test'),
+            'created_by_system' => false,
+            'approved_by' => ApprovedBy::PRIVACY_OFFICE->value,
+            'expiration_date' => now()->addYears(1)->toDateString(),
+            'status' => Status::ACTIVE->value,
         ], $overrides);
     }
+
+    // ==================== Index Tests ====================
 
     /**
      * Test user can get paginated dataset snapshots.
@@ -65,23 +85,22 @@ class DatasetSnapshotControllerTest extends TestCase
                             'id',
                             'dataset_id',
                             'version_tag',
+                            'description',
                             'time_range_start',
                             'time_range_end',
                             'row_count',
-                            'quality_checksums',
-                            'pii_element_count',
-                            'special_category_element_count',
-                            'masking_anonymization_method',
-                            'privacy_transform_evidence_ref',
-                            'residency_zone',
-                            'storage_uri',
+                            'file_count',
+                            'total_size',
+                            'file_format',
+                            'encryption_status',
+                            'status',
                             'created_at',
                             'updated_at',
-                        ]
+                        ],
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ])
             ->assertJson(['error' => false]);
     }
@@ -99,6 +118,8 @@ class DatasetSnapshotControllerTest extends TestCase
             ->assertJsonPath('data.per_page', 10);
     }
 
+    // ==================== Store Tests ====================
+
     /**
      * Test user can create a dataset snapshot with all fields.
      */
@@ -114,10 +135,14 @@ class DatasetSnapshotControllerTest extends TestCase
                 'message',
                 'data' => [
                     'id',
+                    'dataset_id',
                     'version_tag',
+                    'file_format',
                     'residency_zone',
+                    'encryption_status',
                     'storage_uri',
-                ]
+                    'status',
+                ],
             ])
             ->assertJson([
                 'error' => false,
@@ -127,8 +152,9 @@ class DatasetSnapshotControllerTest extends TestCase
         $this->assertDatabaseHas('dataset_snapshots', [
             'dataset_id' => $payload['dataset_id'],
             'version_tag' => $payload['version_tag'],
-            'residency_zone' => $payload['residency_zone'],
-            'storage_uri' => $payload['storage_uri'],
+            'file_format' => $payload['file_format'],
+            'encryption_status' => $payload['encryption_status'],
+            'status' => $payload['status'],
         ]);
     }
 
@@ -142,9 +168,14 @@ class DatasetSnapshotControllerTest extends TestCase
         $payload = [
             'dataset_id' => $dataset->id,
             'version_tag' => 'v1.0',
+            'time_range_start' => '2024-01-01',
+            'time_range_end' => '2024-12-31',
+            'row_count' => 1000,
+            'file_format' => FileFormat::CSV->value,
             'residency_zone' => ResidencyZone::US->value,
             'storage_uri' => 'https://storage.example.com/snapshots/xyz789',
-            'source_created_at' => '2024-01-15',
+            'encryption_status' => EncryptionStatus::ENCRYPTED_AT_REST->value,
+            'status' => Status::ACTIVE->value,
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
@@ -160,6 +191,8 @@ class DatasetSnapshotControllerTest extends TestCase
             'version_tag' => $payload['version_tag'],
         ]);
     }
+
+    // ==================== Validation Tests ====================
 
     /**
      * Test dataset_id is required.
@@ -211,6 +244,152 @@ class DatasetSnapshotControllerTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['version_tag']);
+    }
+
+    /**
+     * Test time_range_start is required.
+     */
+    public function test_time_range_start_is_required(): void
+    {
+        $payload = $this->validPayload(['time_range_start' => null]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['time_range_start']);
+    }
+
+    /**
+     * Test time_range_end is required.
+     */
+    public function test_time_range_end_is_required(): void
+    {
+        $payload = $this->validPayload(['time_range_end' => null]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['time_range_end']);
+    }
+
+    /**
+     * Test time_range_end must be after or equal to time_range_start.
+     */
+    public function test_time_range_end_must_be_after_or_equal_to_start(): void
+    {
+        $payload = $this->validPayload([
+            'time_range_start' => '2024-12-31',
+            'time_range_end' => '2024-01-01',
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['time_range_end']);
+    }
+
+    /**
+     * Test row_count is required.
+     */
+    public function test_row_count_is_required(): void
+    {
+        $payload = $this->validPayload(['row_count' => null]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['row_count']);
+    }
+
+    /**
+     * Test row_count must be non-negative.
+     */
+    public function test_row_count_must_be_non_negative(): void
+    {
+        $payload = $this->validPayload(['row_count' => -1]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['row_count']);
+    }
+
+    /**
+     * Test file_count must be non-negative.
+     */
+    public function test_file_count_must_be_non_negative(): void
+    {
+        $payload = $this->validPayload(['file_count' => -1]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['file_count']);
+    }
+
+    /**
+     * Test total_size must be non-negative.
+     */
+    public function test_total_size_must_be_non_negative(): void
+    {
+        $payload = $this->validPayload(['total_size' => -1]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['total_size']);
+    }
+
+    /**
+     * Test file_format is required.
+     */
+    public function test_file_format_is_required(): void
+    {
+        $payload = $this->validPayload(['file_format' => null]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['file_format']);
+    }
+
+    /**
+     * Test file_format must be valid enum value.
+     */
+    public function test_file_format_must_be_valid_enum(): void
+    {
+        $payload = $this->validPayload(['file_format' => 'INVALID_FORMAT']);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['file_format']);
+    }
+
+    /**
+     * Test pii_element_count must be non-negative.
+     */
+    public function test_pii_element_count_must_be_non_negative(): void
+    {
+        $payload = $this->validPayload(['pii_element_count' => -1]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['pii_element_count']);
+    }
+
+    /**
+     * Test consent_coverage_at_creation must be between 0 and 100.
+     */
+    public function test_consent_coverage_at_creation_max_is_100(): void
+    {
+        $payload = $this->validPayload(['consent_coverage_at_creation' => 101]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['consent_coverage_at_creation']);
     }
 
     /**
@@ -266,59 +445,71 @@ class DatasetSnapshotControllerTest extends TestCase
     }
 
     /**
-     * Test time_range_end must be after or equal to time_range_start.
+     * Test encryption_status is required.
      */
-    public function test_time_range_end_must_be_after_or_equal_to_start(): void
+    public function test_encryption_status_is_required(): void
     {
-        $payload = $this->validPayload([
-            'time_range_start' => '2024-12-31',
-            'time_range_end' => '2024-01-01',
-        ]);
+        $payload = $this->validPayload(['encryption_status' => null]);
 
         $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['time_range_end']);
+            ->assertJsonValidationErrors(['encryption_status']);
     }
 
     /**
-     * Test row_count must be non-negative.
+     * Test encryption_status must be valid enum value.
      */
-    public function test_row_count_must_be_non_negative(): void
+    public function test_encryption_status_must_be_valid_enum(): void
     {
-        $payload = $this->validPayload(['row_count' => -1]);
+        $payload = $this->validPayload(['encryption_status' => 'INVALID_STATUS']);
 
         $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['row_count']);
+            ->assertJsonValidationErrors(['encryption_status']);
     }
 
     /**
-     * Test pii_element_count must be non-negative.
+     * Test status is required.
      */
-    public function test_pii_element_count_must_be_non_negative(): void
+    public function test_status_is_required(): void
     {
-        $payload = $this->validPayload(['pii_element_count' => -1]);
+        $payload = $this->validPayload(['status' => null]);
 
         $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['pii_element_count']);
+            ->assertJsonValidationErrors(['status']);
     }
 
     /**
-     * Test special_category_element_count must be non-negative.
+     * Test status must be valid enum value.
      */
-    public function test_special_category_element_count_must_be_non_negative(): void
+    public function test_status_must_be_valid_enum(): void
     {
-        $payload = $this->validPayload(['special_category_element_count' => -1]);
+        $payload = $this->validPayload(['status' => 'INVALID_STATUS']);
 
         $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['special_category_element_count']);
+            ->assertJsonValidationErrors(['status']);
     }
+
+    /**
+     * Test quality_checksums max length is 255.
+     */
+    public function test_quality_checksums_max_length_is_255(): void
+    {
+        $payload = $this->validPayload(['quality_checksums' => str_repeat('a', 256)]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['quality_checksums']);
+    }
+
+    // ==================== Show Tests ====================
 
     /**
      * Test user can view a specific dataset snapshot.
@@ -335,17 +526,18 @@ class DatasetSnapshotControllerTest extends TestCase
                 'message',
                 'data' => [
                     'id',
+                    'dataset_id',
                     'version_tag',
-                    'residency_zone',
-                    'storage_uri',
-                ]
+                    'encryption_status',
+                    'status',
+                ],
             ])
             ->assertJson([
                 'error' => false,
                 'data' => [
                     'id' => $snapshot->id,
                     'version_tag' => $snapshot->version_tag,
-                ]
+                ],
             ]);
     }
 
@@ -365,10 +557,12 @@ class DatasetSnapshotControllerTest extends TestCase
                     'dataset' => [
                         'id',
                         'name',
-                    ]
-                ]
+                    ],
+                ],
             ]);
     }
+
+    // ==================== Update Tests ====================
 
     /**
      * Test user can update a dataset snapshot.
@@ -379,12 +573,14 @@ class DatasetSnapshotControllerTest extends TestCase
             'organization_id' => $this->organization->id,
             'version_tag' => 'v1.0',
             'row_count' => 1000,
+            'status' => Status::ACTIVE->value,
         ]);
 
         $updateData = [
             'version_tag' => 'v1.1',
             'row_count' => 1500,
-            'quality_checksums' => hash('sha256', 'updated'),
+            'file_count' => 150,
+            'status' => Status::DEPRECATED->value,
         ];
 
         $response = $this->actingAs($this->user)->postJson("/api/dataset-snapshots/{$snapshot->id}", $updateData);
@@ -396,13 +592,14 @@ class DatasetSnapshotControllerTest extends TestCase
                 'data' => [
                     'version_tag' => 'v1.1',
                     'row_count' => 1500,
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('dataset_snapshots', [
             'id' => $snapshot->id,
             'version_tag' => 'v1.1',
             'row_count' => 1500,
+            'file_count' => 150,
         ]);
     }
 
@@ -415,7 +612,7 @@ class DatasetSnapshotControllerTest extends TestCase
             'organization_id' => $this->organization->id,
             'version_tag' => 'v1.0',
             'row_count' => 1000,
-            'residency_zone' => ResidencyZone::EU,
+            'residency_zone' => ResidencyZone::EU->value,
         ]);
 
         $updateData = [
@@ -431,6 +628,33 @@ class DatasetSnapshotControllerTest extends TestCase
             'version_tag' => 'v1.0', // unchanged
             'row_count' => 2000, // updated
             'residency_zone' => ResidencyZone::EU->value, // unchanged
+        ]);
+    }
+
+    /**
+     * Test update can change enum fields.
+     */
+    public function test_update_can_change_enum_fields(): void
+    {
+        $snapshot = DatasetSnapshot::factory()->create([
+            'organization_id' => $this->organization->id,
+            'compression' => Compression::GZIP->value,
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $updateData = [
+            'compression' => Compression::SNAPPY->value,
+            'status' => Status::ARCHIVED->value,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/dataset-snapshots/{$snapshot->id}", $updateData);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('dataset_snapshots', [
+            'id' => $snapshot->id,
+            'compression' => Compression::SNAPPY->value,
+            'status' => Status::ARCHIVED->value,
         ]);
     }
 
@@ -452,6 +676,8 @@ class DatasetSnapshotControllerTest extends TestCase
             ->assertJsonValidationErrors(['time_range_end']);
     }
 
+    // ==================== Delete Tests ====================
+
     /**
      * Test user can delete a dataset snapshot.
      */
@@ -470,6 +696,8 @@ class DatasetSnapshotControllerTest extends TestCase
 
         $this->assertDatabaseMissing('dataset_snapshots', ['id' => $snapshot->id]);
     }
+
+    // ==================== Authentication Tests ====================
 
     /**
      * Test unauthenticated user cannot access index.
@@ -527,44 +755,5 @@ class DatasetSnapshotControllerTest extends TestCase
         $response = $this->deleteJson("/api/dataset-snapshots/{$snapshot->id}");
 
         $response->assertStatus(401);
-    }
-
-    /**
-     * Test quality_checksums max length is 255.
-     */
-    public function test_quality_checksums_max_length_is_255(): void
-    {
-        $payload = $this->validPayload(['quality_checksums' => str_repeat('a', 256)]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['quality_checksums']);
-    }
-
-    /**
-     * Test masking_anonymization_method max length is 255.
-     */
-    public function test_masking_anonymization_method_max_length_is_255(): void
-    {
-        $payload = $this->validPayload(['masking_anonymization_method' => str_repeat('a', 256)]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['masking_anonymization_method']);
-    }
-
-    /**
-     * Test privacy_transform_evidence_ref max length is 255.
-     */
-    public function test_privacy_transform_evidence_ref_max_length_is_255(): void
-    {
-        $payload = $this->validPayload(['privacy_transform_evidence_ref' => str_repeat('a', 256)]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/dataset-snapshots', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['privacy_transform_evidence_ref']);
     }
 }
