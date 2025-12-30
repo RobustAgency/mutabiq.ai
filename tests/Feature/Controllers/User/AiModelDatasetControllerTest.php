@@ -2,22 +2,27 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\AiModelDataset\EligibilityStatus;
-use App\Enums\AiModelDataset\Role;
-use App\Models\AiModel;
-use App\Models\AiModelVersion;
-use App\Models\Dataset;
-use App\Models\DatasetSnapshot;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiModel;
+use App\Models\Dataset;
+use App\Models\Organization;
+use App\Models\AiModelVersion;
+use App\Models\DatasetSnapshot;
+use App\Enums\AiModelDataset\Role;
+use App\Enums\AiModelDataset\CreatedBy;
+use App\Enums\AiModelDataset\LinkageStatus;
+use App\Enums\AiModelDataset\CrossBorderCheck;
+use App\Enums\AiModelDataset\ConsentCheckStatus;
+use App\Enums\AiModelDataset\SpecialCategoryCheck;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AiModelDatasetControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -46,13 +51,19 @@ class AiModelDatasetControllerTest extends TestCase
             'dataset_id' => $dataset->id,
             'dataset_snapshot_id' => $snapshot->id,
             'role' => Role::TRAIN->value,
-            'access_path' => '/data/training/path',
-            'transform_pack_link' => 'https://transforms.example.com/pack123',
-            'license_check_ref' => 'LIC-123456',
-            'privacy_check_ref' => 'PRI-789012',
-            'eligibility_status' => EligibilityStatus::ELIGIBLE->value,
-            'notes' => 'Test dataset assignment',
-            'source_created_at' => now()->subDays(10)->toDateString(),
+            'rows_used' => 5000,
+            'training_start_date' => now()->subDays(10)->toDateString(),
+            'training_end_date' => now()->subDays(5)->toDateString(),
+            'training_duration' => '5 days',
+            'compute_resources' => 'GPU x4',
+            'cost' => 500.00,
+            'consent_check_status' => ConsentCheckStatus::PASSED->value,
+            'cross_border_check' => CrossBorderCheck::PASSED->value,
+            'special_category_check' => SpecialCategoryCheck::PASSED->value,
+            'bias_mitigation_applied' => true,
+            'created_by_system' => CreatedBy::DATA_ENGINEERING_TEAM->value,
+            'linkage_status' => LinkageStatus::ACTIVE->value,
+            'business_justification' => 'Model training purposes',
         ], $overrides);
     }
 
@@ -71,20 +82,29 @@ class AiModelDatasetControllerTest extends TestCase
                 'message',
                 'data' => [
                     'id',
+                    'display_id',
+                    'organization_id',
                     'ai_model_id',
                     'ai_model_version_id',
                     'dataset_id',
                     'dataset_snapshot_id',
                     'role',
-                    'access_path',
-                    'transform_pack_link',
-                    'license_check_ref',
-                    'privacy_check_ref',
-                    'eligibility_status',
-                    'notes',
+                    'rows_used',
+                    'training_start_date',
+                    'training_end_date',
+                    'training_duration',
+                    'compute_resources',
+                    'cost',
+                    'consent_check_status',
+                    'cross_border_check',
+                    'special_category_check',
+                    'bias_mitigation_applied',
+                    'created_by_system',
+                    'linkage_status',
+                    'business_justification',
                     'created_at',
                     'updated_at',
-                ]
+                ],
             ])
             ->assertJson([
                 'error' => false,
@@ -112,7 +132,10 @@ class AiModelDatasetControllerTest extends TestCase
             'ai_model_version_id' => $aiModelVersion->id,
             'dataset_id' => $dataset->id,
             'role' => Role::PRETRAIN->value,
-            'source_created_at' => now()->subDays(10)->toDateString(),
+            'cross_border_check' => CrossBorderCheck::PASSED->value,
+            'special_category_check' => SpecialCategoryCheck::PASSED->value,
+            'created_by_system' => CreatedBy::DATA_ENGINEERING_TEAM->value,
+            'linkage_status' => LinkageStatus::ACTIVE->value,
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
@@ -244,7 +267,10 @@ class AiModelDatasetControllerTest extends TestCase
                 'ai_model_version_id' => $aiModelVersion->id,
                 'dataset_id' => $dataset->id,
                 'role' => $role->value,
-                'source_created_at' => now()->subDays(10)->toDateString(),
+                'cross_border_check' => CrossBorderCheck::PASSED->value,
+                'special_category_check' => SpecialCategoryCheck::PASSED->value,
+                'created_by_system' => CreatedBy::DATA_ENGINEERING_TEAM->value,
+                'linkage_status' => LinkageStatus::ACTIVE->value,
             ];
 
             // Add snapshot for roles that require it
@@ -352,7 +378,10 @@ class AiModelDatasetControllerTest extends TestCase
             'ai_model_version_id' => $aiModelVersion->id,
             'dataset_id' => $dataset->id,
             'role' => Role::PRETRAIN->value,
-            'source_created_at' => now()->subDays(10)->toDateString(),
+            'cross_border_check' => CrossBorderCheck::PASSED->value,
+            'special_category_check' => SpecialCategoryCheck::PASSED->value,
+            'created_by_system' => CreatedBy::DATA_ENGINEERING_TEAM->value,
+            'linkage_status' => LinkageStatus::ACTIVE->value,
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
@@ -374,7 +403,10 @@ class AiModelDatasetControllerTest extends TestCase
             'ai_model_version_id' => $aiModelVersion->id,
             'dataset_id' => $dataset->id,
             'role' => Role::FINE_TUNE->value,
-            'source_created_at' => now()->subDays(10)->toDateString(),
+            'cross_border_check' => CrossBorderCheck::PASSED->value,
+            'special_category_check' => SpecialCategoryCheck::PASSED->value,
+            'created_by_system' => CreatedBy::DATA_ENGINEERING_TEAM->value,
+            'linkage_status' => LinkageStatus::ACTIVE->value,
         ];
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
@@ -383,25 +415,25 @@ class AiModelDatasetControllerTest extends TestCase
     }
 
     /**
-     * Test eligibility_status must be valid enum if provided.
+     * Test consent_check_status must be valid enum if provided.
      */
-    public function test_eligibility_status_must_be_valid_enum(): void
+    public function test_consent_check_status_must_be_valid_enum(): void
     {
-        $payload = $this->validPayload(['eligibility_status' => 'invalid_status']);
+        $payload = $this->validPayload(['consent_check_status' => 'invalid_status']);
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['eligibility_status']);
+            ->assertJsonValidationErrors(['consent_check_status']);
     }
 
     /**
-     * Test all eligibility status enum values are accepted.
+     * Test all consent_check_status enum values are accepted.
      */
-    public function test_all_eligibility_status_enum_values_are_accepted(): void
+    public function test_all_consent_check_status_enum_values_are_accepted(): void
     {
-        foreach (EligibilityStatus::cases() as $status) {
-            $payload = $this->validPayload(['eligibility_status' => $status->value]);
+        foreach (ConsentCheckStatus::cases() as $status) {
+            $payload = $this->validPayload(['consent_check_status' => $status->value]);
 
             $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
 
@@ -410,55 +442,84 @@ class AiModelDatasetControllerTest extends TestCase
     }
 
     /**
-     * Test access_path max length is 500.
+     * Test cross_border_check must be valid enum.
      */
-    public function test_access_path_max_length_is_500(): void
+    public function test_cross_border_check_must_be_valid_enum(): void
     {
-        $payload = $this->validPayload(['access_path' => str_repeat('a', 501)]);
+        $payload = $this->validPayload(['cross_border_check' => 'invalid_status']);
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['access_path']);
+            ->assertJsonValidationErrors(['cross_border_check']);
     }
 
     /**
-     * Test transform_pack_link max length is 500.
+     * Test all cross_border_check enum values are accepted.
      */
-    public function test_transform_pack_link_max_length_is_500(): void
+    public function test_all_cross_border_check_enum_values_are_accepted(): void
     {
-        $payload = $this->validPayload(['transform_pack_link' => str_repeat('a', 501)]);
+        foreach (CrossBorderCheck::cases() as $status) {
+            $payload = $this->validPayload(['cross_border_check' => $status->value]);
 
-        $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+            $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['transform_pack_link']);
+            $response->assertStatus(201);
+        }
     }
 
     /**
-     * Test license_check_ref max length is 255.
+     * Test special_category_check must be valid enum if provided.
      */
-    public function test_license_check_ref_max_length_is_255(): void
+    public function test_special_category_check_must_be_valid_enum(): void
     {
-        $payload = $this->validPayload(['license_check_ref' => str_repeat('a', 256)]);
+        $payload = $this->validPayload(['special_category_check' => 'invalid_status']);
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['license_check_ref']);
+            ->assertJsonValidationErrors(['special_category_check']);
     }
 
     /**
-     * Test privacy_check_ref max length is 255.
+     * Test all special_category_check enum values are accepted.
      */
-    public function test_privacy_check_ref_max_length_is_255(): void
+    public function test_all_special_category_check_enum_values_are_accepted(): void
     {
-        $payload = $this->validPayload(['privacy_check_ref' => str_repeat('a', 256)]);
+        foreach (SpecialCategoryCheck::cases() as $status) {
+            $payload = $this->validPayload(['special_category_check' => $status->value]);
+
+            $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+
+            $response->assertStatus(201);
+        }
+    }
+
+    /**
+     * Test linkage_status must be valid enum if provided.
+     */
+    public function test_linkage_status_must_be_valid_enum(): void
+    {
+        $payload = $this->validPayload(['linkage_status' => 'invalid_status']);
 
         $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['privacy_check_ref']);
+            ->assertJsonValidationErrors(['linkage_status']);
+    }
+
+    /**
+     * Test all linkage_status enum values are accepted.
+     */
+    public function test_all_linkage_status_enum_values_are_accepted(): void
+    {
+        foreach (LinkageStatus::cases() as $status) {
+            $payload = $this->validPayload(['linkage_status' => $status->value]);
+
+            $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+
+            $response->assertStatus(201);
+        }
     }
 
     /**
@@ -471,40 +532,6 @@ class AiModelDatasetControllerTest extends TestCase
         $response = $this->postJson('/api/ai-model-datasets', $payload);
 
         $response->assertStatus(401);
-    }
-
-    /**
-     * Test link with eligible_with_conditions status.
-     */
-    public function test_link_with_eligible_with_conditions_status(): void
-    {
-        $payload = $this->validPayload([
-            'eligibility_status' => EligibilityStatus::ELIGIBLE_WITH_CONDITIONS->value,
-            'notes' => 'Requires additional privacy review.',
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
-
-        $response->assertStatus(201)
-            ->assertJsonPath('data.eligibility_status', EligibilityStatus::ELIGIBLE_WITH_CONDITIONS->value)
-            ->assertJsonPath('data.notes', 'Requires additional privacy review.');
-    }
-
-    /**
-     * Test link with not_eligible status.
-     */
-    public function test_link_with_not_eligible_status(): void
-    {
-        $payload = $this->validPayload([
-            'eligibility_status' => EligibilityStatus::NOT_ELIGIBLE->value,
-            'notes' => 'License restrictions prevent usage.',
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
-
-        $response->assertStatus(201)
-            ->assertJsonPath('data.eligibility_status', EligibilityStatus::NOT_ELIGIBLE->value)
-            ->assertJsonPath('data.notes', 'License restrictions prevent usage.');
     }
 
     /**
@@ -525,7 +552,10 @@ class AiModelDatasetControllerTest extends TestCase
                 'dataset_id' => $dataset->id,
                 'dataset_snapshot_id' => $snapshot->id,
                 'role' => Role::TRAIN->value,
-                'source_created_at' => now()->subDays(10)->toDateString(),
+                'cross_border_check' => CrossBorderCheck::PASSED->value,
+                'special_category_check' => SpecialCategoryCheck::PASSED->value,
+                'created_by_system' => CreatedBy::DATA_ENGINEERING_TEAM->value,
+                'linkage_status' => LinkageStatus::ACTIVE->value,
             ];
             $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
         }
@@ -554,7 +584,7 @@ class AiModelDatasetControllerTest extends TestCase
                     'prev_page_url',
                     'to',
                     'total',
-                ]
+                ],
             ]);
 
         $this->assertEquals(10, count($response->json('data.data')));
@@ -582,20 +612,29 @@ class AiModelDatasetControllerTest extends TestCase
                 'message',
                 'data' => [
                     'id',
+                    'display_id',
+                    'organization_id',
                     'ai_model_id',
                     'ai_model_version_id',
                     'dataset_id',
                     'dataset_snapshot_id',
                     'role',
-                    'access_path',
-                    'transform_pack_link',
-                    'license_check_ref',
-                    'privacy_check_ref',
-                    'eligibility_status',
-                    'notes',
+                    'rows_used',
+                    'training_start_date',
+                    'training_end_date',
+                    'training_duration',
+                    'compute_resources',
+                    'cost',
+                    'consent_check_status',
+                    'cross_border_check',
+                    'special_category_check',
+                    'bias_mitigation_applied',
+                    'created_by_system',
+                    'linkage_status',
+                    'business_justification',
                     'created_at',
                     'updated_at',
-                ]
+                ],
             ])
             ->assertJsonPath('data.id', $datasetId)
             ->assertJsonPath('data.role', $payload['role']);
@@ -622,9 +661,9 @@ class AiModelDatasetControllerTest extends TestCase
         $datasetId = $createResponse->json('data.id');
 
         $updatePayload = [
-            'access_path' => '/data/updated/path',
-            'eligibility_status' => EligibilityStatus::ELIGIBLE_WITH_CONDITIONS->value,
-            'notes' => 'Updated notes',
+            'rows_used' => 10000,
+            'consent_check_status' => ConsentCheckStatus::WARNING->value,
+            'business_justification' => 'Updated justification',
         ];
 
         $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
@@ -634,14 +673,14 @@ class AiModelDatasetControllerTest extends TestCase
                 'error' => false,
                 'message' => 'AI model dataset link updated successfully',
             ])
-            ->assertJsonPath('data.access_path', '/data/updated/path')
-            ->assertJsonPath('data.eligibility_status', EligibilityStatus::ELIGIBLE_WITH_CONDITIONS->value)
-            ->assertJsonPath('data.notes', 'Updated notes');
+            ->assertJsonPath('data.rows_used', 10000)
+            ->assertJsonPath('data.consent_check_status', ConsentCheckStatus::WARNING->value)
+            ->assertJsonPath('data.business_justification', 'Updated justification');
 
         $this->assertDatabaseHas('ai_model_dataset', [
             'id' => $datasetId,
-            'access_path' => '/data/updated/path',
-            'notes' => 'Updated notes',
+            'rows_used' => 10000,
+            'business_justification' => 'Updated justification',
         ]);
     }
 
@@ -655,16 +694,16 @@ class AiModelDatasetControllerTest extends TestCase
         $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
         $datasetId = $createResponse->json('data.id');
 
-        // Only update notes
+        // Only update business_justification
         $updatePayload = [
-            'notes' => 'Only notes updated',
+            'business_justification' => 'Only justification updated',
         ];
 
         $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.notes', 'Only notes updated')
-            ->assertJsonPath('data.access_path', $payload['access_path']); // Original value unchanged
+            ->assertJsonPath('data.business_justification', 'Only justification updated')
+            ->assertJsonPath('data.rows_used', $payload['rows_used']); // Original value unchanged
     }
 
     /**
@@ -717,9 +756,9 @@ class AiModelDatasetControllerTest extends TestCase
     }
 
     /**
-     * Test update validates eligibility_status enum.
+     * Test update validates consent_check_status enum.
      */
-    public function test_update_validates_eligibility_status_enum(): void
+    public function test_update_validates_consent_check_status_enum(): void
     {
         $payload = $this->validPayload();
 
@@ -727,13 +766,53 @@ class AiModelDatasetControllerTest extends TestCase
         $datasetId = $createResponse->json('data.id');
 
         $updatePayload = [
-            'eligibility_status' => 'invalid_status',
+            'consent_check_status' => 'invalid_status',
         ];
 
         $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['eligibility_status']);
+            ->assertJsonValidationErrors(['consent_check_status']);
+    }
+
+    /**
+     * Test update validates cross_border_check enum.
+     */
+    public function test_update_validates_cross_border_check_enum(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        $updatePayload = [
+            'cross_border_check' => 'invalid_status',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['cross_border_check']);
+    }
+
+    /**
+     * Test update validates linkage_status enum.
+     */
+    public function test_update_validates_linkage_status_enum(): void
+    {
+        $payload = $this->validPayload();
+
+        $createResponse = $this->actingAs($this->user)->postJson('/api/ai-model-datasets', $payload);
+        $datasetId = $createResponse->json('data.id');
+
+        $updatePayload = [
+            'linkage_status' => 'invalid_status',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['linkage_status']);
     }
 
     /**
@@ -747,12 +826,12 @@ class AiModelDatasetControllerTest extends TestCase
         $datasetId = $createResponse->json('data.id');
 
         $updatePayload = [
-            'access_path' => str_repeat('a', 501),
+            'training_duration' => str_repeat('a', 101),
         ];
 
         $response = $this->actingAs($this->user)->postJson("/api/ai-model-datasets/{$datasetId}", $updatePayload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['access_path']);
+            ->assertJsonValidationErrors(['training_duration']);
     }
 }

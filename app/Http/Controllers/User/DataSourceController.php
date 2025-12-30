@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\DataSource;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DataSourceResource;
+use App\Repositories\DataSourceRepository;
 use App\Http\Requests\DataSource\ListDataSourceRequest;
 use App\Http\Requests\DataSource\StoreDataSourceRequest;
 use App\Http\Requests\DataSource\UpdateDataSourceRequest;
-use App\Models\DataSource;
-use App\Repositories\DataSourceRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class DataSourceController extends Controller
 {
@@ -28,7 +27,7 @@ class DataSourceController extends Controller
         return response()->json([
             'error' => false,
             'data' => $dataSources,
-            'message' => 'Data sources retrieved successfully'
+            'message' => 'Data sources retrieved successfully',
         ]);
     }
 
@@ -45,7 +44,7 @@ class DataSourceController extends Controller
         return response()->json([
             'error' => false,
             'message' => 'Data source created successfully',
-            'data' => $dataSource
+            'data' => $dataSource,
         ], 201);
     }
 
@@ -56,8 +55,8 @@ class DataSourceController extends Controller
     {
         return response()->json([
             'error' => false,
-            'data' => $dataSource,
-            'message' => 'Data source retrieved successfully'
+            'data' => new DataSourceResource($dataSource),
+            'message' => 'Data source retrieved successfully',
         ]);
     }
 
@@ -73,7 +72,7 @@ class DataSourceController extends Controller
         return response()->json([
             'error' => false,
             'message' => 'Data source updated successfully',
-            'data' => $dataSource->fresh()
+            'data' => $dataSource->fresh(),
         ], 200);
     }
 

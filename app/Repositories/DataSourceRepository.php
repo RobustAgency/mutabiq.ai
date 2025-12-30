@@ -10,7 +10,7 @@ class DataSourceRepository
     /**
      * Get paginated data sources for a specific organization.
      *
-     * @param array<string, mixed> $filter
+     * @param  array<string, mixed>  $filter
      * @return LengthAwarePaginator<int , DataSource>
      */
     public function getFilteredDataSources(array $filter = []): LengthAwarePaginator
@@ -22,19 +22,19 @@ class DataSourceRepository
         }
 
         if (isset($filter['name'])) {
-            $query->where('name', 'like', '%' . $filter['name'] . '%');
+            $query->where('name', 'like', '%'.$filter['name'].'%');
         }
 
         if (isset($filter['system_type'])) {
             $query->where('system_type', $filter['system_type']);
         }
 
-        if (isset($filter['access_method'])) {
-            $query->where('access_method', $filter['access_method']);
+        if (isset($filter['criticality_level'])) {
+            $query->where('criticality_level', $filter['criticality_level']);
         }
 
-        if (isset($filter['classification'])) {
-            $query->where('classification', $filter['classification']);
+        if (isset($filter['status'])) {
+            $query->where('status', $filter['status']);
         }
 
         if (isset($filter['from'])) {
@@ -50,9 +50,6 @@ class DataSourceRepository
 
     /**
      * Get data source by ID.
-     *
-     * @param int $id
-     * @return DataSource|null
      */
     public function getDataSourceById(int $id): ?DataSource
     {
@@ -61,9 +58,6 @@ class DataSourceRepository
 
     /**
      * Create a new data source.
-     *
-     * @param array $data
-     * @return DataSource
      */
     public function createDataSource(array $data): DataSource
     {
@@ -72,10 +66,6 @@ class DataSourceRepository
 
     /**
      * Update a data source.
-     *
-     * @param DataSource $dataSource
-     * @param array $data
-     * @return bool
      */
     public function updateDataSource(DataSource $dataSource, array $data): bool
     {
@@ -84,9 +74,6 @@ class DataSourceRepository
 
     /**
      * Delete a data source.
-     *
-     * @param DataSource $dataSource
-     * @return bool
      */
     public function delete(DataSource $dataSource): bool
     {

@@ -15,9 +15,11 @@ class ListDatasetRequest extends FormRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'sensitivity' => ['nullable', 'string', 'max:255'],
-            'contains_pii' => ['nullable', 'boolean'],
-            'controller_role' => ['nullable', 'string', 'max:255'],
+            'owner_team' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'string', 'max:100'],
+            'data_steward' => ['nullable', 'string', 'max:255'],
+            'license_type' => ['nullable', 'string', 'max:100'],
+            'purpose' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

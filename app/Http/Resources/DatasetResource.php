@@ -8,6 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin Dataset
+ *
  * @property mixed $pivot
  */
 class DatasetResource extends JsonResource
@@ -21,38 +22,28 @@ class DatasetResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'display_id' => $this->display_id,
             'name' => $this->name,
+            'description' => $this->description,
             'source_ids' => $this->source_ids,
             'purpose' => $this->purpose,
-            'schema_summary' => $this->schema_summary,
-            'sensitivity' => $this->sensitivity,
-            'contains_pii' => $this->contains_pii,
-            'data_subject_categories' => $this->data_subject_categories,
-            'controller_role' => $this->controller_role,
-            'lawful_basis' => $this->lawful_basis,
-            'lawful_basis_detail' => $this->lawful_basis_detail,
-            'consent_required' => $this->consent_required,
-            'consent_coverage_pct' => $this->consent_coverage_pct,
-            'consent_source_ref' => $this->consent_source_ref,
-            'licensing_basis' => $this->licensing_basis,
-            'license_type' => $this->license_type,
-            'privacy_notice_ref' => $this->privacy_notice_ref,
-            'cross_border_transfer' => $this->cross_border_transfer,
-            'data_structure' => $this->data_structure,
-            'storage_format' => $this->storage_format,
-            'content_types' => $this->content_types,
-            'retention_policy_ref' => $this->retention_policy_ref,
-            'dpia_ref' => $this->dpia_ref,
-            'aia_ref' => $this->aia_ref,
             'owner_team' => $this->owner_team,
-            'refresh_cadence' => $this->refresh_cadence,
-            'quality_SLA' => $this->quality_SLA,
-            'catalog_asset_id' => $this->catalog_asset_id,
-            'catalog_uri' => $this->catalog_uri,
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'data_steward' => $this->data_steward,
+            'status' => $this->status,
+            'estimated_row_count' => $this->estimated_row_count,
+            'estimated_size' => $this->estimated_size,
+            'size_unit' => $this->size_unit,
+            'retention_period' => $this->retention_period,
+            'primary_languages' => $this->primary_languages,
+            'contains_personal_data' => $this->contains_personal_data,
+            'sensitivity' => $this->sensitivity,
+            'cross_border_transfer' => $this->cross_border_transfer,
+            'license_type' => $this->license_type,
+            'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
             'pivot' => $this->whenPivotLoaded('dataset_element', function () {
                 $pivot = $this->pivot;
+
                 return [
                     'dataset_id' => $pivot->dataset_id,
                     'data_element_id' => $pivot->data_element_id,

@@ -2,18 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Enums\Dataset\ContainsPii;
-use App\Enums\Dataset\ControllerRole;
-use App\Enums\Dataset\CrossBorderTransfer;
-use App\Enums\Dataset\DataStructure;
-use App\Enums\Dataset\DataSubjectCategory;
-use App\Enums\Dataset\LawfulBasis;
-use App\Enums\Dataset\LicenseType;
-use App\Enums\Dataset\Purpose;
-use App\Enums\Dataset\Sensitivity;
-use App\Enums\Dataset\StorageFormat;
 use App\Models\DataSource;
 use App\Models\Organization;
+use App\Enums\Dataset\Status;
+use App\Enums\Dataset\Purpose;
+use App\Enums\Dataset\SizeUnit;
+use App\Enums\Dataset\DataSteward;
+use App\Enums\Dataset\LicenseType;
+use App\Enums\Dataset\Sensitivity;
+use App\Enums\Dataset\PrimaryLanguage;
+use App\Enums\Dataset\ContainPersonalData;
+use App\Enums\Dataset\CrossBorderTransfer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,49 +27,30 @@ class DatasetFactory extends Factory
      */
     public function definition(): array
     {
-        $containsPii = fake()->randomElement(ContainsPii::cases());
-        $lawfulBasis = $containsPii === ContainsPii::YES ? fake()->randomElement(LawfulBasis::cases()) : null;
-        $consentRequired = $lawfulBasis === LawfulBasis::CONSENT;
-
         return [
             'organization_id' => Organization::factory(),
-            'name' => fake()->words(3, true) . ' Dataset',
+            'name' => fake()->words(3, true).' Dataset',
+            'description' => fake()->optional()->sentence(),
             'source_ids' => fake()->randomElements(
                 DataSource::pluck('id')->toArray() ?: [1, 2, 3],
                 fake()->numberBetween(1, 3)
             ),
-            'purpose' => fake()->randomElements(
-                array_map(fn($c) => $c->value, Purpose::cases()),
-                fake()->numberBetween(1, 3)
-            ),
-            'schema_summary' => fake()->optional()->sentence(),
-            'sensitivity' => fake()->randomElement(Sensitivity::cases()),
-            'contains_pii' => $containsPii,
-            'data_subject_categories' => fake()->randomElements(
-                array_map(fn($c) => $c->value, DataSubjectCategory::cases()),
-                fake()->numberBetween(1, 3)
-            ),
-            'controller_role' => fake()->randomElement(ControllerRole::cases()),
-            'lawful_basis' => $lawfulBasis,
-            'lawful_basis_detail' => $lawfulBasis ? fake()->optional()->sentence() : null,
-            'consent_required' => $consentRequired,
-            'consent_coverage_pct' => $consentRequired ? fake()->numberBetween(0, 100) : null,
-            'consent_source_ref' => $consentRequired ? fake()->optional()->regexify('consent-[0-9]{4}') : null,
-            'licensing_basis' => fake()->optional()->sentence(),
-            'license_type' => fake()->optional()->randomElement(LicenseType::cases()),
-            'privacy_notice_ref' => fake()->optional()->regexify('PN-[0-9]{4}'),
-            'cross_border_transfer' => fake()->randomElement(CrossBorderTransfer::cases()),
-            'data_structure' => fake()->randomElement(DataStructure::cases()),
-            'storage_format' => fake()->randomElement(StorageFormat::cases()),
-            'content_types' => fake()->optional()->randomElements(['text', 'image', 'video', 'audio', 'structured'], fake()->numberBetween(1, 3)),
-            'retention_policy_ref' => fake()->optional()->randomElement(['policy-30d', 'policy-90d', 'policy-1y', 'policy-7y']),
-            'dpia_ref' => fake()->optional()->regexify('DPIA-[0-9]{4}'),
-            'aia_ref' => fake()->optional()->regexify('AIA-[0-9]{4}'),
+            'purpose' => fake()->randomElement(Purpose::cases())->value,
             'owner_team' => fake()->randomElement(['Data Science', 'Engineering', 'Analytics', 'Research', 'Operations']),
-            'refresh_cadence' => fake()->optional()->randomElement(['daily', 'weekly', 'monthly', 'quarterly', 'ad-hoc']),
-            'quality_SLA' => fake()->optional()->randomElement(['99.9%', '99.5%', '95%', 'best-effort']),
-            'catalog_asset_id' => fake()->optional()->regexify('CAT-[0-9]{6}'),
-            'catalog_uri' => fake()->optional()->url(),
+            'data_steward' => fake()->randomElement(DataSteward::cases())->value,
+            'status' => fake()->randomElement(Status::cases())->value,
+            'estimated_row_count' => fake()->optional()->numberBetween(1000, 10000000),
+            'estimated_size' => fake()->optional()->numberBetween(100, 10000),
+            'size_unit' => fake()->boolean() ? fake()->randomElement(SizeUnit::cases())->value : null,
+            'retention_period' => fake()->optional()->randomElement(['30 days', '90 days', '1 year', '7 years', 'indefinite']),
+            'primary_languages' => fake()->boolean() ? fake()->randomElements(
+                array_map(fn ($c) => $c->value, PrimaryLanguage::cases()),
+                fake()->numberBetween(1, 3)
+            ) : null,
+            'contains_personal_data' => fake()->randomElement(ContainPersonalData::cases())->value,
+            'sensitivity' => fake()->randomElement(Sensitivity::cases())->value,
+            'cross_border_transfer' => fake()->randomElement(CrossBorderTransfer::cases())->value,
+            'license_type' => fake()->boolean() ? fake()->randomElement(LicenseType::cases())->value : null,
         ];
     }
 }

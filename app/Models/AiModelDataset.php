@@ -20,19 +20,29 @@ class AiModelDataset extends Model
         'dataset_id',
         'dataset_snapshot_id',
         'role',
-        'access_path',
-        'transform_pack_link',
-        'license_check_ref',
-        'privacy_check_ref',
-        'eligibility_status',
-        'notes',
-        'source_created_at',
+        'rows_used',
+        'training_start_date',
+        'training_end_date',
+        'training_duration',
+        'compute_resources',
+        'cost',
+        'consent_check_status',
+        'cross_border_check',
+        'special_category_check',
+        'bias_mitigation_applied',
+        'created_by_system',
+        'linkage_status',
+        'business_justification',
     ];
 
     protected function casts(): array
     {
         return [
-            'source_created_at' => 'datetime',
+            'rows_used' => 'integer',
+            'training_start_date' => 'date',
+            'training_end_date' => 'date',
+            'cost' => 'decimal:2',
+            'bias_mitigation_applied' => 'boolean',
         ];
     }
 

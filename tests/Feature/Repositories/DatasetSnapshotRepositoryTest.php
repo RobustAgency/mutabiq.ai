@@ -2,13 +2,20 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Enums\DatasetSnapshot\ResidencyZone;
+use Tests\TestCase;
 use App\Models\Dataset;
-use App\Models\DatasetSnapshot;
 use App\Models\Organization;
+use App\Models\DatasetSnapshot;
+use App\Enums\DatasetSnapshot\Status;
+use App\Enums\DatasetSnapshot\ApprovedBy;
+use App\Enums\DatasetSnapshot\FileFormat;
+use App\Enums\DatasetSnapshot\Compression;
+use App\Enums\DatasetSnapshot\StorageTier;
+use App\Enums\DatasetSnapshot\MaskingMethod;
+use App\Enums\DatasetSnapshot\ResidencyZone;
+use App\Enums\DatasetSnapshot\EncryptionStatus;
 use App\Repositories\DatasetSnapshotRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class DatasetSnapshotRepositoryTest extends TestCase
 {
@@ -19,7 +26,7 @@ class DatasetSnapshotRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new DatasetSnapshotRepository();
+        $this->repository = new DatasetSnapshotRepository;
     }
 
     /**
@@ -190,7 +197,7 @@ class DatasetSnapshotRepositoryTest extends TestCase
     }
 
     /**
-     * Test create snapshot creates a new snapshot.
+     * Test create snapshot creates a new snapshot with all required fields.
      */
     public function test_create_snapshot_creates_new_snapshot(): void
     {
@@ -201,16 +208,28 @@ class DatasetSnapshotRepositoryTest extends TestCase
             'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'version_tag' => 'v1.0',
+            'supersedes_snapshot_id' => null,
+            'description' => 'Test dataset snapshot',
             'time_range_start' => now()->subMonths(3),
             'time_range_end' => now(),
             'row_count' => 50000,
-            'quality_checksums' => hash('sha256', 'test'),
+            'file_count' => 120,
+            'total_size' => 5242880,
+            'size_unit' => 'MB',
+            'file_format' => FileFormat::PARQUET->value,
             'pii_element_count' => 10,
-            'special_category_element_count' => 5,
-            'masking_anonymization_method' => 'Tokenization',
-            'privacy_transform_evidence_ref' => 'PTE-123456',
-            'residency_zone' => ResidencyZone::EU,
+            'consent_coverage_at_creation' => 95,
+            'residency_zone' => ResidencyZone::EU->value,
             'storage_uri' => 'https://storage.example.com/snapshots/abc123',
+            'storage_tier' => StorageTier::HOT->value,
+            'compression' => Compression::GZIP->value,
+            'encryption_status' => EncryptionStatus::ENCRYPTED_AT_REST->value,
+            'masking_method_applied' => MaskingMethod::TOKENIZATION->value,
+            'quality_checksums' => hash('sha256', 'test'),
+            'created_by_system' => false,
+            'approved_by' => ApprovedBy::PRIVACY_OFFICE->value,
+            'expiration_date' => now()->addYears(1),
+            'status' => Status::ACTIVE->value,
         ];
 
         $result = $this->repository->createSnapshot($data);
@@ -219,9 +238,14 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $this->assertEquals($data['version_tag'], $result->version_tag);
         $this->assertEquals($data['dataset_id'], $result->dataset_id);
         $this->assertEquals($data['row_count'], $result->row_count);
-        $this->assertEquals($data['residency_zone'], $result->residency_zone);
+        $this->assertEquals($data['file_count'], $result->file_count);
+        $this->assertEquals($data['total_size'], $result->total_size);
+        $this->assertEquals($data['file_format'], $result->file_format);
+        $this->assertEquals($data['encryption_status'], $result->encryption_status);
+        $this->assertEquals($data['status'], $result->status);
         $this->assertDatabaseHas('dataset_snapshots', [
             'version_tag' => 'v1.0',
+            'file_format' => FileFormat::PARQUET->value,
         ]);
     }
 
@@ -237,32 +261,46 @@ class DatasetSnapshotRepositoryTest extends TestCase
             'organization_id' => $organization->id,
             'dataset_id' => $dataset->id,
             'version_tag' => 'v1.0',
-            'residency_zone' => ResidencyZone::US,
+            'time_range_start' => now()->subMonths(1),
+            'time_range_end' => now(),
+            'row_count' => 1000,
+            'residency_zone' => ResidencyZone::US->value,
             'storage_uri' => 'https://storage.example.com/snapshots/xyz789',
+            'encryption_status' => EncryptionStatus::ENCRYPTED_AT_REST->value,
+            'status' => Status::ACTIVE->value,
+            'file_format' => FileFormat::CSV->value,
         ];
 
         $result = $this->repository->createSnapshot($data);
 
         $this->assertInstanceOf(DatasetSnapshot::class, $result);
-        $this->assertNull($result->time_range_start);
-        $this->assertNull($result->time_range_end);
-        $this->assertNull($result->row_count);
+        $this->assertEquals($data['version_tag'], $result->version_tag);
+        $this->assertEquals($data['dataset_id'], $result->dataset_id);
+        $this->assertNull($result->file_count);
+        $this->assertNull($result->total_size);
+        $this->assertNull($result->masking_method_applied);
     }
 
     /**
-     * Test update snapshot updates existing snapshot.
+     * Test update snapshot updates existing snapshot with new fields.
      */
     public function test_update_snapshot_updates_existing_snapshot(): void
     {
         $snapshot = DatasetSnapshot::factory()->create([
             'version_tag' => 'v1.0',
             'row_count' => 1000,
+            'status' => Status::ACTIVE->value,
         ]);
 
         $updateData = [
             'version_tag' => 'v1.1',
             'row_count' => 1500,
+            'file_count' => 150,
+            'total_size' => 2097152,
             'quality_checksums' => hash('sha256', 'updated'),
+            'compression' => Compression::SNAPPY->value,
+            'masking_method_applied' => MaskingMethod::HASHING->value,
+            'status' => Status::DEPRECATED->value,
         ];
 
         $result = $this->repository->updateSnapshot($snapshot, $updateData);
@@ -271,7 +309,10 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $snapshot->refresh();
         $this->assertEquals('v1.1', $snapshot->version_tag);
         $this->assertEquals(1500, $snapshot->row_count);
+        $this->assertEquals(150, $snapshot->file_count);
         $this->assertEquals($updateData['quality_checksums'], $snapshot->quality_checksums);
+        $this->assertEquals(Compression::SNAPPY->value, $snapshot->compression);
+        $this->assertEquals(Status::DEPRECATED->value, $snapshot->status);
     }
 
     /**
@@ -314,12 +355,14 @@ class DatasetSnapshotRepositoryTest extends TestCase
         $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
             'time_range_start' => null,
             'time_range_end' => null,
+            'expiration_date' => null,
         ]);
 
         $result = $this->repository->getSnapshotById($snapshot->id);
 
         $this->assertNull($result->time_range_start);
         $this->assertNull($result->time_range_end);
+        $this->assertNull($result->expiration_date);
     }
 
     /**
@@ -331,34 +374,232 @@ class DatasetSnapshotRepositoryTest extends TestCase
 
         $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
             'row_count' => null,
+            'file_count' => null,
             'pii_element_count' => null,
-            'special_category_element_count' => null,
+            'total_size' => null,
+            'consent_coverage_at_creation' => null,
         ]);
 
         $result = $this->repository->getSnapshotById($snapshot->id);
 
         $this->assertNull($result->row_count);
+        $this->assertNull($result->file_count);
         $this->assertNull($result->pii_element_count);
-        $this->assertNull($result->special_category_element_count);
+        $this->assertNull($result->total_size);
+        $this->assertNull($result->consent_coverage_at_creation);
     }
 
     /**
-     * Test repository handles nullable text fields.
+     * Test repository handles nullable text and enum fields.
      */
-    public function test_repository_handles_nullable_text_fields(): void
+    public function test_repository_handles_nullable_text_and_enum_fields(): void
     {
         $dataset = Dataset::factory()->create();
 
         $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
             'quality_checksums' => null,
-            'masking_anonymization_method' => null,
-            'privacy_transform_evidence_ref' => null,
+            'masking_method_applied' => null,
+            'compression' => null,
+            'storage_tier' => null,
+            'approved_by' => null,
+            'description' => null,
+            'size_unit' => null,
+            'supersedes_snapshot_id' => null,
         ]);
 
         $result = $this->repository->getSnapshotById($snapshot->id);
 
         $this->assertNull($result->quality_checksums);
-        $this->assertNull($result->masking_anonymization_method);
-        $this->assertNull($result->privacy_transform_evidence_ref);
+        $this->assertNull($result->masking_method_applied);
+        $this->assertNull($result->compression);
+        $this->assertNull($result->storage_tier);
+        $this->assertNull($result->approved_by);
+        $this->assertNull($result->description);
+        $this->assertNull($result->size_unit);
+        $this->assertNull($result->supersedes_snapshot_id);
+    }
+
+    /**
+     * Test repository handles all file format enums.
+     */
+    public function test_repository_handles_all_file_format_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (FileFormat::cases() as $format) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'file_format' => $format->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($format->value, $result->file_format);
+        }
+    }
+
+    /**
+     * Test repository handles all encryption status enums.
+     */
+    public function test_repository_handles_all_encryption_status_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (EncryptionStatus::cases() as $status) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'encryption_status' => $status->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($status->value, $result->encryption_status);
+        }
+    }
+
+    /**
+     * Test repository handles all residency zone enums.
+     */
+    public function test_repository_handles_all_residency_zone_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (ResidencyZone::cases() as $zone) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'residency_zone' => $zone->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($zone->value, $result->residency_zone);
+        }
+    }
+
+    /**
+     * Test repository handles all status enums.
+     */
+    public function test_repository_handles_all_status_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (Status::cases() as $status) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'status' => $status->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($status->value, $result->status);
+        }
+    }
+
+    /**
+     * Test repository handles compression enums.
+     */
+    public function test_repository_handles_compression_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (Compression::cases() as $compression) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'compression' => $compression->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($compression->value, $result->compression);
+        }
+    }
+
+    /**
+     * Test repository handles storage tier enums.
+     */
+    public function test_repository_handles_storage_tier_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (StorageTier::cases() as $tier) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'storage_tier' => $tier->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($tier->value, $result->storage_tier);
+        }
+    }
+
+    /**
+     * Test repository handles masking method enums.
+     */
+    public function test_repository_handles_masking_method_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (MaskingMethod::cases() as $method) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'masking_method_applied' => $method->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($method->value, $result->masking_method_applied);
+        }
+    }
+
+    /**
+     * Test repository handles approved by enums.
+     */
+    public function test_repository_handles_approved_by_enums(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        foreach (ApprovedBy::cases() as $approver) {
+            $snapshot = DatasetSnapshot::factory()->for($dataset)->create([
+                'approved_by' => $approver->value,
+            ]);
+
+            $result = $this->repository->getSnapshotById($snapshot->id);
+            $this->assertEquals($approver->value, $result->approved_by);
+        }
+    }
+
+    /**
+     * Test repository handles boolean fields.
+     */
+    public function test_repository_handles_boolean_fields(): void
+    {
+        $dataset = Dataset::factory()->create();
+
+        $snapshotTrue = DatasetSnapshot::factory()->for($dataset)->create([
+            'created_by_system' => true,
+        ]);
+
+        $snapshotFalse = DatasetSnapshot::factory()->for($dataset)->create([
+            'created_by_system' => false,
+        ]);
+
+        $resultTrue = $this->repository->getSnapshotById($snapshotTrue->id);
+        $resultFalse = $this->repository->getSnapshotById($snapshotFalse->id);
+
+        $this->assertTrue($resultTrue->created_by_system);
+        $this->assertFalse($resultFalse->created_by_system);
+    }
+
+    /**
+     * Test repository handles snapshot with superseded relationship.
+     */
+    public function test_repository_handles_snapshot_superseding(): void
+    {
+        $dataset = Dataset::factory()->create();
+        $previousSnapshot = DatasetSnapshot::factory()->for($dataset)->create([
+            'version_tag' => 'v1.0',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $newSnapshot = DatasetSnapshot::factory()->for($dataset)->create([
+            'version_tag' => 'v2.0',
+            'supersedes_snapshot_id' => $previousSnapshot->id,
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $result = $this->repository->getSnapshotById($newSnapshot->id);
+
+        $this->assertEquals($previousSnapshot->id, $result->supersedes_snapshot_id);
+        $this->assertDatabaseHas('dataset_snapshots', [
+            'id' => $newSnapshot->id,
+            'supersedes_snapshot_id' => $previousSnapshot->id,
+        ]);
     }
 }

@@ -2,24 +2,25 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\DataSource\AccessMethod;
-use App\Enums\DataSource\CloudProvider;
-use App\Enums\DataSource\DataClassification;
-use App\Enums\DataSource\DataResidency;
-use App\Enums\DataSource\HostingModel;
-use App\Enums\DataSource\ServiceModel;
-use App\Enums\DataSource\SystemType;
+use Tests\TestCase;
+use App\Models\User;
 use App\Models\DataSource;
 use App\Models\Organization;
-use App\Models\User;
+use App\Enums\DataSource\Status;
+use App\Enums\DataSource\OwnerTeam;
+use App\Enums\DataSource\DataDomain;
+use App\Enums\DataSource\SystemType;
+use App\Enums\DataSource\HostingModel;
+use App\Enums\DataSource\DataResidency;
+use App\Enums\DataSource\CriticalityLevel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class DataSourceControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -38,20 +39,20 @@ class DataSourceControllerTest extends TestCase
     {
         return array_merge([
             'name' => 'Customer Database',
+            'description' => 'Central customer database',
             'system_type' => $this->enumFirstValue(SystemType::class),
-            'owner_team' => 'Engineering',
-            'data_domains' => ['Customer', 'Finance'],
-            'access_method' => $this->enumFirstValue(AccessMethod::class),
+            'owner_team' => $this->enumFirstValue(OwnerTeam::class),
+            'data_domains' => [
+                $this->enumFirstValue(DataDomain::class),
+            ],
             'residency' => $this->enumFirstValue(DataResidency::class),
-            'classification' => $this->enumFirstValue(DataClassification::class),
+            'criticality_level' => $this->enumFirstValue(CriticalityLevel::class),
             'hosting_model' => $this->enumFirstValue(HostingModel::class),
-            'service_model' => $this->enumFirstValue(ServiceModel::class),
-            'cloud_provider' => $this->enumFirstValue(CloudProvider::class),
-            'primary_region' => 'us-east-1',
-            'secondary_region' => 'us-west-2',
-            'network_ref' => 'vpc-12345678',
-            'retention_policy_ref' => 'policy-90d',
-            'catalog_uri' => 'https://catalog.example.com',
+            'technical_owner' => $this->enumFirstValue(OwnerTeam::class),
+            'business_owner' => $this->enumFirstValue(OwnerTeam::class),
+            'last_review_date' => now()->format('Y-m-d'),
+            'next_review_date' => now()->addMonths(3)->format('Y-m-d'),
+            'status' => $this->enumFirstValue(Status::class),
         ], $overrides);
     }
 
@@ -103,13 +104,13 @@ class DataSourceControllerTest extends TestCase
                 'message' => 'Data source created successfully',
                 'data' => [
                     'name' => 'Customer Database',
-                    'owner_team' => 'Engineering',
+                    'description' => 'Central customer database',
                 ],
             ]);
 
         $this->assertDatabaseHas('data_sources', [
             'name' => 'Customer Database',
-            'owner_team' => 'Engineering',
+            'description' => 'Central customer database',
         ]);
     }
 
@@ -123,12 +124,11 @@ class DataSourceControllerTest extends TestCase
                 'system_type',
                 'owner_team',
                 'data_domains',
-                'access_method',
                 'residency',
-                'classification',
                 'hosting_model',
-                'service_model',
-                'cloud_provider',
+                'technical_owner',
+                'business_owner',
+                'status',
             ]);
     }
 
@@ -136,13 +136,13 @@ class DataSourceControllerTest extends TestCase
     {
         $data = $this->validPayload([
             'system_type' => 'invalid_type',
-            'access_method' => 'invalid_method',
+            'status' => 'invalid_status',
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/data-sources', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['system_type', 'access_method']);
+            ->assertJsonValidationErrors(['system_type', 'status']);
     }
 
     public function test_user_can_view_single_data_source(): void
@@ -152,7 +152,7 @@ class DataSourceControllerTest extends TestCase
             'name' => 'Test Database',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/data-sources/' . $dataSource->id);
+        $response = $this->actingAs($this->user)->getJson('/api/data-sources/'.$dataSource->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -170,15 +170,15 @@ class DataSourceControllerTest extends TestCase
         $dataSource = DataSource::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Old Name',
-            'owner_team' => 'Old Team',
+            'description' => 'Old Description',
         ]);
 
         $updateData = [
             'name' => 'Updated Name',
-            'owner_team' => 'Updated Team',
+            'description' => 'Updated Description',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/data-sources/' . $dataSource->id, $updateData);
+        $response = $this->actingAs($this->user)->postJson('/api/data-sources/'.$dataSource->id, $updateData);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -186,14 +186,14 @@ class DataSourceControllerTest extends TestCase
                 'message' => 'Data source updated successfully',
                 'data' => [
                     'name' => 'Updated Name',
-                    'owner_team' => 'Updated Team',
+                    'description' => 'Updated Description',
                 ],
             ]);
 
         $this->assertDatabaseHas('data_sources', [
             'id' => $dataSource->id,
             'name' => 'Updated Name',
-            'owner_team' => 'Updated Team',
+            'description' => 'Updated Description',
         ]);
     }
 
@@ -205,7 +205,7 @@ class DataSourceControllerTest extends TestCase
             'system_type' => 'invalid_type',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/data-sources/' . $dataSource->id, $updateData);
+        $response = $this->actingAs($this->user)->postJson('/api/data-sources/'.$dataSource->id, $updateData);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['system_type']);
@@ -215,7 +215,7 @@ class DataSourceControllerTest extends TestCase
     {
         $dataSource = DataSource::factory()->create(['organization_id' => $this->organization->id]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/api/data-sources/' . $dataSource->id);
+        $response = $this->actingAs($this->user)->deleteJson('/api/data-sources/'.$dataSource->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -231,7 +231,10 @@ class DataSourceControllerTest extends TestCase
     public function test_data_domains_are_stored_as_array(): void
     {
         $data = $this->validPayload([
-            'data_domains' => ['Customer', 'Finance', 'Marketing'],
+            'data_domains' => [
+                DataDomain::cases()[0]->value,
+                DataDomain::cases()[1]->value,
+            ],
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/data-sources', $data);
@@ -240,17 +243,16 @@ class DataSourceControllerTest extends TestCase
 
         $dataSource = DataSource::find($response->json('data.id'));
         $this->assertIsArray($dataSource->data_domains);
-        $this->assertCount(3, $dataSource->data_domains);
+        $this->assertCount(2, $dataSource->data_domains);
     }
 
     public function test_nullable_fields_can_be_null(): void
     {
         $data = $this->validPayload([
-            'primary_region' => null,
-            'secondary_region' => null,
-            'network_ref' => null,
-            'retention_policy_ref' => null,
-            'catalog_uri' => null,
+            'description' => null,
+            'criticality_level' => null,
+            'last_review_date' => null,
+            'next_review_date' => null,
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/data-sources', $data);
@@ -258,22 +260,22 @@ class DataSourceControllerTest extends TestCase
         $response->assertStatus(201);
 
         $dataSource = DataSource::find($response->json('data.id'));
-        $this->assertNull($dataSource->primary_region);
-        $this->assertNull($dataSource->secondary_region);
-        $this->assertNull($dataSource->network_ref);
-        $this->assertNull($dataSource->retention_policy_ref);
-        $this->assertNull($dataSource->catalog_uri);
+        $this->assertNull($dataSource->description);
+        $this->assertNull($dataSource->criticality_level);
+        $this->assertNull($dataSource->last_review_date);
+        $this->assertNull($dataSource->next_review_date);
     }
 
-    public function test_catalog_uri_must_be_valid_url(): void
+    public function test_next_review_date_must_be_after_or_equal_last_review_date(): void
     {
         $data = $this->validPayload([
-            'catalog_uri' => 'not-a-valid-url',
+            'last_review_date' => now()->format('Y-m-d'),
+            'next_review_date' => now()->subDays(1)->format('Y-m-d'),
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/api/data-sources', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['catalog_uri']);
+            ->assertJsonValidationErrors(['next_review_date']);
     }
 }

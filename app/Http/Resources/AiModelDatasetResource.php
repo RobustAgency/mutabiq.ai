@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\AiModelDataset;
 use Illuminate\Http\Request;
+use App\Models\AiModelDataset;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -20,17 +20,26 @@ class AiModelDatasetResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'display_id' => $this->display_id,
+            'organization_id' => $this->organization_id,
             'ai_model_id' => $this->ai_model_id,
             'ai_model_version_id' => $this->ai_model_version_id,
             'dataset_id' => $this->dataset_id,
             'dataset_snapshot_id' => $this->dataset_snapshot_id,
             'role' => $this->role,
-            'access_path' => $this->access_path,
-            'transform_pack_link' => $this->transform_pack_link,
-            'license_check_ref' => $this->license_check_ref,
-            'privacy_check_ref' => $this->privacy_check_ref,
-            'eligibility_status' => $this->eligibility_status,
-            'notes' => $this->notes,
+            'rows_used' => $this->rows_used,
+            'training_start_date' => $this->training_start_date,
+            'training_end_date' => $this->training_end_date,
+            'training_duration' => $this->training_duration,
+            'compute_resources' => $this->compute_resources,
+            'cost' => $this->cost,
+            'consent_check_status' => $this->consent_check_status,
+            'cross_border_check' => $this->cross_border_check,
+            'special_category_check' => $this->special_category_check,
+            'bias_mitigation_applied' => $this->bias_mitigation_applied,
+            'created_by_system' => $this->created_by_system,
+            'linkage_status' => $this->linkage_status,
+            'business_justification' => $this->business_justification,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
             'ai_model' => new AiModelResource($this->whenLoaded('aiModel')),
