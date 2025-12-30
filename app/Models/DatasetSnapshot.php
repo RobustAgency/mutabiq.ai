@@ -15,17 +15,28 @@ class DatasetSnapshot extends Model
         'organization_id',
         'dataset_id',
         'version_tag',
+        'supersedes_snapshot_id',
+        'description',
         'time_range_start',
         'time_range_end',
         'row_count',
         'quality_checksums',
         'pii_element_count',
-        'special_category_element_count',
-        'masking_anonymization_method',
-        'privacy_transform_evidence_ref',
+        'consent_coverage_at_creation',
+        'file_count',
+        'total_size',
+        'size_unit',
+        'file_format',
         'residency_zone',
         'storage_uri',
-        'source_created_at',
+        'storage_tier',
+        'compression',
+        'encryption_status',
+        'masking_method_applied',
+        'created_by_system',
+        'approved_by',
+        'expiration_date',
+        'status',
     ];
 
     protected function casts(): array
@@ -33,10 +44,13 @@ class DatasetSnapshot extends Model
         return [
             'time_range_start' => 'datetime',
             'time_range_end' => 'datetime',
+            'expiration_date' => 'date',
             'row_count' => 'integer',
             'pii_element_count' => 'integer',
-            'special_category_element_count' => 'integer',
-            'source_created_at' => 'datetime',
+            'file_count' => 'integer',
+            'total_size' => 'integer',
+            'consent_coverage_at_creation' => 'integer',
+            'created_by_system' => 'boolean',
         ];
     }
 
