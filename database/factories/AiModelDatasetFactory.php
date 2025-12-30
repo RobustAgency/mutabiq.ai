@@ -2,14 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Enums\AiModelDataset\EligibilityStatus;
-use App\Enums\AiModelDataset\Role;
 use App\Models\AiModel;
+use App\Models\Dataset;
+use App\Models\Organization;
 use App\Models\AiModelDataset;
 use App\Models\AiModelVersion;
-use App\Models\Dataset;
 use App\Models\DatasetSnapshot;
-use App\Models\Organization;
+use App\Enums\AiModelDataset\Role;
+use App\Enums\AiModelDataset\CreatedBy;
+use App\Enums\AiModelDataset\LinkageStatus;
+use App\Enums\AiModelDataset\CrossBorderCheck;
+use App\Enums\AiModelDataset\ConsentCheckStatus;
+use App\Enums\AiModelDataset\SpecialCategoryCheck;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -40,29 +44,25 @@ class AiModelDatasetFactory extends Factory
             'organization_id' => Organization::factory(),
             'ai_model_id' => AiModel::factory(),
             'ai_model_version_id' => AiModelVersion::factory(),
-            'dataset_id' => fake()->optional(0.7)->passthrough(Dataset::factory()),
+            'dataset_id' => Dataset::factory(),
             'dataset_snapshot_id' => $requiresSnapshot
                 ? DatasetSnapshot::factory()
                 : fake()->optional(0.3)->passthrough(DatasetSnapshot::factory()),
             'role' => $role->value,
-            'access_path' => fake()->optional()->filePath(),
-            'transform_pack_link' => fake()->optional()->url(),
-            'license_check_ref' => fake()->optional()->regexify('LIC-[0-9]{6}'),
-            'privacy_check_ref' => fake()->optional()->regexify('PRI-[0-9]{6}'),
-            'eligibility_status' => fake()->optional()->randomElement(EligibilityStatus::cases())?->value,
-            'notes' => fake()->optional()->sentence(15),
+            'rows_used' => fake()->optional()->numberBetween(100, 1000000),
+            'training_start_date' => fake()->optional()->dateTimeBetween('-6 months', '-1 month'),
+            'training_end_date' => fake()->optional()->dateTimeBetween('-1 month', 'now'),
+            'training_duration' => fake()->optional()->randomElement(['1h', '2h', '4h', '8h', '12h', '24h', '48h']),
+            'compute_resources' => fake()->optional()->randomElement(['GPU-1', 'GPU-4', 'GPU-8', 'TPU-1', 'TPU-4']),
+            'cost' => fake()->optional()->randomFloat(2, 10, 10000),
+            'consent_check_status' => fake()->optional(0.7)->passthrough(fake()->randomElement(ConsentCheckStatus::cases())->value),
+            'cross_border_check' => fake()->randomElement(CrossBorderCheck::cases())->value,
+            'special_category_check' => fake()->randomElement(SpecialCategoryCheck::cases())->value,
+            'bias_mitigation_applied' => fake()->boolean(),
+            'created_by_system' => fake()->randomElement(CreatedBy::cases())->value,
+            'linkage_status' => fake()->randomElement(LinkageStatus::cases())->value,
+            'business_justification' => fake()->optional()->sentence(15),
         ];
-    }
-
-    /**
-     * State for pretrain role.
-     */
-    public function pretrain(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Role::PRETRAIN->value,
-            'dataset_snapshot_id' => fake()->optional(0.3)->passthrough(DatasetSnapshot::factory()),
-        ]);
     }
 
     /**
@@ -70,31 +70,9 @@ class AiModelDatasetFactory extends Factory
      */
     public function train(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'role' => Role::TRAIN->value,
             'dataset_snapshot_id' => DatasetSnapshot::factory(),
-        ]);
-    }
-
-    /**
-     * State for fine_tune role.
-     */
-    public function fineTune(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Role::FINE_TUNE->value,
-            'dataset_snapshot_id' => fake()->optional(0.3)->passthrough(DatasetSnapshot::factory()),
-        ]);
-    }
-
-    /**
-     * State for align_rlhf role.
-     */
-    public function alignRlhf(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Role::ALIGN_RLHF->value,
-            'dataset_snapshot_id' => fake()->optional(0.3)->passthrough(DatasetSnapshot::factory()),
         ]);
     }
 
@@ -103,7 +81,7 @@ class AiModelDatasetFactory extends Factory
      */
     public function validation(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'role' => Role::VALIDATION->value,
             'dataset_snapshot_id' => DatasetSnapshot::factory(),
         ]);
@@ -114,7 +92,7 @@ class AiModelDatasetFactory extends Factory
      */
     public function test(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'role' => Role::TEST->value,
             'dataset_snapshot_id' => DatasetSnapshot::factory(),
         ]);
@@ -125,91 +103,9 @@ class AiModelDatasetFactory extends Factory
      */
     public function evalBenchmark(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'role' => Role::EVAL_BENCHMARK->value,
             'dataset_snapshot_id' => DatasetSnapshot::factory(),
-        ]);
-    }
-
-    /**
-     * State for rag_corpus role.
-     */
-    public function ragCorpus(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Role::RAG_CORPUS->value,
-            'dataset_snapshot_id' => fake()->optional(0.3)->passthrough(DatasetSnapshot::factory()),
-        ]);
-    }
-
-    /**
-     * State for drift_baseline role.
-     */
-    public function driftBaseline(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Role::DRIFT_BASELINE->value,
-            'dataset_snapshot_id' => fake()->optional(0.3)->passthrough(DatasetSnapshot::factory()),
-        ]);
-    }
-
-    /**
-     * State for online_feedback role.
-     */
-    public function onlineFeedback(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Role::ONLINE_FEEDBACK->value,
-            'dataset_snapshot_id' => fake()->optional(0.3)->passthrough(DatasetSnapshot::factory()),
-        ]);
-    }
-
-    /**
-     * State for eligible status.
-     */
-    public function eligible(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'eligibility_status' => EligibilityStatus::ELIGIBLE->value,
-        ]);
-    }
-
-    /**
-     * State for eligible with conditions status.
-     */
-    public function eligibleWithConditions(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'eligibility_status' => EligibilityStatus::ELIGIBLE_WITH_CONDITIONS->value,
-            'notes' => fake()->sentence(20),
-        ]);
-    }
-
-    /**
-     * State for not eligible status.
-     */
-    public function notEligible(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'eligibility_status' => EligibilityStatus::NOT_ELIGIBLE->value,
-            'notes' => fake()->sentence(20),
-        ]);
-    }
-
-    /**
-     * State with all optional fields filled.
-     */
-    public function complete(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'dataset_id' => Dataset::factory(),
-            'dataset_snapshot_id' => DatasetSnapshot::factory(),
-            'access_path' => fake()->filePath(),
-            'transform_pack_link' => fake()->url(),
-            'license_check_ref' => fake()->regexify('LIC-[0-9]{6}'),
-            'privacy_check_ref' => fake()->regexify('PRI-[0-9]{6}'),
-            'eligibility_status' => fake()->randomElement(EligibilityStatus::cases())->value,
-            'notes' => fake()->sentence(15),
         ]);
     }
 
@@ -218,7 +114,7 @@ class AiModelDatasetFactory extends Factory
      */
     public function withoutSnapshot(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'dataset_snapshot_id' => null,
             'role' => fake()->randomElement([
                 Role::PRETRAIN,
@@ -228,6 +124,24 @@ class AiModelDatasetFactory extends Factory
                 Role::DRIFT_BASELINE,
                 Role::ONLINE_FEEDBACK,
             ])->value,
+        ]);
+    }
+
+    /**
+     * State with all optional fields filled.
+     */
+    public function complete(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'rows_used' => fake()->numberBetween(10000, 1000000),
+            'training_start_date' => fake()->dateTimeBetween('-3 months', '-1 month'),
+            'training_end_date' => fake()->dateTimeBetween('-1 month', 'now'),
+            'training_duration' => '24h',
+            'compute_resources' => 'GPU-8',
+            'cost' => fake()->randomFloat(2, 100, 50000),
+            'consent_check_status' => ConsentCheckStatus::PASSED->value,
+            'bias_mitigation_applied' => true,
+            'business_justification' => fake()->sentence(20),
         ]);
     }
 }
