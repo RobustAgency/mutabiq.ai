@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests\IncidentAction;
 
-use App\Enums\IncidentAction\ActionType;
-use App\Enums\IncidentAction\ValidationResult;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\IncidentAction\ActionType;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\IncidentAction\ExecutionStatus;
+use App\Enums\IncidentAction\ApprovalRequired;
+use App\Enums\IncidentAction\ValidationResult;
 
 class StoreIncidentActionRequest extends FormRequest
 {
@@ -26,12 +28,18 @@ class StoreIncidentActionRequest extends FormRequest
     {
         return [
             'ai_incident_id' => ['required', 'integer', 'exists:ai_incidents,id'],
-            'action_type' => ['required', Rule::in(array_map(fn($c) => $c->value, ActionType::cases()))],
+            'action_type' => ['required', Rule::enum(ActionType::class)],
+            'execution_status' => ['required', Rule::enum(ExecutionStatus::class)],
             'description' => ['required', 'string'],
-            'performed_by' => ['required', 'string', 'max:255'],
+            'performed_by' => ['required', 'integer', 'exists:stakeholders,id'],
+            'individual_name' => ['nullable', 'string', 'max:255'],
+            'depends_on' => ['nullable', 'string', 'max:255'],
+            'approval_required' => ['nullable', Rule::enum(ApprovalRequired::class)],
+            'estimated_duration' => ['nullable', 'string'],
+            'actual_duration' => ['nullable', 'string'],
             'started_at' => ['required', 'date'],
             'completed_at' => ['nullable', 'date', 'after_or_equal:started_at'],
-            'validation_result' => ['required', Rule::in(array_map(fn($c) => $c->value, ValidationResult::cases()))],
+            'validation_result' => ['required', Rule::enum(ValidationResult::class)],
             'validation_notes' => ['nullable', 'string'],
             'linked_release_id' => ['nullable', 'string'],
             'evidence_link' => ['nullable', 'url', 'max:2048'],
