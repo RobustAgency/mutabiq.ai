@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\AiIncident;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\AiIncidentResource;
+use App\Repositories\AiIncidentRepository;
 use App\Http\Requests\AiIncident\ListAiIncidentRequest;
 use App\Http\Requests\AiIncident\StoreAiIncidentRequest;
 use App\Http\Requests\AiIncident\UpdateAiIncidentRequest;
-use App\Http\Resources\AiIncidentResource;
-use App\Models\AiIncident;
-use App\Repositories\AiIncidentRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AiIncidentController extends Controller
 {
