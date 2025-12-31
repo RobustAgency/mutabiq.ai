@@ -15,11 +15,13 @@ class IncidentAlert extends Model
         'organization_id',
         'ai_incident_id',
         'source_type',
+        'data_source_id',
         'source_ref',
-        'rule_version',
+        'alert_sensitivity',
         'context',
         'first_seen_at',
         'last_seen_at',
+        'auto_promote_incident',
         'evidence_link',
     ];
 
@@ -28,6 +30,7 @@ class IncidentAlert extends Model
         return [
             'first_seen_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'auto_promote_incident' => 'boolean',
         ];
     }
 
