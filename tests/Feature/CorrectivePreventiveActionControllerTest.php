@@ -2,19 +2,26 @@
 
 namespace Tests\Feature;
 
-use App\Models\AiIncident;
-use App\Models\AiModel;
-use App\Models\CorrectivePreventiveAction;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiModel;
+use App\Models\Dataset;
+use App\Models\Organization;
+use App\Models\CorrectivePreventiveAction;
+use App\Enums\CorrectivePreventiveAction\Status;
+use App\Enums\CorrectivePreventiveAction\CapaType;
+use App\Enums\CorrectivePreventiveAction\Priority;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\CorrectivePreventiveAction\OwnerTeam;
+use App\Enums\CorrectivePreventiveAction\SourceType;
+use App\Enums\CorrectivePreventiveAction\VerificationResult;
 
 class CorrectivePreventiveActionControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
+
     protected Organization $organization;
 
     protected function setUp(): void
@@ -46,21 +53,27 @@ class CorrectivePreventiveActionControllerTest extends TestCase
                     'data' => [
                         '*' => [
                             'id',
+                            'display_id',
+                            'organization_id',
                             'source_type',
-                            'source_id',
+                            'source_reference',
                             'ai_model_id',
+                            'dataset_id',
                             'title',
                             'capa_type',
                             'priority',
-                            'owner_team',
-                            'assignee',
                             'root_cause',
                             'actions',
+                            'owner_team',
+                            'assignee',
                             'due_date',
                             'status',
+                            'success_criteria',
+                            'linked_training',
+                            'estimated_cost',
+                            'effectiveness_review_date',
                             'verification_result',
                             'evidence_link',
-                            'closed_at',
                             'created_at',
                             'updated_at',
                         ],
@@ -73,19 +86,19 @@ class CorrectivePreventiveActionControllerTest extends TestCase
 
     public function test_store_creates_corrective_preventive_action_with_required_fields(): void
     {
-        $incident = AiIncident::factory()->create();
         $model = AiModel::factory()->create();
 
         $data = [
-            'source_type' => 'incident',
-            'source_id' => (string) $incident->id,
-            'model_id' => (string) $model->id,
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-12345',
+            'ai_model_id' => $model->id,
             'title' => 'Fix data validation issue',
-            'capa_type' => 'corrective',
-            'priority' => 'high',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::HIGH->value,
+            'actions' => 'Take immediate action',
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -97,35 +110,42 @@ class CorrectivePreventiveActionControllerTest extends TestCase
                 'message' => 'Corrective preventive action created successfully',
             ])
             ->assertJsonPath('data.title', 'Fix data validation issue')
-            ->assertJsonPath('data.capa_type', 'corrective')
-            ->assertJsonPath('data.priority', 'high')
-            ->assertJsonPath('data.status', 'new');
+            ->assertJsonPath('data.capa_type', CapaType::CORRECTIVE->value)
+            ->assertJsonPath('data.priority', Priority::HIGH->value)
+            ->assertJsonPath('data.status', Status::NEW->value);
 
         $this->assertDatabaseHas('corrective_preventive_actions', [
             'title' => 'Fix data validation issue',
-            'capa_type' => 'corrective',
-            'priority' => 'high',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::HIGH->value,
         ]);
     }
 
     public function test_store_creates_corrective_preventive_action_with_all_fields(): void
     {
-        $incident = AiIncident::factory()->create();
         $model = AiModel::factory()->create();
+        $dataset = Dataset::factory()->create();
+        $dueDate = now()->addDays(14);
+        $reviewDate = now()->addDays(30);
 
         $data = [
-            'source_type' => 'incident',
-            'source_id' => (string) $incident->id,
-            'model_id' => (string) $model->id,
+            'source_type' => SourceType::RCA->value,
+            'source_reference' => 'RCA-67890',
+            'ai_model_id' => $model->id,
+            'dataset_id' => $dataset->id,
             'title' => 'Implement model monitoring',
-            'capa_type' => 'preventive',
-            'priority' => 'critical',
-            'owner_team' => 'data_science',
-            'assignee' => 'John Doe',
+            'capa_type' => CapaType::PREVENTIVE->value,
+            'priority' => Priority::CRITICAL->value,
             'root_cause' => 'Lack of real-time monitoring led to delayed incident detection',
             'actions' => 'Set up monitoring dashboard, Configure alerts, Train team on new tools',
-            'due_date' => now()->addDays(14)->format('Y-m-d'),
-            'status' => 'in_progress',
+            'owner_team' => OwnerTeam::DATA_GOVERNANCE->value,
+            'assignee' => 'John Doe',
+            'due_date' => $dueDate->format('Y-m-d'),
+            'status' => Status::IN_PROGRESS->value,
+            'success_criteria' => 'Model accuracy > 95%',
+            'linked_training' => 'Model Validation Best Practices',
+            'estimated_cost' => 5000.00,
+            'effectiveness_review_date' => $reviewDate->format('Y-m-d'),
             'verification_result' => null,
             'evidence_link' => null,
         ];
@@ -135,9 +155,11 @@ class CorrectivePreventiveActionControllerTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.title', 'Implement model monitoring')
-            ->assertJsonPath('data.capa_type', 'preventive')
+            ->assertJsonPath('data.capa_type', CapaType::PREVENTIVE->value)
             ->assertJsonPath('data.assignee', 'John Doe')
-            ->assertJsonPath('data.root_cause', 'Lack of real-time monitoring led to delayed incident detection');
+            ->assertJsonPath('data.root_cause', 'Lack of real-time monitoring led to delayed incident detection')
+            ->assertJsonPath('data.success_criteria', 'Model accuracy > 95%')
+            ->assertJsonPath('data.linked_training', 'Model Validation Best Practices');
 
         $this->assertDatabaseHas('corrective_preventive_actions', [
             'title' => 'Implement model monitoring',
@@ -148,13 +170,13 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_source_type_is_required(): void
     {
         $data = [
-            'source_id' => '123',
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -168,13 +190,13 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     {
         $data = [
             'source_type' => 'invalid_source',
-            'source_id' => '123',
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -184,35 +206,35 @@ class CorrectivePreventiveActionControllerTest extends TestCase
             ->assertJsonValidationErrors(['source_type']);
     }
 
-    public function test_store_validates_source_id_is_required(): void
+    public function test_store_validates_source_reference_is_required(): void
     {
         $data = [
-            'source_type' => 'incident',
+            'source_type' => SourceType::INCIDENT->value,
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/corrective-preventive-actions', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['source_id']);
+            ->assertJsonValidationErrors(['source_reference']);
     }
 
     public function test_store_validates_title_is_required(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -225,13 +247,13 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_capa_type_is_required(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -244,14 +266,14 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_capa_type_enum(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
             'capa_type' => 'invalid_type',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -264,13 +286,13 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_priority_is_required(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -283,14 +305,14 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_priority_enum(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
+            'capa_type' => CapaType::CORRECTIVE->value,
             'priority' => 'invalid_priority',
-            'owner_team' => 'engineering',
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -303,13 +325,13 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_owner_team_is_required(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -322,14 +344,14 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_owner_team_enum(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
             'owner_team' => 'invalid_team',
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -342,13 +364,13 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_due_date_is_required(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
-            'status' => 'new',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
+            'status' => Status::NEW->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -361,12 +383,12 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_status_is_required(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
         ];
 
@@ -380,12 +402,12 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_status_enum(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
             'status' => 'invalid_status',
         ];
@@ -400,14 +422,14 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_validates_evidence_link_is_url(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'new',
+            'status' => Status::NEW->value,
             'evidence_link' => 'not-a-valid-url',
         ];
 
@@ -421,14 +443,14 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_store_requires_verification_result_when_status_is_closed(): void
     {
         $data = [
-            'source_type' => 'incident',
-            'source_id' => '123',
+            'source_type' => SourceType::INCIDENT->value,
+            'source_reference' => 'INC-123',
             'title' => 'Test action',
-            'capa_type' => 'corrective',
-            'priority' => 'medium',
-            'owner_team' => 'engineering',
+            'capa_type' => CapaType::CORRECTIVE->value,
+            'priority' => Priority::MEDIUM->value,
+            'owner_team' => OwnerTeam::ML_ENGINEERING->value,
             'due_date' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'closed',
+            'status' => Status::CLOSED->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -440,131 +462,121 @@ class CorrectivePreventiveActionControllerTest extends TestCase
 
     public function test_store_accepts_all_valid_source_types(): void
     {
-        $sourceTypes = ['incident', 'risk', 'feedback', 'override', 'audit', 'assessment', 'other'];
-
-        foreach ($sourceTypes as $sourceType) {
+        foreach (SourceType::cases() as $sourceType) {
             $data = [
-                'source_type' => $sourceType,
-                'source_id' => '123',
-                'title' => "Test action for {$sourceType}",
-                'capa_type' => 'corrective',
-                'priority' => 'medium',
-                'owner_team' => 'engineering',
+                'source_type' => $sourceType->value,
+                'source_reference' => "REF-{$sourceType->name}",
+                'title' => "Test action for {$sourceType->name}",
+                'capa_type' => CapaType::CORRECTIVE->value,
+                'priority' => Priority::MEDIUM->value,
+                'actions' => 'Take action',
+                'owner_team' => OwnerTeam::ML_ENGINEERING->value,
                 'due_date' => now()->addDays(7)->format('Y-m-d'),
-                'status' => 'new',
+                'status' => Status::NEW->value,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/corrective-preventive-actions', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.source_type', $sourceType);
+                ->assertJsonPath('data.source_type', $sourceType->value);
         }
     }
 
     public function test_store_accepts_all_valid_capa_types(): void
     {
-        $capaTypes = ['corrective', 'preventive', 'both'];
-
-        foreach ($capaTypes as $capaType) {
+        foreach (CapaType::cases() as $capaType) {
             $data = [
-                'source_type' => 'incident',
-                'source_id' => '123',
-                'title' => "Test action for {$capaType}",
-                'capa_type' => $capaType,
-                'priority' => 'medium',
-                'owner_team' => 'engineering',
+                'source_type' => SourceType::INCIDENT->value,
+                'source_reference' => 'INC-123',
+                'title' => "Test action for {$capaType->name}",
+                'capa_type' => $capaType->value,
+                'priority' => Priority::MEDIUM->value,
+                'actions' => 'Take action',
+                'owner_team' => OwnerTeam::ML_ENGINEERING->value,
                 'due_date' => now()->addDays(7)->format('Y-m-d'),
-                'status' => 'new',
+                'status' => Status::NEW->value,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/corrective-preventive-actions', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.capa_type', $capaType);
+                ->assertJsonPath('data.capa_type', $capaType->value);
         }
     }
 
     public function test_store_accepts_all_valid_priorities(): void
     {
-        $priorities = ['low', 'medium', 'high', 'critical'];
-
-        foreach ($priorities as $priority) {
+        foreach (Priority::cases() as $priority) {
             $data = [
-                'source_type' => 'incident',
-                'source_id' => '123',
-                'title' => "Test action with {$priority} priority",
-                'capa_type' => 'corrective',
-                'priority' => $priority,
-                'owner_team' => 'engineering',
+                'source_type' => SourceType::INCIDENT->value,
+                'source_reference' => 'INC-123',
+                'title' => "Test action with {$priority->name} priority",
+                'capa_type' => CapaType::CORRECTIVE->value,
+                'priority' => $priority->value,
+                'actions' => 'Take action',
+                'owner_team' => OwnerTeam::ML_ENGINEERING->value,
                 'due_date' => now()->addDays(7)->format('Y-m-d'),
-                'status' => 'new',
+                'status' => Status::NEW->value,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/corrective-preventive-actions', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.priority', $priority);
+                ->assertJsonPath('data.priority', $priority->value);
         }
     }
 
     public function test_store_accepts_all_valid_owner_teams(): void
     {
-        $teams = ['product_ops', 'engineering', 'data_science', 'security', 'privacy', 'risk', 'legal', 'vendor_mgmt'];
-
-        foreach ($teams as $team) {
+        foreach (OwnerTeam::cases() as $team) {
             $data = [
-                'source_type' => 'incident',
-                'source_id' => '123',
-                'title' => "Test action for {$team}",
-                'capa_type' => 'corrective',
-                'priority' => 'medium',
-                'owner_team' => $team,
+                'source_type' => SourceType::INCIDENT->value,
+                'source_reference' => 'INC-123',
+                'title' => "Test action for {$team->name}",
+                'capa_type' => CapaType::CORRECTIVE->value,
+                'priority' => Priority::MEDIUM->value,
+                'actions' => 'Take action',
+                'owner_team' => $team->value,
                 'due_date' => now()->addDays(7)->format('Y-m-d'),
-                'status' => 'new',
+                'status' => Status::NEW->value,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/corrective-preventive-actions', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.owner_team', $team);
+                ->assertJsonPath('data.owner_team', $team->value);
         }
     }
 
     public function test_store_accepts_all_valid_statuses(): void
     {
-        $statuses = [
-            'new' => false,
-            'in_progress' => false,
-            'blocked' => false,
-            'pending_verification' => false,
-            'closed' => true,
-        ];
-
-        foreach ($statuses as $status => $requiresVerification) {
+        foreach (Status::cases() as $status) {
             $data = [
-                'source_type' => 'incident',
-                'source_id' => '123',
-                'title' => "Test action with {$status} status",
-                'capa_type' => 'corrective',
-                'priority' => 'medium',
-                'owner_team' => 'engineering',
+                'source_type' => SourceType::INCIDENT->value,
+                'source_reference' => 'INC-123',
+                'title' => "Test action with {$status->name} status",
+                'capa_type' => CapaType::CORRECTIVE->value,
+                'priority' => Priority::MEDIUM->value,
+                'actions' => 'Take action',
+                'owner_team' => OwnerTeam::ML_ENGINEERING->value,
                 'due_date' => now()->addDays(7)->format('Y-m-d'),
-                'status' => $status,
+                'status' => $status->value,
             ];
 
-            if ($requiresVerification) {
-                $data['verification_result'] = 'passed';
+            // Add verification result when status is closed
+            if ($status === Status::CLOSED) {
+                $data['verification_result'] = VerificationResult::VERIFIED_EFFECTIVE->value;
             }
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/corrective-preventive-actions', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.status', $status);
+                ->assertJsonPath('data.status', $status->value);
         }
     }
 
@@ -611,13 +623,13 @@ class CorrectivePreventiveActionControllerTest extends TestCase
     public function test_update_updates_corrective_preventive_action(): void
     {
         $capa = CorrectivePreventiveAction::factory()->create([
-            'status' => 'new',
-            'priority' => 'medium',
+            'status' => Status::NEW->value,
+            'priority' => Priority::MEDIUM->value,
         ]);
 
         $updateData = [
-            'status' => 'in_progress',
-            'priority' => 'high',
+            'status' => Status::IN_PROGRESS->value,
+            'priority' => Priority::HIGH->value,
             'assignee' => 'Jane Smith',
         ];
 
@@ -629,52 +641,52 @@ class CorrectivePreventiveActionControllerTest extends TestCase
                 'error' => false,
                 'message' => 'Corrective preventive action updated successfully',
             ])
-            ->assertJsonPath('data.status', 'in_progress')
-            ->assertJsonPath('data.priority', 'high')
+            ->assertJsonPath('data.status', Status::IN_PROGRESS->value)
+            ->assertJsonPath('data.priority', Priority::HIGH->value)
             ->assertJsonPath('data.assignee', 'Jane Smith');
 
         $this->assertDatabaseHas('corrective_preventive_actions', [
             'id' => $capa->id,
-            'status' => 'in_progress',
-            'priority' => 'high',
+            'status' => Status::IN_PROGRESS->value,
+            'priority' => Priority::HIGH->value,
         ]);
     }
 
     public function test_update_can_close_action_with_verification(): void
     {
         $capa = CorrectivePreventiveAction::factory()->create([
-            'status' => 'pending_verification',
+            'status' => Status::PENDING_VERIFICATION->value,
         ]);
 
         $updateData = [
-            'status' => 'closed',
-            'verification_result' => 'passed',
+            'status' => Status::CLOSED->value,
+            'verification_result' => VerificationResult::VERIFIED_EFFECTIVE->value,
             'evidence_link' => 'https://example.com/evidence',
-            'closed_at' => now()->toDateTimeString(),
+            'effectiveness_review_date' => now()->format('Y-m-d'),
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson("/api/corrective-preventive-actions/{$capa->id}", $updateData);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.status', 'closed')
-            ->assertJsonPath('data.verification_result', 'passed');
+            ->assertJsonPath('data.status', Status::CLOSED->value)
+            ->assertJsonPath('data.verification_result', VerificationResult::VERIFIED_EFFECTIVE->value);
 
         $this->assertDatabaseHas('corrective_preventive_actions', [
             'id' => $capa->id,
-            'status' => 'closed',
-            'verification_result' => 'passed',
+            'status' => Status::CLOSED->value,
+            'verification_result' => VerificationResult::VERIFIED_EFFECTIVE->value,
         ]);
     }
 
     public function test_update_requires_verification_result_when_closing(): void
     {
         $capa = CorrectivePreventiveAction::factory()->create([
-            'status' => 'in_progress',
+            'status' => Status::IN_PROGRESS->value,
         ]);
 
         $updateData = [
-            'status' => 'closed',
+            'status' => Status::CLOSED->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
