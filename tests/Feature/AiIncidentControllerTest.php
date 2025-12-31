@@ -2,20 +2,27 @@
 
 namespace Tests\Feature;
 
-use App\Models\AiIncident;
-use App\Models\AiModel;
-use App\Models\AiModelVersion;
-use App\Models\User;
-use App\Models\UseCase;
-use App\Models\Organization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiModel;
+use App\Models\AiIncident;
+use App\Models\Organization;
+use App\Enums\AiIncident\Domain;
+use App\Enums\AiIncident\IncidentType;
+use App\Enums\AiIncident\ResponseTeam;
+use App\Enums\AiIncident\IncidentStatus;
+use App\Enums\AiIncident\ImpactedDataType;
+use App\Enums\AiIncident\IncidentSeverity;
+use App\Enums\AiIncident\NotificationRequirement;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\AiIncident\PrimaryRegulatoryFramework;
 
 class AiIncidentControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -29,7 +36,7 @@ class AiIncidentControllerTest extends TestCase
 
     public function test_index_returns_paginated_ai_incidents(): void
     {
-        AiIncident::factory()->count(15)->create();
+        AiIncident::factory()->count(15)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user, 'supabase')
             ->getJson('/api/ai-incidents');
@@ -43,27 +50,31 @@ class AiIncidentControllerTest extends TestCase
                     'data' => [
                         '*' => [
                             'id',
+                            'display_id',
+                            'organization_id',
                             'title',
                             'summary',
-                            'category',
+                            'incident_type',
+                            'domain',
                             'severity',
                             'status',
-                            'stage',
-                            'ic_owner',
-                            'ai_model_id',
-                            'ai_model_version_id',
-                            'use_case_id',
-                            'first_seen_at',
-                            'declared_at',
-                            'resolved_at',
-                            'closed_at',
-                            'impacted_users',
-                            'impacted_data',
+                            'incident_commander',
+                            'response_team',
+                            'primary_regulatory_framework',
+                            'notification_requirement',
+                            'data_residency_affected',
+                            'regulatory_reference',
+                            'estimated_impacted_users',
+                            'estimated_impacted_records',
+                            'data_types_impacted',
+                            'affected_business_units',
+                            'external_parties_involved',
+                            'business_impact_description',
                             'impacted_systems',
-                            'linked_release_id',
+                            'ai_model_id',
+                            'linked_dataset_id',
                             'linked_risk_id',
                             'linked_assessment_id',
-                            'linked_capa_id',
                             'evidence_link',
                             'created_at',
                             'updated_at',
@@ -71,13 +82,13 @@ class AiIncidentControllerTest extends TestCase
                     ],
                     'per_page',
                     'total',
-                ]
+                ],
             ]);
     }
 
     public function test_index_returns_default_pagination(): void
     {
-        AiIncident::factory()->count(20)->create();
+        AiIncident::factory()->count(20)->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user, 'supabase')
             ->getJson('/api/ai-incidents');
@@ -96,27 +107,23 @@ class AiIncidentControllerTest extends TestCase
     public function test_store_creates_ai_incident_with_all_fields(): void
     {
         $aiModel = AiModel::factory()->create();
-        $aiModelVersion = AiModelVersion::factory()->create();
-        $useCase = UseCase::factory()->create();
 
         $data = [
-            'title' => 'Test Safety Incident',
-            'summary' => 'This is a detailed summary of the safety incident.',
-            'category' => 'safety',
-            'severity' => 'sev1_critical',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'ai_model_id' => $aiModel->id,
-            'ai_model_version_id' => $aiModelVersion->id,
-            'use_case_id' => $useCase->id,
-            'first_seen_at' => now()->subHours(2)->toDateTimeString(),
-            'declared_at' => now()->subHour()->toDateTimeString(),
-            'impacted_users' => '1000+ users',
-            'impacted_data' => ['pii', 'financial'],
+            'title' => 'Test Privacy Incident',
+            'summary' => 'This is a detailed summary of the privacy incident.',
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV1_CRITICAL->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'estimated_impacted_users' => 1000,
+            'estimated_impacted_records' => 5000,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
             'impacted_systems' => 'Payment system, User database',
-            'linked_release_id' => 'REL-123',
-            'linked_risk_id' => 'RISK-456',
+            'ai_model_id' => $aiModel->id,
             'evidence_link' => 'https://evidence.example.com/incident-123',
         ];
 
@@ -128,23 +135,20 @@ class AiIncidentControllerTest extends TestCase
                 'error' => false,
                 'message' => 'AI incident created successfully',
             ])
-            ->assertJsonPath('data.title', 'Test Safety Incident')
-            ->assertJsonPath('data.category', 'safety')
-            ->assertJsonPath('data.severity', 'sev1_critical')
-            ->assertJsonPath('data.status', 'open')
-            ->assertJsonPath('data.stage', 'prod')
-            ->assertJsonPath('data.ic_owner', 'John Doe')
+            ->assertJsonPath('data.title', 'Test Privacy Incident')
+            ->assertJsonPath('data.incident_type', IncidentType::PRIVACY_VIOLATION->value)
+            ->assertJsonPath('data.domain', Domain::DATA_PRIVACY->value)
+            ->assertJsonPath('data.severity', IncidentSeverity::SEV1_CRITICAL->value)
+            ->assertJsonPath('data.status', IncidentStatus::OPEN->value)
+            ->assertJsonPath('data.incident_commander', 'John Doe')
             ->assertJsonPath('data.ai_model_id', $aiModel->id)
-            ->assertJsonPath('data.ai_model_version_id', $aiModelVersion->id)
-            ->assertJsonPath('data.use_case_id', $useCase->id)
-            ->assertJsonPath('data.impacted_users', '1000+ users')
-            ->assertJsonPath('data.linked_release_id', 'REL-123')
+            ->assertJsonPath('data.estimated_impacted_users', 1000)
             ->assertJsonPath('data.evidence_link', 'https://evidence.example.com/incident-123');
 
         $this->assertDatabaseHas('ai_incidents', [
-            'title' => 'Test Safety Incident',
-            'category' => 'safety',
-            'severity' => 'sev1_critical',
+            'title' => 'Test Privacy Incident',
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'severity' => IncidentSeverity::SEV1_CRITICAL->value,
             'ai_model_id' => $aiModel->id,
         ]);
     }
@@ -153,14 +157,16 @@ class AiIncidentControllerTest extends TestCase
     {
         $data = [
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -174,14 +180,16 @@ class AiIncidentControllerTest extends TestCase
     {
         $data = [
             'title' => 'Test Incident',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -191,154 +199,144 @@ class AiIncidentControllerTest extends TestCase
             ->assertJsonValidationErrors(['summary']);
     }
 
-    public function test_store_validates_first_seen_at_is_required(): void
+    public function test_store_validates_incident_type_is_required(): void
     {
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-incidents', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['first_seen_at']);
+            ->assertJsonValidationErrors(['incident_type']);
     }
 
-    public function test_store_validates_declared_at_is_required(): void
+    public function test_store_validates_incident_type_enum(): void
     {
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_type' => 'invalid_type',
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-incidents', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['declared_at']);
+            ->assertJsonValidationErrors(['incident_type']);
     }
 
-    public function test_store_validates_impacted_data_is_required(): void
+    public function test_store_validates_domain_is_required(): void
     {
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-incidents', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['impacted_data']);
+            ->assertJsonValidationErrors(['domain']);
     }
 
-    public function test_store_validates_impacted_data_requires_at_least_one(): void
+    public function test_store_validates_domain_enum(): void
     {
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => [],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => 'invalid_domain',
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-incidents', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['impacted_data']);
+            ->assertJsonValidationErrors(['domain']);
     }
 
-    public function test_store_validates_impacted_data_values(): void
+    public function test_store_validates_data_types_impacted_is_required(): void
     {
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['invalid_value'],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-incidents', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['impacted_data.0']);
+            ->assertJsonValidationErrors(['data_types_impacted']);
     }
 
-    public function test_store_validates_category_is_required(): void
+    public function test_store_validates_estimated_impacted_records_is_required(): void
     {
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-incidents', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['category']);
-    }
-
-    public function test_store_validates_category_enum(): void
-    {
-        $data = [
-            'title' => 'Test Incident',
-            'summary' => 'Test summary',
-            'category' => 'invalid_category',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-incidents', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['category']);
+            ->assertJsonValidationErrors(['estimated_impacted_records']);
     }
 
     public function test_store_validates_severity_is_required(): void
@@ -346,13 +344,15 @@ class AiIncidentControllerTest extends TestCase
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -367,14 +367,16 @@ class AiIncidentControllerTest extends TestCase
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
             'severity' => 'invalid_severity',
-            'status' => 'open',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'status' => IncidentStatus::OPEN->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -389,13 +391,15 @@ class AiIncidentControllerTest extends TestCase
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -410,14 +414,16 @@ class AiIncidentControllerTest extends TestCase
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
             'status' => 'invalid_status',
-            'stage' => 'prod',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_commander' => 'John Doe',
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -427,68 +433,27 @@ class AiIncidentControllerTest extends TestCase
             ->assertJsonValidationErrors(['status']);
     }
 
-    public function test_store_validates_stage_is_required(): void
+    public function test_store_validates_incident_commander_is_required(): void
     {
         $data = [
             'title' => 'Test Incident',
             'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV2_HIGH->value,
+            'status' => IncidentStatus::OPEN->value,
+            'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+            'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+            'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+            'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+            'estimated_impacted_records' => 100,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/ai-incidents', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['stage']);
-    }
-
-    public function test_store_validates_stage_enum(): void
-    {
-        $data = [
-            'title' => 'Test Incident',
-            'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'invalid_stage',
-            'ic_owner' => 'John Doe',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-incidents', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['stage']);
-    }
-
-    public function test_store_validates_ic_owner_is_required(): void
-    {
-        $data = [
-            'title' => 'Test Incident',
-            'summary' => 'Test summary',
-            'category' => 'safety',
-            'severity' => 'sev2_high',
-            'status' => 'open',
-            'stage' => 'prod',
-            'first_seen_at' => now()->subHour()->toDateTimeString(),
-            'declared_at' => now()->toDateTimeString(),
-            'impacted_data' => ['pii'],
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/ai-incidents', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['ic_owner']);
+            ->assertJsonValidationErrors(['incident_commander']);
     }
 
     public function test_store_requires_authentication(): void
@@ -501,8 +466,9 @@ class AiIncidentControllerTest extends TestCase
     public function test_show_returns_ai_incident(): void
     {
         $aiIncident = AiIncident::factory()->create([
+            'organization_id' => $this->organization->id,
             'title' => 'Test Incident',
-            'category' => 'privacy',
+            'incident_type' => IncidentType::PRIVACY_VIOLATION->value,
         ]);
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -515,7 +481,7 @@ class AiIncidentControllerTest extends TestCase
             ])
             ->assertJsonPath('data.id', $aiIncident->id)
             ->assertJsonPath('data.title', 'Test Incident')
-            ->assertJsonPath('data.category', 'privacy');
+            ->assertJsonPath('data.incident_type', IncidentType::PRIVACY_VIOLATION->value);
     }
 
     public function test_show_returns_404_for_non_existent_ai_incident(): void
@@ -528,7 +494,7 @@ class AiIncidentControllerTest extends TestCase
 
     public function test_show_requires_authentication(): void
     {
-        $aiIncident = AiIncident::factory()->create();
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->getJson("/api/ai-incidents/{$aiIncident->id}");
 
@@ -538,13 +504,14 @@ class AiIncidentControllerTest extends TestCase
     public function test_update_modifies_ai_incident(): void
     {
         $aiIncident = AiIncident::factory()->create([
+            'organization_id' => $this->organization->id,
             'title' => 'Original Title',
-            'status' => 'open',
+            'status' => IncidentStatus::OPEN->value,
         ]);
 
         $updateData = [
             'title' => 'Updated Title',
-            'status' => 'resolved',
+            'status' => IncidentStatus::CLOSED->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -556,86 +523,106 @@ class AiIncidentControllerTest extends TestCase
                 'message' => 'AI incident updated successfully',
             ])
             ->assertJsonPath('data.title', 'Updated Title')
-            ->assertJsonPath('data.status', 'resolved');
+            ->assertJsonPath('data.status', IncidentStatus::CLOSED->value);
 
         $this->assertDatabaseHas('ai_incidents', [
             'id' => $aiIncident->id,
             'title' => 'Updated Title',
-            'status' => 'resolved',
+            'status' => IncidentStatus::CLOSED->value,
         ]);
     }
 
     public function test_update_supports_partial_updates(): void
     {
         $aiIncident = AiIncident::factory()->create([
+            'organization_id' => $this->organization->id,
             'title' => 'Test Incident',
-            'category' => 'security',
-            'severity' => 'sev3_medium',
+            'domain' => Domain::DATA_PRIVACY->value,
+            'severity' => IncidentSeverity::SEV3_MEDIUM->value,
         ]);
 
-        $updateData = ['severity' => 'sev1_critical'];
+        $updateData = ['severity' => IncidentSeverity::SEV1_CRITICAL->value];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson("/api/ai-incidents/{$aiIncident->id}", $updateData);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.title', 'Test Incident')
-            ->assertJsonPath('data.category', 'security')
-            ->assertJsonPath('data.severity', 'sev1_critical');
+            ->assertJsonPath('data.domain', Domain::DATA_PRIVACY->value)
+            ->assertJsonPath('data.severity', IncidentSeverity::SEV1_CRITICAL->value);
     }
 
     public function test_update_can_change_status(): void
     {
-        $aiIncident = AiIncident::factory()->create(['status' => 'open']);
+        $aiIncident = AiIncident::factory()->create([
+            'organization_id' => $this->organization->id,
+            'status' => IncidentStatus::OPEN->value,
+        ]);
 
-        $updateData = ['status' => 'closed'];
+        $updateData = ['status' => IncidentStatus::CLOSED->value];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson("/api/ai-incidents/{$aiIncident->id}", $updateData);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.status', 'closed');
+            ->assertJsonPath('data.status', IncidentStatus::CLOSED->value);
 
         $this->assertDatabaseHas('ai_incidents', [
             'id' => $aiIncident->id,
-            'status' => 'closed',
+            'status' => IncidentStatus::CLOSED->value,
         ]);
     }
 
-    public function test_update_can_change_ic_owner(): void
+    public function test_update_can_change_incident_commander(): void
     {
-        $aiIncident = AiIncident::factory()->create(['ic_owner' => 'John Doe']);
+        $aiIncident = AiIncident::factory()->create([
+            'organization_id' => $this->organization->id,
+            'incident_commander' => 'John Doe',
+        ]);
 
-        $updateData = ['ic_owner' => 'Jane Smith'];
+        $updateData = ['incident_commander' => 'Jane Smith'];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson("/api/ai-incidents/{$aiIncident->id}", $updateData);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.ic_owner', 'Jane Smith');
+            ->assertJsonPath('data.incident_commander', 'Jane Smith');
 
         $this->assertDatabaseHas('ai_incidents', [
             'id' => $aiIncident->id,
-            'ic_owner' => 'Jane Smith',
+            'incident_commander' => 'Jane Smith',
         ]);
     }
 
-    public function test_update_validates_category_enum(): void
+    public function test_update_validates_incident_type_enum(): void
     {
-        $aiIncident = AiIncident::factory()->create();
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
 
-        $updateData = ['category' => 'invalid_category'];
+        $updateData = ['incident_type' => 'invalid_type'];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson("/api/ai-incidents/{$aiIncident->id}", $updateData);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['category']);
+            ->assertJsonValidationErrors(['incident_type']);
+    }
+
+    public function test_update_validates_domain_enum(): void
+    {
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
+
+        $updateData = ['domain' => 'invalid_domain'];
+
+        $response = $this->actingAs($this->user, 'supabase')
+            ->postJson("/api/ai-incidents/{$aiIncident->id}", $updateData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['domain']);
     }
 
     public function test_update_validates_severity_enum(): void
     {
-        $aiIncident = AiIncident::factory()->create();
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
 
         $updateData = ['severity' => 'invalid_severity'];
 
@@ -648,7 +635,7 @@ class AiIncidentControllerTest extends TestCase
 
     public function test_update_validates_status_enum(): void
     {
-        $aiIncident = AiIncident::factory()->create();
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
 
         $updateData = ['status' => 'invalid_status'];
 
@@ -659,22 +646,9 @@ class AiIncidentControllerTest extends TestCase
             ->assertJsonValidationErrors(['status']);
     }
 
-    public function test_update_validates_stage_enum(): void
-    {
-        $aiIncident = AiIncident::factory()->create();
-
-        $updateData = ['stage' => 'invalid_stage'];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson("/api/ai-incidents/{$aiIncident->id}", $updateData);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['stage']);
-    }
-
     public function test_update_requires_authentication(): void
     {
-        $aiIncident = AiIncident::factory()->create();
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->postJson("/api/ai-incidents/{$aiIncident->id}", []);
 
@@ -683,7 +657,7 @@ class AiIncidentControllerTest extends TestCase
 
     public function test_destroy_deletes_ai_incident(): void
     {
-        $aiIncident = AiIncident::factory()->create();
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->actingAs($this->user, 'supabase')
             ->deleteJson("/api/ai-incidents/{$aiIncident->id}");
@@ -709,55 +683,69 @@ class AiIncidentControllerTest extends TestCase
 
     public function test_destroy_requires_authentication(): void
     {
-        $aiIncident = AiIncident::factory()->create();
+        $aiIncident = AiIncident::factory()->create(['organization_id' => $this->organization->id]);
 
         $response = $this->deleteJson("/api/ai-incidents/{$aiIncident->id}");
 
         $response->assertStatus(401);
     }
 
-    public function test_store_accepts_all_valid_categories(): void
+    public function test_store_accepts_all_valid_incident_types(): void
     {
-        $categories = ['safety', 'privacy', 'security', 'bias_fairness', 'reliability', 'availability', 'legal_compliance', 'vendor', 'other'];
+        $incidentTypes = [
+            IncidentType::AI_MODEL_FAILURE->value,
+            IncidentType::DATA_BREACH->value,
+            IncidentType::PRIVACY_VIOLATION->value,
+            IncidentType::SECURITY_INCIDENT->value,
+        ];
 
-        foreach ($categories as $category) {
+        foreach ($incidentTypes as $incidentType) {
             $data = [
-                'title' => "Test {$category} Incident",
+                'title' => "Test {$incidentType} Incident",
                 'summary' => 'Test summary',
-                'category' => $category,
-                'severity' => 'sev2_high',
-                'status' => 'open',
-                'stage' => 'prod',
-                'ic_owner' => 'Test Owner',
-                'first_seen_at' => now()->subHour()->toDateTimeString(),
-                'declared_at' => now()->toDateTimeString(),
-                'impacted_data' => ['pii'],
+                'incident_type' => $incidentType,
+                'domain' => Domain::DATA_PRIVACY->value,
+                'severity' => IncidentSeverity::SEV2_HIGH->value,
+                'status' => IncidentStatus::OPEN->value,
+                'incident_commander' => 'Test Owner',
+                'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+                'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+                'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+                'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+                'estimated_impacted_records' => 100,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/ai-incidents', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.category', $category);
+                ->assertJsonPath('data.incident_type', $incidentType);
         }
     }
 
     public function test_store_accepts_all_valid_severities(): void
     {
-        $severities = ['sev1_critical', 'sev2_high', 'sev3_medium', 'sev4_low', 'near_miss'];
+        $severities = [
+            IncidentSeverity::SEV1_CRITICAL->value,
+            IncidentSeverity::SEV2_HIGH->value,
+            IncidentSeverity::SEV3_MEDIUM->value,
+            IncidentSeverity::SEV4_LOW->value,
+        ];
 
         foreach ($severities as $severity) {
             $data = [
                 'title' => "Test {$severity} Incident",
                 'summary' => 'Test summary',
-                'category' => 'safety',
+                'incident_type' => IncidentType::DATA_BREACH->value,
+                'domain' => Domain::DATA_PRIVACY->value,
                 'severity' => $severity,
-                'status' => 'open',
-                'stage' => 'prod',
-                'ic_owner' => 'Test Owner',
-                'first_seen_at' => now()->subHour()->toDateTimeString(),
-                'declared_at' => now()->toDateTimeString(),
-                'impacted_data' => ['pii'],
+                'status' => IncidentStatus::OPEN->value,
+                'incident_commander' => 'Test Owner',
+                'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+                'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+                'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+                'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+                'estimated_impacted_records' => 100,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
@@ -770,20 +758,27 @@ class AiIncidentControllerTest extends TestCase
 
     public function test_store_accepts_all_valid_statuses(): void
     {
-        $statuses = ['open', 'contained', 'monitoring', 'resolved', 'closed'];
+        $statuses = [
+            IncidentStatus::OPEN->value,
+            IncidentStatus::INVESTIGATING->value,
+            IncidentStatus::CONTAINED->value,
+            IncidentStatus::CLOSED->value,
+        ];
 
         foreach ($statuses as $status) {
             $data = [
                 'title' => "Test {$status} Incident",
                 'summary' => 'Test summary',
-                'category' => 'safety',
-                'severity' => 'sev2_high',
+                'incident_type' => IncidentType::DATA_BREACH->value,
+                'domain' => Domain::DATA_PRIVACY->value,
+                'severity' => IncidentSeverity::SEV2_HIGH->value,
                 'status' => $status,
-                'stage' => 'prod',
-                'ic_owner' => 'Test Owner',
-                'first_seen_at' => now()->subHour()->toDateTimeString(),
-                'declared_at' => now()->toDateTimeString(),
-                'impacted_data' => ['pii'],
+                'incident_commander' => 'Test Owner',
+                'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+                'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+                'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+                'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+                'estimated_impacted_records' => 100,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
@@ -794,29 +789,36 @@ class AiIncidentControllerTest extends TestCase
         }
     }
 
-    public function test_store_accepts_all_valid_stages(): void
+    public function test_store_accepts_all_valid_domains(): void
     {
-        $stages = ['ideation', 'conception', 'dev', 'test', 'staging', 'prod', 'retirement'];
+        $domains = [
+            Domain::AI_GOVERNANCE->value,
+            Domain::DATA_PRIVACY->value,
+            Domain::DATA_GOVERNANCE->value,
+            Domain::INFORMATION_SECURITY->value,
+        ];
 
-        foreach ($stages as $stage) {
+        foreach ($domains as $domain) {
             $data = [
-                'title' => "Test {$stage} Incident",
+                'title' => "Test {$domain} Incident",
                 'summary' => 'Test summary',
-                'category' => 'safety',
-                'severity' => 'sev2_high',
-                'status' => 'open',
-                'stage' => $stage,
-                'ic_owner' => 'Test Owner',
-                'first_seen_at' => now()->subHour()->toDateTimeString(),
-                'declared_at' => now()->toDateTimeString(),
-                'impacted_data' => ['pii'],
+                'incident_type' => IncidentType::DATA_BREACH->value,
+                'domain' => $domain,
+                'severity' => IncidentSeverity::SEV2_HIGH->value,
+                'status' => IncidentStatus::OPEN->value,
+                'incident_commander' => 'Test Owner',
+                'response_team' => ResponseTeam::DATA_PRIVACY_OFFICE->value,
+                'primary_regulatory_framework' => PrimaryRegulatoryFramework::GDPR->value,
+                'notification_requirement' => NotificationRequirement::DPA_WITHIN_72_HOURS->value,
+                'data_types_impacted' => [ImpactedDataType::PII_DIRECT_IDENTIFIERS->value],
+                'estimated_impacted_records' => 100,
             ];
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/ai-incidents', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.stage', $stage);
+                ->assertJsonPath('data.domain', $domain);
         }
     }
 }
