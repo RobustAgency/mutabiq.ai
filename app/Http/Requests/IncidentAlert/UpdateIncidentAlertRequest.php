@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests\IncidentAlert;
 
-use App\Enums\IncidentAlert\AlertSourceType;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\IncidentAlert\AlertSeverity;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\IncidentAlert\AlertSourceType;
 
 class UpdateIncidentAlertRequest extends FormRequest
 {
@@ -25,13 +26,15 @@ class UpdateIncidentAlertRequest extends FormRequest
     {
         return [
             'ai_incident_id' => ['sometimes', 'integer', 'exists:ai_incidents,id'],
-            'source_type' => ['sometimes', Rule::in(array_map(fn($c) => $c->value, AlertSourceType::cases()))],
-            'source_ref' => ['nullable', 'string', 'max:255'],
-            'rule_version' => ['nullable', 'string', 'max:255'],
-            'context' => ['nullable', 'string'],
+            'source_type' => ['sometimes', Rule::enum(AlertSourceType::class)],
+            'data_source_id' => ['sometimes', 'nullable', 'integer', 'exists:data_sources,id'],
+            'alert_sensitivity' => ['sometimes', Rule::enum(AlertSeverity::class)],
+            'source_ref' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'context' => ['sometimes', 'string'],
             'first_seen_at' => ['sometimes', 'date'],
-            'last_seen_at' => ['nullable', 'date', 'after_or_equal:first_seen_at'],
-            'evidence_link' => ['nullable', 'url', 'max:2048'],
+            'last_seen_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:first_seen_at'],
+            'evidence_link' => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'auto_promote_incident' => ['sometimes', 'nullable', 'boolean'],
         ];
     }
 

@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\IncidentAlert;
+use Illuminate\Http\JsonResponse;
+use App\Http\Resources\IncidentAlertResource;
+use App\Repositories\IncidentAlertRepository;
 use App\Http\Requests\IncidentAlert\ListIncidentAlertRequest;
 use App\Http\Requests\IncidentAlert\StoreIncidentAlertRequest;
 use App\Http\Requests\IncidentAlert\UpdateIncidentAlertRequest;
-use App\Http\Resources\IncidentAlertResource;
-use App\Models\IncidentAlert;
-use App\Repositories\IncidentAlertRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class IncidentAlertController extends Controller
 {
@@ -55,6 +54,7 @@ class IncidentAlertController extends Controller
     public function show(IncidentAlert $incidentAlert): JsonResponse
     {
         $incidentAlert = $this->incidentAlertRepository->getIncidentAlertById($incidentAlert);
+
         return response()->json([
             'error' => false,
             'message' => 'Incident alert retrieved successfully',

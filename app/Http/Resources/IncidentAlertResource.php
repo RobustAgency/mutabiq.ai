@@ -20,13 +20,17 @@ class IncidentAlertResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'display_id' => $this->display_id,
+            'organization_id' => $this->organization_id,
             'ai_incident_id' => $this->ai_incident_id,
             'source_type' => $this->source_type,
+            'data_source_id' => $this->data_source_id,
             'source_ref' => $this->source_ref,
-            'rule_version' => $this->rule_version,
+            'alert_sensitivity' => $this->alert_sensitivity,
             'context' => $this->context,
             'first_seen_at' => $this->first_seen_at ? Carbon::parse($this->first_seen_at)->toIso8601String() : null,
             'last_seen_at' => $this->last_seen_at ? Carbon::parse($this->last_seen_at)->toIso8601String() : null,
+            'auto_promote_incident' => $this->auto_promote_incident,
             'evidence_link' => $this->evidence_link,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
