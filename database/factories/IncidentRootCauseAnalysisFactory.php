@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\IncidentRootCauseAnalysis\RcaMethod;
 use App\Models\AiIncident;
 use App\Models\IncidentRootCauseAnalysis;
+use App\Enums\IncidentRootCauseAnalysis\RcaMethod;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,14 +25,14 @@ class IncidentRootCauseAnalysisFactory extends Factory
             'organization_id' => \App\Models\Organization::factory(),
             'ai_incident_id' => AiIncident::factory(),
             'rca_method' => $this->faker->randomElement(RcaMethod::cases())->value,
+            'analysis_date' => $this->faker->dateTimeBetween('-60 days', 'now'),
             'immediate_cause' => $this->faker->paragraph(2),
-            'latent_causes' => $this->faker->paragraph(3),
+            'root_causes' => $this->faker->paragraph(3),
             'contributing_factors' => $this->faker->boolean(60) ? $this->faker->paragraph(2) : null,
-            'impact_assessment' => $this->faker->boolean(60) ? $this->faker->paragraph(2) : null,
-            'fixes_implemented' => $this->faker->boolean(70) ? $this->faker->paragraph(2) : null,
-            'lessons_learned' => $this->faker->paragraph(3),
+            'control_failures' => $this->faker->boolean(60) ? $this->faker->paragraph(2) : null,
             'recommendations' => $this->faker->paragraph(3),
-            'approved_by' => $this->faker->name(),
+            'lead_analyst' => $this->faker->name(),
+            'review_committee' => $this->faker->boolean(70) ? $this->faker->name().' | '.$this->faker->name().' | '.$this->faker->name() : null,
             'approved_at' => $approvedAt,
             'report_link' => $this->faker->boolean(50) ? $this->faker->url() : null,
         ];
@@ -43,7 +43,7 @@ class IncidentRootCauseAnalysisFactory extends Factory
      */
     public function fiveWhys(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'rca_method' => RcaMethod::FIVE_WHYS->value,
         ]);
     }
@@ -53,7 +53,7 @@ class IncidentRootCauseAnalysisFactory extends Factory
      */
     public function fishbone(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'rca_method' => RcaMethod::FISHBONE->value,
         ]);
     }
@@ -63,10 +63,10 @@ class IncidentRootCauseAnalysisFactory extends Factory
      */
     public function complete(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'contributing_factors' => $this->faker->paragraph(2),
-            'impact_assessment' => $this->faker->paragraph(2),
-            'fixes_implemented' => $this->faker->paragraph(2),
+            'control_failures' => $this->faker->paragraph(2),
+            'review_committee' => $this->faker->name().' | '.$this->faker->name().' | '.$this->faker->name(),
             'report_link' => $this->faker->url(),
         ]);
     }

@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\IncidentRootCauseAnalysis;
 
-use App\Enums\IncidentRootCauseAnalysis\RcaMethod;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\IncidentRootCauseAnalysis\RcaMethod;
 
 class StoreIncidentRootCauseAnalysisRequest extends FormRequest
 {
@@ -25,16 +25,16 @@ class StoreIncidentRootCauseAnalysisRequest extends FormRequest
     {
         return [
             'ai_incident_id' => ['required', 'integer', 'exists:ai_incidents,id'],
-            'rca_method' => ['required', Rule::in(array_map(fn($c) => $c->value, RcaMethod::cases()))],
+            'rca_method' => ['required', Rule::enum(RcaMethod::class)],
+            'analysis_date' => ['nullable', 'date'],
             'immediate_cause' => ['required', 'string'],
-            'latent_causes' => ['required', 'string'],
+            'root_causes' => ['required', 'string'],
             'contributing_factors' => ['nullable', 'string'],
-            'impact_assessment' => ['nullable', 'string'],
-            'fixes_implemented' => ['nullable', 'string'],
-            'lessons_learned' => ['required', 'string'],
+            'control_failures' => ['nullable', 'string'],
             'recommendations' => ['required', 'string'],
-            'approved_by' => ['required', 'string', 'max:255'],
-            'approved_at' => ['required', 'date'],
+            'lead_analyst' => ['required', 'string', 'max:255'],
+            'review_committee' => ['nullable', 'string'],
+            'approved_at' => ['nullable', 'date'],
             'report_link' => ['nullable', 'url', 'max:2048'],
         ];
     }
