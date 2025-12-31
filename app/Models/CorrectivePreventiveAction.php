@@ -14,27 +14,31 @@ class CorrectivePreventiveAction extends Model
     protected $fillable = [
         'organization_id',
         'source_type',
-        'source_id',
+        'source_reference',
         'ai_model_id',
+        'dataset_id',
         'title',
         'capa_type',
         'priority',
-        'owner_team',
-        'assignee',
         'root_cause',
         'actions',
+        'owner_team',
+        'assignee',
         'due_date',
         'status',
+        'success_criteria',
+        'linked_training',
+        'estimated_cost',
+        'effectiveness_review_date',
         'verification_result',
         'evidence_link',
-        'closed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'due_date' => 'date',
-            'closed_at' => 'datetime',
+            'effectiveness_review_date' => 'date',
         ];
     }
 
