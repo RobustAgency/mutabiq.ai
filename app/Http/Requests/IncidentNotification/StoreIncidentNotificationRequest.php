@@ -2,10 +2,14 @@
 
 namespace App\Http\Requests\IncidentNotification;
 
-use App\Enums\IncidentNotification\AudienceType;
+use Illuminate\Validation\Rule;
 use App\Enums\IncidentNotification\Channel;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Enums\IncidentNotification\Language;
+use App\Enums\IncidentNotification\Template;
+use App\Enums\IncidentNotification\AudienceType;
+use App\Enums\IncidentNotification\DeliveryStatus;
+use App\Enums\IncidentNotification\RegulatoryBasis;
 
 class StoreIncidentNotificationRequest extends FormRequest
 {
@@ -26,34 +30,21 @@ class StoreIncidentNotificationRequest extends FormRequest
     {
         return [
             'ai_incident_id' => ['required', 'integer', 'exists:ai_incidents,id'],
-            'audience_type' => ['required', Rule::in(array_map(fn($c) => $c->value, AudienceType::cases()))],
-            'channel' => ['required', Rule::in(array_map(fn($c) => $c->value, Channel::cases()))],
+            'template' => ['nullable', Rule::enum(Template::class)],
+            'language' => ['nullable', Rule::enum(Language::class)],
+            'regulatory_basis' => ['nullable', Rule::enum(RegulatoryBasis::class)],
+            'notification_deadline' => ['nullable', 'date'],
+            'audience_type' => ['required', Rule::enum(AudienceType::class)],
+            'channel' => ['required', Rule::enum(Channel::class)],
             'notice_summary' => ['required', 'string'],
             'notice_link' => ['nullable', 'url', 'max:2048'],
-            'notified_at' => ['required', 'date'],
-            'approved_by' => ['nullable', 'string', 'max:255', Rule::requiredIf(function () {
-                $audienceType = $this->input('audience_type');
-                return in_array($audienceType, [
-                    AudienceType::CUSTOMERS->value,
-                    AudienceType::REGULATOR->value,
-                    AudienceType::VENDOR->value,
-                    AudienceType::MEDIA->value,
-                ]);
-            })],
-            'approval_ref' => ['nullable', 'string', 'max:255'],
+            'sent_at' => ['required', 'date'],
+            'sent_by' => ['nullable', 'string', 'max:255'],
+            'delivery_status' => ['required', Rule::enum(DeliveryStatus::class)],
+            'response_summary' => ['nullable', 'string'],
             'follow_up_required' => ['required', 'boolean'],
-        ];
-    }
-
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'approved_by.required' => 'Approval is required for external audiences (customers, regulator, vendor, media).',
+            'follow_up_date' => ['nullable', 'date'],
+            'follow_up_notes' => ['nullable', 'string'],
         ];
     }
 }

@@ -2,10 +2,14 @@
 
 namespace App\Http\Requests\IncidentNotification;
 
-use App\Enums\IncidentNotification\AudienceType;
+use Illuminate\Validation\Rule;
 use App\Enums\IncidentNotification\Channel;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Enums\IncidentNotification\Language;
+use App\Enums\IncidentNotification\Template;
+use App\Enums\IncidentNotification\AudienceType;
+use App\Enums\IncidentNotification\DeliveryStatus;
+use App\Enums\IncidentNotification\RegulatoryBasis;
 
 class UpdateIncidentNotificationRequest extends FormRequest
 {
@@ -26,26 +30,21 @@ class UpdateIncidentNotificationRequest extends FormRequest
     {
         return [
             'ai_incident_id' => ['sometimes', 'required', 'integer', 'exists:ai_incidents,id'],
-            'audience_type' => ['sometimes', 'required', Rule::in(array_map(fn($c) => $c->value, AudienceType::cases()))],
-            'channel' => ['sometimes', 'required', Rule::in(array_map(fn($c) => $c->value, Channel::cases()))],
+            'template' => ['sometimes', 'nullable', Rule::enum(Template::class)],
+            'language' => ['sometimes', 'nullable', Rule::enum(Language::class)],
+            'regulatory_basis' => ['sometimes', 'nullable', Rule::enum(RegulatoryBasis::class)],
+            'notification_deadline' => ['sometimes', 'nullable', 'date'],
+            'audience_type' => ['sometimes', 'required', Rule::enum(AudienceType::class)],
+            'channel' => ['sometimes', 'required', Rule::enum(Channel::class)],
             'notice_summary' => ['sometimes', 'required', 'string'],
-            'notice_link' => ['nullable', 'url', 'max:2048'],
-            'notified_at' => ['sometimes', 'required', 'date'],
-            'approved_by' => ['nullable', 'string', 'max:255'],
-            'approval_ref' => ['nullable', 'string', 'max:255'],
+            'notice_link' => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'sent_at' => ['sometimes', 'required', 'date'],
+            'sent_by' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'delivery_status' => ['sometimes', 'required', Rule::enum(DeliveryStatus::class)],
+            'response_summary' => ['sometimes', 'nullable', 'string'],
             'follow_up_required' => ['sometimes', 'required', 'boolean'],
-        ];
-    }
-
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'approved_by.required' => 'Approval is required for external audiences (customers, regulator, vendor, media).',
+            'follow_up_date' => ['sometimes', 'nullable', 'date'],
+            'follow_up_notes' => ['sometimes', 'nullable', 'string'],
         ];
     }
 }

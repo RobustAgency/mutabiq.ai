@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
+use App\Models\IncidentNotification;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\IncidentNotificationResource;
+use App\Repositories\IncidentNotificationRepository;
 use App\Http\Requests\IncidentNotification\ListIncidentNotificationRequest;
 use App\Http\Requests\IncidentNotification\StoreIncidentNotificationRequest;
 use App\Http\Requests\IncidentNotification\UpdateIncidentNotificationRequest;
-use App\Http\Resources\IncidentNotificationResource;
-use App\Models\IncidentNotification;
-use App\Repositories\IncidentNotificationRepository;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class IncidentNotificationController extends Controller
 {
@@ -26,6 +25,7 @@ class IncidentNotificationController extends Controller
         $validated = $request->validated();
         $validated['organization_id'] = Auth::user()->organization_id;
         $incidentNotifications = $this->incidentNotificationRepository->getFilteredIncidentNotifications($validated);
+
         return response()->json([
             'error' => false,
             'message' => 'Incident notifications retrieved successfully',
@@ -55,6 +55,7 @@ class IncidentNotificationController extends Controller
     public function show(IncidentNotification $incidentNotification): JsonResponse
     {
         $incidentNotification = $this->incidentNotificationRepository->getIncidentNotificationById($incidentNotification);
+
         return response()->json([
             'error' => false,
             'message' => 'Incident notification retrieved successfully',

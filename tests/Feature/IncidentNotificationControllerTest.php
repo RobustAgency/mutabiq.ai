@@ -2,12 +2,18 @@
 
 namespace Tests\Feature;
 
-use App\Models\AiIncident;
-use App\Models\IncidentNotification;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\AiIncident;
+use App\Models\Organization;
+use App\Models\IncidentNotification;
+use App\Enums\IncidentNotification\Channel;
+use App\Enums\IncidentNotification\Language;
+use App\Enums\IncidentNotification\Template;
+use App\Enums\IncidentNotification\AudienceType;
+use App\Enums\IncidentNotification\DeliveryStatus;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Enums\IncidentNotification\RegulatoryBasis;
 
 class IncidentNotificationControllerTest extends TestCase
 {
@@ -45,13 +51,15 @@ class IncidentNotificationControllerTest extends TestCase
                         '*' => [
                             'id',
                             'ai_incident_id',
+                            'template',
+                            'language',
                             'audience_type',
                             'channel',
+                            'regulatory_basis',
                             'notice_summary',
                             'notice_link',
-                            'notified_at',
-                            'approved_by',
-                            'approval_ref',
+                            'sent_at',
+                            'delivery_status',
                             'follow_up_required',
                             'created_at',
                             'updated_at',
@@ -68,10 +76,14 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
+            'regulatory_basis' => RegulatoryBasis::GDPR_ART_33->value,
             'notice_summary' => 'Internal notification about incident response',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -84,59 +96,70 @@ class IncidentNotificationControllerTest extends TestCase
                 'message' => 'Incident notification created successfully',
             ])
             ->assertJsonPath('data.ai_incident_id', $incident->id)
-            ->assertJsonPath('data.audience_type', 'internal_staff')
-            ->assertJsonPath('data.channel', 'email')
+            ->assertJsonPath('data.audience_type', AudienceType::INTERNAL_TECHNICAL->value)
+            ->assertJsonPath('data.channel', Channel::EMAIL->value)
             ->assertJsonPath('data.follow_up_required', false);
 
         $this->assertDatabaseHas('incident_notifications', [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
         ]);
     }
 
     public function test_store_creates_incident_notification_with_all_fields(): void
     {
         $incident = AiIncident::factory()->create();
-        $notifiedAt = now()->subHours(2);
+        $sentAt = now()->subHours(2);
+        $notificationDeadline = now()->addDays(7);
+        $followUpDate = now()->addDays(14);
 
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'customers',
-            'channel' => 'status_page',
+            'template' => Template::CUSTOMER_NOTICE_TEMPLATE->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::AFFECTED_DATA_SUBJECTS->value,
+            'channel' => Channel::EMAIL->value,
+            'regulatory_basis' => RegulatoryBasis::GDPR_ART_34->value,
+            'notification_deadline' => $notificationDeadline->toDateTimeString(),
             'notice_summary' => 'We are experiencing technical difficulties with our AI service',
             'notice_link' => 'https://example.com/status/incident-123',
-            'notified_at' => $notifiedAt->toDateTimeString(),
-            'approved_by' => 'Jane Smith',
-            'approval_ref' => 'APPR-1234',
+            'sent_at' => $sentAt->toDateTimeString(),
+            'sent_by' => 'notifications@example.com',
+            'delivery_status' => DeliveryStatus::DELIVERED->value,
+            'response_summary' => 'All customers notified successfully',
             'follow_up_required' => true,
+            'follow_up_date' => $followUpDate->toDateTimeString(),
+            'follow_up_notes' => 'Monitor customer response and complaints',
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
             ->postJson('/api/incident-notifications', $data);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.audience_type', 'customers')
-            ->assertJsonPath('data.channel', 'status_page')
+            ->assertJsonPath('data.audience_type', AudienceType::AFFECTED_DATA_SUBJECTS->value)
+            ->assertJsonPath('data.channel', Channel::EMAIL->value)
             ->assertJsonPath('data.notice_link', 'https://example.com/status/incident-123')
-            ->assertJsonPath('data.approved_by', 'Jane Smith')
-            ->assertJsonPath('data.approval_ref', 'APPR-1234')
+            ->assertJsonPath('data.sent_by', 'notifications@example.com')
             ->assertJsonPath('data.follow_up_required', true);
 
         $this->assertDatabaseHas('incident_notifications', [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'customers',
-            'approved_by' => 'Jane Smith',
+            'audience_type' => AudienceType::AFFECTED_DATA_SUBJECTS->value,
+            'sent_by' => 'notifications@example.com',
         ]);
     }
 
     public function test_store_validates_ai_incident_id_is_required(): void
     {
         $data = [
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -151,10 +174,13 @@ class IncidentNotificationControllerTest extends TestCase
     {
         $data = [
             'ai_incident_id' => 99999,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -170,9 +196,12 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -188,10 +217,13 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
             'audience_type' => 'invalid_audience',
-            'channel' => 'email',
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -207,9 +239,12 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -225,10 +260,13 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
             'channel' => 'invalid_channel',
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -244,9 +282,12 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
-            'notified_at' => now()->toDateTimeString(),
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -257,14 +298,17 @@ class IncidentNotificationControllerTest extends TestCase
             ->assertJsonValidationErrors(['notice_summary']);
     }
 
-    public function test_store_validates_notified_at_is_required(): void
+    public function test_store_validates_sent_at_is_required(): void
     {
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
         ];
 
@@ -272,7 +316,28 @@ class IncidentNotificationControllerTest extends TestCase
             ->postJson('/api/incident-notifications', $data);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['notified_at']);
+            ->assertJsonValidationErrors(['sent_at']);
+    }
+
+    public function test_store_validates_delivery_status_is_required(): void
+    {
+        $incident = AiIncident::factory()->create();
+        $data = [
+            'ai_incident_id' => $incident->id,
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
+            'notice_summary' => 'Test notification',
+            'sent_at' => now()->toDateTimeString(),
+            'follow_up_required' => false,
+        ];
+
+        $response = $this->actingAs($this->user, 'supabase')
+            ->postJson('/api/incident-notifications', $data);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['delivery_status']);
     }
 
     public function test_store_validates_follow_up_required_is_required(): void
@@ -280,10 +345,13 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
         ];
 
         $response = $this->actingAs($this->user, 'supabase')
@@ -298,10 +366,13 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => 'not_a_boolean',
         ];
 
@@ -317,10 +388,13 @@ class IncidentNotificationControllerTest extends TestCase
         $incident = AiIncident::factory()->create();
         $data = [
             'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'template' => Template::DPA_BREACH_NOTIFICATION->value,
+            'language' => Language::ENGLISH->value,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
             'notice_summary' => 'Test notification',
-            'notified_at' => now()->toDateTimeString(),
+            'sent_at' => now()->toDateTimeString(),
+            'delivery_status' => DeliveryStatus::DRAFT->value,
             'follow_up_required' => false,
             'notice_link' => 'not-a-valid-url',
         ];
@@ -332,91 +406,45 @@ class IncidentNotificationControllerTest extends TestCase
             ->assertJsonValidationErrors(['notice_link']);
     }
 
-    public function test_store_does_not_require_approved_by_for_internal_exec(): void
-    {
-        $incident = AiIncident::factory()->create();
-        $data = [
-            'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_exec',
-            'channel' => 'email',
-            'notice_summary' => 'Executive notification',
-            'notified_at' => now()->toDateTimeString(),
-            'follow_up_required' => false,
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/incident-notifications', $data);
-
-        $response->assertStatus(201)
-            ->assertJsonPath('data.audience_type', 'internal_exec');
-    }
-
-    public function test_store_does_not_require_approved_by_for_internal_staff(): void
-    {
-        $incident = AiIncident::factory()->create();
-        $data = [
-            'ai_incident_id' => $incident->id,
-            'audience_type' => 'internal_staff',
-            'channel' => 'portal',
-            'notice_summary' => 'Staff notification',
-            'notified_at' => now()->toDateTimeString(),
-            'follow_up_required' => false,
-        ];
-
-        $response = $this->actingAs($this->user, 'supabase')
-            ->postJson('/api/incident-notifications', $data);
-
-        $response->assertStatus(201)
-            ->assertJsonPath('data.audience_type', 'internal_staff');
-    }
-
     public function test_store_accepts_all_valid_audience_types(): void
     {
         $incident = AiIncident::factory()->create();
-        $audienceTypes = [
-            'internal_exec' => false,
-            'internal_staff' => false,
-            'customers' => true,
-            'regulator' => true,
-            'vendor' => true,
-            'media' => true,
-            'other' => false,
-        ];
 
-        foreach ($audienceTypes as $audienceType => $requiresApproval) {
+        foreach (AudienceType::cases() as $audienceType) {
             $data = [
                 'ai_incident_id' => $incident->id,
-                'audience_type' => $audienceType,
-                'channel' => 'email',
-                'notice_summary' => "Test notification for {$audienceType}",
-                'notified_at' => now()->toDateTimeString(),
+                'template' => Template::CUSTOM_OTHER->value,
+                'language' => Language::ENGLISH->value,
+                'audience_type' => $audienceType->value,
+                'channel' => Channel::EMAIL->value,
+                'notice_summary' => "Test notification for {$audienceType->value}",
+                'sent_at' => now()->toDateTimeString(),
+                'delivery_status' => DeliveryStatus::SENT->value,
                 'follow_up_required' => false,
             ];
-
-            if ($requiresApproval) {
-                $data['approved_by'] = 'Approver Name';
-            }
 
             $response = $this->actingAs($this->user, 'supabase')
                 ->postJson('/api/incident-notifications', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.audience_type', $audienceType);
+                ->assertJsonPath('data.audience_type', $audienceType->value);
         }
     }
 
     public function test_store_accepts_all_valid_channels(): void
     {
         $incident = AiIncident::factory()->create();
-        $channels = ['email', 'portal', 'status_page', 'phone', 'meeting', 'legal_letter', 'other'];
 
-        foreach ($channels as $channel) {
+        foreach (Channel::cases() as $channel) {
             $data = [
                 'ai_incident_id' => $incident->id,
-                'audience_type' => 'internal_staff',
-                'channel' => $channel,
-                'notice_summary' => "Test notification via {$channel}",
-                'notified_at' => now()->toDateTimeString(),
+                'template' => Template::CUSTOM_OTHER->value,
+                'language' => Language::ENGLISH->value,
+                'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+                'channel' => $channel->value,
+                'notice_summary' => "Test notification via {$channel->value}",
+                'sent_at' => now()->toDateTimeString(),
+                'delivery_status' => DeliveryStatus::SENT->value,
                 'follow_up_required' => false,
             ];
 
@@ -424,7 +452,32 @@ class IncidentNotificationControllerTest extends TestCase
                 ->postJson('/api/incident-notifications', $data);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.channel', $channel);
+                ->assertJsonPath('data.channel', $channel->value);
+        }
+    }
+
+    public function test_store_accepts_all_delivery_statuses(): void
+    {
+        $incident = AiIncident::factory()->create();
+
+        foreach (DeliveryStatus::cases() as $status) {
+            $data = [
+                'ai_incident_id' => $incident->id,
+                'template' => Template::CUSTOM_OTHER->value,
+                'language' => Language::ENGLISH->value,
+                'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+                'channel' => Channel::EMAIL->value,
+                'notice_summary' => "Test notification with status {$status->value}",
+                'sent_at' => now()->toDateTimeString(),
+                'delivery_status' => $status->value,
+                'follow_up_required' => false,
+            ];
+
+            $response = $this->actingAs($this->user, 'supabase')
+                ->postJson('/api/incident-notifications', $data);
+
+            $response->assertStatus(201)
+                ->assertJsonPath('data.delivery_status', $status->value);
         }
     }
 
@@ -471,14 +524,14 @@ class IncidentNotificationControllerTest extends TestCase
     public function test_update_updates_incident_notification(): void
     {
         $notification = IncidentNotification::factory()->create([
-            'audience_type' => 'internal_staff',
-            'channel' => 'email',
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'channel' => Channel::EMAIL->value,
             'follow_up_required' => false,
         ]);
 
         $updateData = [
-            'audience_type' => 'internal_exec',
-            'channel' => 'meeting',
+            'audience_type' => AudienceType::INTERNAL_EXECUTIVE->value,
+            'channel' => Channel::SLACK_TEAMS->value,
             'follow_up_required' => true,
         ];
 
@@ -490,26 +543,26 @@ class IncidentNotificationControllerTest extends TestCase
                 'error' => false,
                 'message' => 'Incident notification updated successfully',
             ])
-            ->assertJsonPath('data.audience_type', 'internal_exec')
-            ->assertJsonPath('data.channel', 'meeting')
+            ->assertJsonPath('data.audience_type', AudienceType::INTERNAL_EXECUTIVE->value)
+            ->assertJsonPath('data.channel', Channel::SLACK_TEAMS->value)
             ->assertJsonPath('data.follow_up_required', true);
 
         $this->assertDatabaseHas('incident_notifications', [
             'id' => $notification->id,
-            'audience_type' => 'internal_exec',
-            'channel' => 'meeting',
+            'audience_type' => AudienceType::INTERNAL_EXECUTIVE->value,
+            'channel' => Channel::SLACK_TEAMS->value,
         ]);
     }
 
     public function test_update_partially_updates_incident_notification(): void
     {
         $notification = IncidentNotification::factory()->create([
-            'audience_type' => 'internal_staff',
-            'approval_ref' => null,
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
+            'sent_by' => null,
         ]);
 
         $updateData = [
-            'approval_ref' => 'APPR-9999',
+            'sent_by' => 'dpo@example.com',
             'notice_link' => 'https://example.com/updated-link',
         ];
 
@@ -517,14 +570,33 @@ class IncidentNotificationControllerTest extends TestCase
             ->postJson("/api/incident-notifications/{$notification->id}", $updateData);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.audience_type', 'internal_staff')
-            ->assertJsonPath('data.approval_ref', 'APPR-9999')
+            ->assertJsonPath('data.audience_type', AudienceType::INTERNAL_TECHNICAL->value)
+            ->assertJsonPath('data.sent_by', 'dpo@example.com')
             ->assertJsonPath('data.notice_link', 'https://example.com/updated-link');
 
         $this->assertDatabaseHas('incident_notifications', [
             'id' => $notification->id,
-            'audience_type' => 'internal_staff',
+            'audience_type' => AudienceType::INTERNAL_TECHNICAL->value,
         ]);
+    }
+
+    public function test_update_updates_delivery_status(): void
+    {
+        $notification = IncidentNotification::factory()->create([
+            'delivery_status' => DeliveryStatus::SENT->value,
+        ]);
+
+        $updateData = [
+            'delivery_status' => DeliveryStatus::DELIVERED->value,
+            'response_summary' => 'Successfully delivered to all recipients',
+        ];
+
+        $response = $this->actingAs($this->user, 'supabase')
+            ->postJson("/api/incident-notifications/{$notification->id}", $updateData);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.delivery_status', DeliveryStatus::DELIVERED->value)
+            ->assertJsonPath('data.response_summary', 'Successfully delivered to all recipients');
     }
 
     public function test_update_requires_authentication(): void
