@@ -20,10 +20,18 @@ class IncidentActionResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'display_id' => $this->display_id,
+            'organization_id' => $this->organization_id,
             'ai_incident_id' => $this->ai_incident_id,
             'action_type' => $this->action_type,
+            'execution_status' => $this->execution_status,
             'description' => $this->description,
             'performed_by' => $this->performed_by,
+            'individual_name' => $this->individual_name,
+            'depends_on' => $this->depends_on,
+            'approval_required' => $this->approval_required,
+            'estimated_duration' => $this->estimated_duration,
+            'actual_duration' => $this->actual_duration,
             'started_at' => $this->started_at ? Carbon::parse($this->started_at)->toIso8601String() : null,
             'completed_at' => $this->completed_at ? Carbon::parse($this->completed_at)->toIso8601String() : null,
             'validation_result' => $this->validation_result,

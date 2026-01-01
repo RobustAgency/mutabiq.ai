@@ -2,14 +2,14 @@
 
 namespace App\Http\Requests\CorrectivePreventiveAction;
 
-use App\Enums\CorrectivePreventiveAction\CapaType;
-use App\Enums\CorrectivePreventiveAction\OwnerTeam;
-use App\Enums\CorrectivePreventiveAction\Priority;
-use App\Enums\CorrectivePreventiveAction\SourceType;
-use App\Enums\CorrectivePreventiveAction\Status;
-use App\Enums\CorrectivePreventiveAction\VerificationResult;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\CorrectivePreventiveAction\Status;
+use App\Enums\CorrectivePreventiveAction\CapaType;
+use App\Enums\CorrectivePreventiveAction\Priority;
+use App\Enums\CorrectivePreventiveAction\OwnerTeam;
+use App\Enums\CorrectivePreventiveAction\SourceType;
+use App\Enums\CorrectivePreventiveAction\VerificationResult;
 
 class UpdateCorrectivePreventiveActionRequest extends FormRequest
 {
@@ -29,21 +29,25 @@ class UpdateCorrectivePreventiveActionRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'source_type' => ['sometimes', Rule::enum(SourceType::class)],
-            'source_id' => ['sometimes', 'string', 'max:255'],
-            'model_id' => ['sometimes', 'nullable', 'exists:ai_models,id'],
-            'title' => ['sometimes', 'string', 'max:255'],
-            'capa_type' => ['sometimes', Rule::enum(CapaType::class)],
-            'priority' => ['sometimes', Rule::enum(Priority::class)],
-            'owner_team' => ['sometimes', Rule::enum(OwnerTeam::class)],
-            'assignee' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'source_type' => ['sometimes', 'required', Rule::enum(SourceType::class)],
+            'source_reference' => ['sometimes', 'required', 'string', 'max:255'],
+            'ai_model_id' => ['sometimes', 'nullable', 'integer', 'exists:ai_models,id'],
+            'dataset_id' => ['sometimes', 'nullable', 'integer', 'exists:datasets,id'],
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'capa_type' => ['sometimes', 'required', Rule::enum(CapaType::class)],
+            'priority' => ['sometimes', 'required', Rule::enum(Priority::class)],
             'root_cause' => ['sometimes', 'nullable', 'string'],
-            'actions' => ['sometimes', 'nullable', 'string'],
-            'due_date' => ['sometimes', 'date'],
-            'status' => ['sometimes', Rule::enum(Status::class)],
+            'actions' => ['sometimes', 'required', 'string'],
+            'owner_team' => ['sometimes', 'required', Rule::enum(OwnerTeam::class)],
+            'assignee' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'due_date' => ['sometimes', 'required', 'date'],
+            'status' => ['sometimes', 'required', Rule::enum(Status::class)],
+            'success_criteria' => ['sometimes', 'nullable', 'string'],
+            'linked_training' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'estimated_cost' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'verification_result' => ['sometimes', 'nullable', Rule::enum(VerificationResult::class)],
+            'effectiveness_review_date' => ['sometimes', 'nullable', 'date'],
             'evidence_link' => ['sometimes', 'nullable', 'url', 'max:500'],
-            'closed_at' => ['sometimes', 'nullable', 'date'],
         ];
 
         // Require verification_result when status is closed

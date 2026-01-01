@@ -2,14 +2,14 @@
 
 namespace App\Http\Requests\CorrectivePreventiveAction;
 
-use App\Enums\CorrectivePreventiveAction\CapaType;
-use App\Enums\CorrectivePreventiveAction\OwnerTeam;
-use App\Enums\CorrectivePreventiveAction\Priority;
-use App\Enums\CorrectivePreventiveAction\SourceType;
-use App\Enums\CorrectivePreventiveAction\Status;
-use App\Enums\CorrectivePreventiveAction\VerificationResult;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\CorrectivePreventiveAction\Status;
+use App\Enums\CorrectivePreventiveAction\CapaType;
+use App\Enums\CorrectivePreventiveAction\Priority;
+use App\Enums\CorrectivePreventiveAction\OwnerTeam;
+use App\Enums\CorrectivePreventiveAction\SourceType;
+use App\Enums\CorrectivePreventiveAction\VerificationResult;
 
 class StoreCorrectivePreventiveActionRequest extends FormRequest
 {
@@ -30,20 +30,24 @@ class StoreCorrectivePreventiveActionRequest extends FormRequest
     {
         $rules = [
             'source_type' => ['required', Rule::enum(SourceType::class)],
-            'source_id' => ['required', 'string', 'max:255'],
+            'source_reference' => ['required', 'string', 'max:255'],
+            'ai_model_id' => ['nullable', 'integer', 'exists:ai_models,id'],
+            'dataset_id' => ['nullable', 'integer', 'exists:datasets,id'],
             'title' => ['required', 'string', 'max:255'],
-            'model_id' => ['nullable', 'string', 'max:255'],
             'capa_type' => ['required', Rule::enum(CapaType::class)],
             'priority' => ['required', Rule::enum(Priority::class)],
+            'root_cause' => ['nullable', 'string'],
+            'actions' => ['required', 'string'],
             'owner_team' => ['required', Rule::enum(OwnerTeam::class)],
             'assignee' => ['nullable', 'string', 'max:255'],
-            'root_cause' => ['nullable', 'string'],
-            'actions' => ['nullable', 'string'],
             'due_date' => ['required', 'date'],
             'status' => ['required', Rule::enum(Status::class)],
+            'success_criteria' => ['nullable', 'string'],
+            'linked_training' => ['nullable', 'string', 'max:255'],
+            'estimated_cost' => ['nullable', 'numeric', 'min:0'],
             'verification_result' => ['nullable', Rule::enum(VerificationResult::class)],
+            'effectiveness_review_date' => ['nullable', 'date'],
             'evidence_link' => ['nullable', 'url', 'max:500'],
-            'closed_at' => ['nullable', 'date'],
         ];
 
         // Require verification_result when status is closed

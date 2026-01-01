@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\IncidentRootCauseAnalysis;
 
-use App\Enums\IncidentRootCauseAnalysis\RcaMethod;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\IncidentRootCauseAnalysis\RcaMethod;
 
 class UpdateIncidentRootCauseAnalysisRequest extends FormRequest
 {
@@ -25,16 +25,16 @@ class UpdateIncidentRootCauseAnalysisRequest extends FormRequest
     {
         return [
             'ai_incident_id' => ['sometimes', 'required', 'integer', 'exists:ai_incidents,id'],
-            'rca_method' => ['sometimes', 'required', Rule::in(array_map(fn($c) => $c->value, RcaMethod::cases()))],
+            'rca_method' => ['sometimes', 'required', Rule::enum(RcaMethod::class)],
+            'analysis_date' => ['nullable', 'date'],
             'immediate_cause' => ['sometimes', 'required', 'string'],
-            'latent_causes' => ['sometimes', 'required', 'string'],
+            'root_causes' => ['sometimes', 'required', 'string'],
             'contributing_factors' => ['nullable', 'string'],
-            'impact_assessment' => ['nullable', 'string'],
-            'fixes_implemented' => ['nullable', 'string'],
-            'lessons_learned' => ['sometimes', 'required', 'string'],
+            'control_failures' => ['nullable', 'string'],
             'recommendations' => ['sometimes', 'required', 'string'],
-            'approved_by' => ['sometimes', 'required', 'string', 'max:255'],
-            'approved_at' => ['sometimes', 'required', 'date'],
+            'lead_analyst' => ['sometimes', 'required', 'string', 'max:255'],
+            'review_committee' => ['nullable', 'string'],
+            'approved_at' => ['sometimes', 'nullable', 'date'],
             'report_link' => ['nullable', 'url', 'max:2048'],
         ];
     }

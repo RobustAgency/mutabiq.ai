@@ -2,18 +2,24 @@
 
 namespace Tests\Feature\Repositories;
 
+use Tests\TestCase;
 use App\Models\AiIncident;
-use App\Models\IncidentAction;
+use App\Models\Stakeholder;
 use App\Models\Organization;
+use App\Models\IncidentAction;
+use App\Enums\IncidentAction\ActionType;
+use App\Enums\IncidentAction\ExecutionStatus;
+use App\Enums\IncidentAction\ApprovalRequired;
+use App\Enums\IncidentAction\ValidationResult;
 use App\Repositories\IncidentActionRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class IncidentActionRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     protected IncidentActionRepository $repository;
+
     protected Organization $organization;
 
     protected function setUp(): void
@@ -37,43 +43,53 @@ class IncidentActionRepositoryTest extends TestCase
     public function test_create_incident_action_creates_new_record(): void
     {
         $incident = AiIncident::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $data = [
             'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
-            'action_type' => 'kill_switch',
+            'action_type' => ActionType::KILL_SWITCH->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
             'description' => 'Emergency kill switch activated',
-            'performed_by' => 'John Doe',
+            'performed_by' => $stakeholder->id,
             'started_at' => now()->subHour(),
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
         ];
 
         $result = $this->repository->createIncidentAction($data);
 
         $this->assertInstanceOf(IncidentAction::class, $result);
         $this->assertEquals($incident->id, $result->ai_incident_id);
-        $this->assertEquals('kill_switch', $result->action_type);
+        $this->assertEquals(ActionType::KILL_SWITCH->value, $result->action_type);
+        $this->assertEquals(ExecutionStatus::COMPLETED->value, $result->execution_status);
         $this->assertEquals('Emergency kill switch activated', $result->description);
-        $this->assertEquals('John Doe', $result->performed_by);
-        $this->assertEquals('passed', $result->validation_result);
+        $this->assertEquals($stakeholder->id, $result->performed_by);
+        $this->assertEquals(ValidationResult::EFFECTIVE->value, $result->validation_result);
         $this->assertDatabaseHas('incident_actions', [
             'id' => $result->id,
             'ai_incident_id' => $incident->id,
-            'action_type' => 'kill_switch',
+            'action_type' => ActionType::KILL_SWITCH->value,
         ]);
     }
 
     public function test_create_incident_action_with_all_fields(): void
     {
         $incident = AiIncident::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $data = [
             'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
-            'action_type' => 'rollback_release',
+            'action_type' => ActionType::MODEL_ROLLBACK->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
             'description' => 'Rolled back to previous stable version',
-            'performed_by' => 'Jane Smith',
+            'performed_by' => $stakeholder->id,
+            'individual_name' => 'Jane Smith',
+            'depends_on' => 'Action 123',
+            'approval_required' => ApprovalRequired::MANAGER_APPROVAL->value,
+            'estimated_duration' => '120 hours',
+            'actual_duration' => '90 hours',
             'started_at' => now()->subHours(2),
             'completed_at' => now()->subHour(),
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
             'validation_notes' => 'All systems operational after rollback',
             'linked_release_id' => 'REL-1234',
             'evidence_link' => 'https://example.com/evidence/rollback-123',
@@ -81,10 +97,16 @@ class IncidentActionRepositoryTest extends TestCase
 
         $result = $this->repository->createIncidentAction($data);
 
-        $this->assertEquals('rollback_release', $result->action_type);
+        $this->assertEquals(ActionType::MODEL_ROLLBACK->value, $result->action_type);
+        $this->assertEquals(ExecutionStatus::COMPLETED->value, $result->execution_status);
         $this->assertEquals('Rolled back to previous stable version', $result->description);
-        $this->assertEquals('Jane Smith', $result->performed_by);
-        $this->assertEquals('passed', $result->validation_result);
+        $this->assertEquals($stakeholder->id, $result->performed_by);
+        $this->assertEquals('Jane Smith', $result->individual_name);
+        $this->assertEquals('Action 123', $result->depends_on);
+        $this->assertEquals(ApprovalRequired::MANAGER_APPROVAL->value, $result->approval_required);
+        $this->assertEquals('120 hours', $result->estimated_duration);
+        $this->assertEquals('90 hours', $result->actual_duration);
+        $this->assertEquals(ValidationResult::EFFECTIVE->value, $result->validation_result);
         $this->assertEquals('All systems operational after rollback', $result->validation_notes);
         $this->assertEquals('REL-1234', $result->linked_release_id);
         $this->assertEquals('https://example.com/evidence/rollback-123', $result->evidence_link);
@@ -94,26 +116,30 @@ class IncidentActionRepositoryTest extends TestCase
 
     public function test_update_incident_action_updates_existing_record(): void
     {
+        $stakeholder = Stakeholder::factory()->create();
         $action = IncidentAction::factory()->create([
-            'action_type' => 'kill_switch',
+            'action_type' => ActionType::KILL_SWITCH->value,
+            'execution_status' => ExecutionStatus::PLANNED->value,
             'description' => 'Original description',
-            'validation_result' => 'pending',
+            'validation_result' => ValidationResult::PENDING->value,
         ]);
 
         $result = $this->repository->updateIncidentAction($action, [
-            'action_type' => 'rollback_release',
+            'action_type' => ActionType::MODEL_ROLLBACK->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
             'description' => 'Updated description',
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
         ]);
 
-        $this->assertEquals('rollback_release', $result->action_type);
+        $this->assertEquals(ActionType::MODEL_ROLLBACK->value, $result->action_type);
+        $this->assertEquals(ExecutionStatus::COMPLETED->value, $result->execution_status);
         $this->assertEquals('Updated description', $result->description);
-        $this->assertEquals('passed', $result->validation_result);
+        $this->assertEquals(ValidationResult::EFFECTIVE->value, $result->validation_result);
         $this->assertDatabaseHas('incident_actions', [
             'id' => $action->id,
-            'action_type' => 'rollback_release',
+            'action_type' => ActionType::MODEL_ROLLBACK->value,
             'description' => 'Updated description',
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
         ]);
     }
 
@@ -121,14 +147,21 @@ class IncidentActionRepositoryTest extends TestCase
     {
         $action = IncidentAction::factory()->create();
         $newIncident = AiIncident::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
 
         $updateData = [
             'ai_incident_id' => $newIncident->id,
-            'action_type' => 'key_rotation',
-            'description' => 'Rotated all API keys',
-            'performed_by' => 'Security Team',
-            'validation_result' => 'passed',
-            'validation_notes' => 'All keys rotated successfully',
+            'action_type' => ActionType::DATA_ISOLATION->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
+            'description' => 'Isolated compromised data',
+            'performed_by' => $stakeholder->id,
+            'individual_name' => 'Security Team',
+            'depends_on' => 'Prior action completed',
+            'approval_required' => ApprovalRequired::EXECUTIVE_APPROVAL->value,
+            'estimated_duration' => 240,
+            'actual_duration' => 200,
+            'validation_result' => ValidationResult::EFFECTIVE->value,
+            'validation_notes' => 'Data isolation completed successfully',
             'linked_release_id' => 'REL-9999',
             'evidence_link' => 'https://example.com/new-evidence',
         ];
@@ -136,11 +169,17 @@ class IncidentActionRepositoryTest extends TestCase
         $result = $this->repository->updateIncidentAction($action, $updateData);
 
         $this->assertEquals($newIncident->id, $result->ai_incident_id);
-        $this->assertEquals('key_rotation', $result->action_type);
-        $this->assertEquals('Rotated all API keys', $result->description);
-        $this->assertEquals('Security Team', $result->performed_by);
-        $this->assertEquals('passed', $result->validation_result);
-        $this->assertEquals('All keys rotated successfully', $result->validation_notes);
+        $this->assertEquals(ActionType::DATA_ISOLATION->value, $result->action_type);
+        $this->assertEquals(ExecutionStatus::COMPLETED->value, $result->execution_status);
+        $this->assertEquals('Isolated compromised data', $result->description);
+        $this->assertEquals($stakeholder->id, $result->performed_by);
+        $this->assertEquals('Security Team', $result->individual_name);
+        $this->assertEquals('Prior action completed', $result->depends_on);
+        $this->assertEquals(ApprovalRequired::EXECUTIVE_APPROVAL->value, $result->approval_required);
+        $this->assertEquals(240, $result->estimated_duration);
+        $this->assertEquals(200, $result->actual_duration);
+        $this->assertEquals(ValidationResult::EFFECTIVE->value, $result->validation_result);
+        $this->assertEquals('Data isolation completed successfully', $result->validation_notes);
         $this->assertEquals('REL-9999', $result->linked_release_id);
         $this->assertEquals('https://example.com/new-evidence', $result->evidence_link);
     }
@@ -167,18 +206,20 @@ class IncidentActionRepositoryTest extends TestCase
     public function test_create_incident_action_with_datetime_fields(): void
     {
         $incident = AiIncident::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $startedAt = now()->subHours(3);
         $completedAt = now()->subHour();
 
         $data = [
             'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
-            'action_type' => 'traffic_throttle',
-            'description' => 'Throttled traffic to 50%',
-            'performed_by' => 'Operations Team',
+            'action_type' => ActionType::SYSTEM_PATCH->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
+            'description' => 'Applied critical system patches',
+            'performed_by' => $stakeholder->id,
             'started_at' => $startedAt,
             'completed_at' => $completedAt,
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
         ];
 
         $result = $this->repository->createIncidentAction($data);
@@ -192,55 +233,46 @@ class IncidentActionRepositoryTest extends TestCase
     public function test_create_incident_action_with_all_action_types(): void
     {
         $incident = AiIncident::factory()->create();
-        $actionTypes = [
-            'kill_switch',
-            'rollback_release',
-            'key_rotation',
-            'blocklist_update',
-            'traffic_throttle',
-            'model_disable_tool',
-            'policy_change',
-            'communication',
-            'data_purge',
-            'other',
-        ];
+        $stakeholder = Stakeholder::factory()->create();
 
-        foreach ($actionTypes as $actionType) {
+        foreach (ActionType::cases() as $actionType) {
             $data = [
                 'organization_id' => $this->organization->id,
                 'ai_incident_id' => $incident->id,
-                'action_type' => $actionType,
-                'description' => "Test description for {$actionType}",
-                'performed_by' => 'Test User',
+                'action_type' => $actionType->value,
+                'execution_status' => ExecutionStatus::COMPLETED->value,
+                'description' => "Test description for {$actionType->name}",
+                'performed_by' => $stakeholder->id,
                 'started_at' => now(),
-                'validation_result' => 'passed',
+                'validation_result' => ValidationResult::EFFECTIVE->value,
             ];
 
             $result = $this->repository->createIncidentAction($data);
 
-            $this->assertEquals($actionType, $result->action_type);
+            $this->assertEquals($actionType->value, $result->action_type);
         }
     }
 
     public function test_create_incident_action_with_all_validation_results(): void
     {
         $incident = AiIncident::factory()->create();
-        $validationResults = ['passed', 'failed', 'pending', 'not_applicable'];
+        $stakeholder = Stakeholder::factory()->create();
 
-        foreach ($validationResults as $result) {
+        foreach (ValidationResult::cases() as $validationResult) {
             $data = [
                 'organization_id' => $this->organization->id,
                 'ai_incident_id' => $incident->id,
-                'action_type' => 'kill_switch',
-                'description' => "Test description for {$result}",
-                'performed_by' => 'Test User',
+                'action_type' => ActionType::KILL_SWITCH->value,
+                'execution_status' => ExecutionStatus::COMPLETED->value,
+                'description' => "Test description for {$validationResult->name}",
+                'performed_by' => $stakeholder->id,
                 'started_at' => now(),
-                'validation_result' => $result,
+                'validation_result' => $validationResult->value,
             ];
 
             $created = $this->repository->createIncidentAction($data);
 
-            $this->assertEquals($result, $created->validation_result);
+            $this->assertEquals($validationResult->value, $created->validation_result);
         }
     }
 
@@ -279,19 +311,26 @@ class IncidentActionRepositoryTest extends TestCase
     public function test_create_incident_action_without_optional_fields(): void
     {
         $incident = AiIncident::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $data = [
             'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
-            'action_type' => 'communication',
+            'action_type' => ActionType::COMMUNICATION_NOTIFICATION->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
             'description' => 'Sent notification to stakeholders',
-            'performed_by' => 'Communication Team',
+            'performed_by' => $stakeholder->id,
             'started_at' => now(),
-            'validation_result' => 'not_applicable',
+            'validation_result' => ValidationResult::PENDING->value,
         ];
 
         $result = $this->repository->createIncidentAction($data);
 
         $this->assertNull($result->completed_at);
+        $this->assertNull($result->individual_name);
+        $this->assertNull($result->depends_on);
+        $this->assertNull($result->approval_required);
+        $this->assertNull($result->estimated_duration);
+        $this->assertNull($result->actual_duration);
         $this->assertNull($result->validation_notes);
         $this->assertNull($result->linked_release_id);
         $this->assertNull($result->evidence_link);
@@ -301,33 +340,35 @@ class IncidentActionRepositoryTest extends TestCase
     {
         $action = IncidentAction::factory()->create([
             'completed_at' => null,
-            'validation_result' => 'pending',
+            'validation_result' => ValidationResult::PENDING->value,
         ]);
 
         $completedAt = now();
         $result = $this->repository->updateIncidentAction($action, [
             'completed_at' => $completedAt,
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
         ]);
 
         $this->assertNotNull($result->completed_at);
         $this->assertEquals($completedAt->format('Y-m-d H:i:s'), $result->completed_at->format('Y-m-d H:i:s'));
-        $this->assertEquals('passed', $result->validation_result);
+        $this->assertEquals(ValidationResult::EFFECTIVE->value, $result->validation_result);
     }
 
     public function test_create_incident_action_with_long_description(): void
     {
         $incident = AiIncident::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $longDescription = str_repeat('This is a very long description. ', 100);
 
         $data = [
             'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
-            'action_type' => 'policy_change',
+            'action_type' => ActionType::CONFIGURATION_CHANGE->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
             'description' => $longDescription,
-            'performed_by' => 'Policy Team',
+            'performed_by' => $stakeholder->id,
             'started_at' => now(),
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
         ];
 
         $result = $this->repository->createIncidentAction($data);
@@ -338,16 +379,18 @@ class IncidentActionRepositoryTest extends TestCase
     public function test_create_incident_action_with_long_validation_notes(): void
     {
         $incident = AiIncident::factory()->create();
+        $stakeholder = Stakeholder::factory()->create();
         $longNotes = str_repeat('These are detailed validation notes. ', 50);
 
         $data = [
             'organization_id' => $this->organization->id,
             'ai_incident_id' => $incident->id,
-            'action_type' => 'data_purge',
-            'description' => 'Purged compromised data',
-            'performed_by' => 'Data Team',
+            'action_type' => ActionType::ERADICATION->value,
+            'execution_status' => ExecutionStatus::COMPLETED->value,
+            'description' => 'Eradicated malicious code',
+            'performed_by' => $stakeholder->id,
             'started_at' => now(),
-            'validation_result' => 'passed',
+            'validation_result' => ValidationResult::EFFECTIVE->value,
             'validation_notes' => $longNotes,
         ];
 

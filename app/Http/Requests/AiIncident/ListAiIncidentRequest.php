@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests\AiIncident;
 
-use App\Enums\AiIncident\IncidentCategory;
-use App\Enums\AiIncident\IncidentSeverity;
-use App\Enums\AiIncident\IncidentStage;
-use App\Enums\AiIncident\IncidentStatus;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\AiIncident\IncidentStatus;
+use App\Enums\AiIncident\IncidentSeverity;
+use Illuminate\Foundation\Http\FormRequest;
 
 class ListAiIncidentRequest extends FormRequest
 {
@@ -30,8 +28,6 @@ class ListAiIncidentRequest extends FormRequest
             'title' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', Rule::enum(IncidentStatus::class)],
             'severity' => ['nullable', 'string', Rule::enum(IncidentSeverity::class)],
-            'stage' => ['nullable', 'string', Rule::enum(IncidentStage::class)],
-            'category' => ['nullable', 'string', Rule::enum(IncidentCategory::class)],
             'from' => ['nullable', 'date', 'before_or_equal:today'],
             'to' => ['nullable', 'date', 'before_or_equal:today', 'after_or_equal:from'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],

@@ -4,10 +4,10 @@ namespace App\Enums\IncidentAlert;
 
 enum AlertSourceType: string
 {
-    case KRI = 'kri';
     case MONITORING_RULE = 'monitoring_rule';
-    case HUMAN_REPORT = 'human_report';
-    case VENDOR_NOTICE = 'vendor_notice';
-    case SECURITY_TOOL = 'security_tool';
-    case OTHER = 'other';
+    case KRI_THRESHOLD = 'kri_threshold';
+    case MANUAL_REPORT = 'manual_report';
+    case AUTOMATED_SCAN = 'automated_scan';
+    case USER_COMPLAINT = 'user_complaint';
+    case EXTERNAL_REPORT = 'external_report';
 }

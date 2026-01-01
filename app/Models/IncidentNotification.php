@@ -14,20 +14,29 @@ class IncidentNotification extends Model
     protected $fillable = [
         'organization_id',
         'ai_incident_id',
+        'template',
+        'language',
         'audience_type',
         'channel',
+        'regulatory_basis',
+        'notification_deadline',
         'notice_summary',
         'notice_link',
-        'notified_at',
-        'approved_by',
-        'approval_ref',
+        'sent_at',
+        'sent_by',
+        'delivery_status',
+        'response_summary',
         'follow_up_required',
+        'follow_up_date',
+        'follow_up_notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'notified_at' => 'datetime',
+            'sent_at' => 'datetime',
+            'notification_deadline' => 'datetime',
+            'follow_up_date' => 'datetime',
             'follow_up_required' => 'boolean',
         ];
     }

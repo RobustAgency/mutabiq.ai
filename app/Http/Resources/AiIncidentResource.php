@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\AiIncident;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,27 +20,31 @@ class AiIncidentResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'display_id' => $this->display_id,
+            'organization_id' => $this->organization_id,
             'title' => $this->title,
             'summary' => $this->summary,
-            'category' => $this->category,
+            'incident_type' => $this->incident_type,
+            'domain' => $this->domain,
             'severity' => $this->severity,
             'status' => $this->status,
-            'stage' => $this->stage,
-            'ic_owner' => $this->ic_owner,
-            'ai_model_id' => $this->ai_model_id,
-            'ai_model_version_id' => $this->ai_model_version_id,
-            'use_case_id' => $this->use_case_id,
-            'first_seen_at' => $this->first_seen_at ? Carbon::parse($this->first_seen_at)->toIso8601String() : null,
-            'declared_at' => $this->declared_at ? Carbon::parse($this->declared_at)->toIso8601String() : null,
-            'resolved_at' => $this->resolved_at ? Carbon::parse($this->resolved_at)->toIso8601String() : null,
-            'closed_at' => $this->closed_at ? Carbon::parse($this->closed_at)->toIso8601String() : null,
-            'impacted_users' => $this->impacted_users,
-            'impacted_data' => $this->impacted_data,
+            'incident_commander' => $this->incident_commander,
+            'response_team' => $this->response_team,
+            'primary_regulatory_framework' => $this->primary_regulatory_framework,
+            'notification_requirement' => $this->notification_requirement,
+            'data_residency_affected' => $this->data_residency_affected,
+            'regulatory_reference' => $this->regulatory_reference,
+            'estimated_impacted_users' => $this->estimated_impacted_users,
+            'estimated_impacted_records' => $this->estimated_impacted_records,
+            'data_types_impacted' => $this->data_types_impacted,
+            'affected_business_units' => $this->affected_business_units,
+            'external_parties_involved' => $this->external_parties_involved,
+            'business_impact_description' => $this->business_impact_description,
             'impacted_systems' => $this->impacted_systems,
-            'linked_release_id' => $this->linked_release_id,
+            'ai_model_id' => $this->ai_model_id,
+            'linked_dataset_id' => $this->linked_dataset_id,
             'linked_risk_id' => $this->linked_risk_id,
             'linked_assessment_id' => $this->linked_assessment_id,
-            'linked_capa_id' => $this->linked_capa_id,
             'evidence_link' => $this->evidence_link,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

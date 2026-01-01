@@ -9,4 +9,5 @@ enum Status: string
     case BLOCKED = 'blocked';
     case PENDING_VERIFICATION = 'pending_verification';
     case CLOSED = 'closed';
+    case OVERDUE = 'overdue';
 }
