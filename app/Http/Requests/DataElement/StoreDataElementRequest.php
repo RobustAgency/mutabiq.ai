@@ -2,15 +2,14 @@
 
 namespace App\Http\Requests\DataElement;
 
-use App\Enums\DataElement\CdeCategory;
-use App\Enums\DataElement\CdeFlag;
-use App\Enums\DataElement\DataType;
-use App\Enums\DataElement\PersonalDataCategory;
-use App\Enums\DataElement\PiiFlag;
-use App\Enums\DataElement\Sensitivity;
-use App\Enums\DataElement\SpecialCategoryFlag;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\DataElement\Status;
+use App\Enums\DataElement\DataType;
+use App\Enums\DataElement\DataSteward;
+use App\Enums\DataElement\Sensitivity;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\DataElement\DefaultMaskingMethod;
+use App\Enums\DataElement\PersonalDataCategory;
 
 class StoreDataElementRequest extends FormRequest
 {
@@ -23,18 +22,29 @@ class StoreDataElementRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'business_definition' => ['nullable', 'string'],
-            'data_type' => ['required', 'string', Rule::in(array_map(fn(DataType $c) => $c->value, DataType::cases()))],
+            'data_type' => ['required', 'string', Rule::enum(DataType::class)],
             'format' => ['nullable', 'string', 'max:255'],
-            'sensitivity' => ['required', 'string', Rule::in(array_map(fn(Sensitivity $c) => $c->value, Sensitivity::cases()))],
-            'pii_flag' => ['required', 'string', Rule::in(array_map(fn(PiiFlag $c) => $c->value, PiiFlag::cases()))],
-            'personal_data_category' => ['nullable', 'string', Rule::in(array_map(fn(PersonalDataCategory $c) => $c->value, PersonalDataCategory::cases()))],
-            'special_category_flag' => ['required', 'string', Rule::in(array_map(fn(SpecialCategoryFlag $c) => $c->value, SpecialCategoryFlag::cases()))],
-            'cde_flag' => ['required', 'string', Rule::in(array_map(fn(CdeFlag $c) => $c->value, CdeFlag::cases()))],
-            'cde_category' => ['required_if:cde_flag,true', 'string', Rule::in(array_map(fn(CdeCategory $c) => $c->value, CdeCategory::cases()))],
-            'owner_team' => ['nullable', 'string', 'max:255'],
-            'quality_rules_ref' => ['nullable', 'string'],
-            'catalog_column_id' => ['nullable', 'string', 'max:255'],
+            'business_definition' => ['required', 'string'],
+            'data_steward' => ['required', Rule::enum(DataSteward::class)],
+            'status' => ['required', 'string', Rule::enum(Status::class)],
+            'data_source_id' => ['required', 'integer', 'exists:data_sources,id'],
+            'database_name' => ['required', 'string', 'max:255'],
+            'schema_name' => ['nullable', 'string', 'max:255'],
+            'table_name' => ['required', 'string', 'max:255'],
+            'column_name' => ['required', 'string', 'max:255'],
+            'used_in_datasets' => ['nullable', 'array'],
+            'is_nullable' => ['nullable', 'boolean'],
+            'is_unique' => ['nullable', 'boolean'],
+            'default_value' => ['nullable', 'string'],
+            'validation_rule' => ['nullable', 'string'],
+            'sample_values' => ['nullable', 'array'],
+            'sensitivity' => ['required', 'string', Rule::enum(Sensitivity::class)],
+            'contains_personal_data' => ['required', 'boolean'],
+            'personal_data_type' => ['required_if:contains_personal_data,true', 'string', Rule::enum(PersonalDataCategory::class)],
+            'contains_sensitive_data' => ['required_if:contains_personal_data,true', 'boolean'],
+            'default_masking_method' => ['nullable', Rule::enum(DefaultMaskingMethod::class)],
+            'cde_flag' => ['nullable', 'boolean'],
+            'cde_categories' => ['required', 'array'],
         ];
     }
 }

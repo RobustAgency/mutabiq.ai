@@ -58,7 +58,7 @@ class StoreAiIncidentRequest extends FormRequest
             'impacted_systems' => ['nullable', 'string', 'max:255'],
             'ai_model_id' => ['nullable', 'integer', 'exists:ai_models,id'],
             'linked_dataset_id' => ['nullable', 'integer', 'exists:datasets,id'],
-            'linked_risk_id' => ['nullable', 'integer', 'exists:risks,id'],
+            'linked_risk_id' => ['nullable', 'integer', 'exists:ai_risk_registers,id'],
             'evidence_link' => ['nullable', 'url'],
         ];
     }

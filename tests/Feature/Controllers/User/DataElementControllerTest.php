@@ -2,21 +2,25 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use App\Enums\DataElement\CdeCategory;
-use App\Enums\DataElement\PersonalDataCategory;
-use App\Models\DataElement;
-use App\Models\Dataset;
-use App\Models\DatasetDataElement;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Dataset;
+use App\Models\DataSource;
+use App\Models\DataElement;
+use App\Models\Organization;
+use App\Enums\DataElement\Status;
+use App\Models\DatasetDataElement;
+use App\Enums\DataElement\DataSteward;
+use App\Enums\DataElement\Sensitivity;
+use App\Enums\DataElement\PersonalDataCategory;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DataElementControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
 
     protected function setUp(): void
@@ -28,20 +32,26 @@ class DataElementControllerTest extends TestCase
 
     private function validPayload(array $overrides = []): array
     {
+        $dataSource = DataSource::first() ?? DataSource::factory()->create();
+
         return array_merge([
             'name' => 'Customer Email',
             'business_definition' => 'Email address of the customer',
             'data_type' => 'string',
             'format' => 'email',
-            'sensitivity' => 'Confidential',
-            'pii_flag' => 'Yes',
-            'personal_data_category' => PersonalDataCategory::IDENTIFIER->value,
-            'special_category_flag' => 'No',
-            'cde_flag' => 'Yes',
-            'cde_category' => CdeCategory::FINANCIAL->value,
-            'owner_team' => 'Data Engineering',
-            'quality_rules_ref' => 'Must be valid email format',
-            'catalog_column_id' => 'COL000123',
+            'data_steward' => DataSteward::DATA_ENGINEERING_TEAM->value,
+            'status' => Status::ACTIVE->value,
+            'data_source_id' => $dataSource->id,
+            'database_name' => 'prod_db',
+            'schema_name' => 'public',
+            'table_name' => 'customers',
+            'column_name' => 'email',
+            'sensitivity' => Sensitivity::CONFIDENTIAL->value,
+            'contains_personal_data' => true,
+            'personal_data_type' => PersonalDataCategory::CONTACT_INFORMATION->value,
+            'contains_sensitive_data' => false,
+            'cde_flag' => true,
+            'cde_categories' => ['strategic_asset'],
         ], $overrides);
     }
 
@@ -64,15 +74,13 @@ class DataElementControllerTest extends TestCase
                             'business_definition',
                             'data_type',
                             'format',
+                            'data_steward',
+                            'status',
+                            'database_name',
+                            'table_name',
+                            'column_name',
                             'sensitivity',
-                            'pii_flag',
-                            'personal_data_category',
-                            'special_category_flag',
-                            'cde_flag',
-                            'cde_category',
-                            'owner_team',
-                            'quality_rules_ref',
-                            'catalog_column_id',
+                            'contains_personal_data',
                             'created_at',
                             'updated_at',
                             'datasets' => [
@@ -83,7 +91,6 @@ class DataElementControllerTest extends TestCase
                                         'dataset_id',
                                         'data_element_id',
                                         'column_name',
-                                        'nullable',
                                     ],
                                 ],
                             ],
@@ -151,15 +158,15 @@ class DataElementControllerTest extends TestCase
                     'name' => 'Customer Email',
                     'business_definition' => 'Email address of the customer',
                     'data_type' => 'string',
-                    'sensitivity' => 'Confidential',
-                    'pii_flag' => 'Yes',
+                    'sensitivity' => Sensitivity::CONFIDENTIAL->value,
+                    'contains_personal_data' => true,
                 ],
             ]);
 
         $this->assertDatabaseHas('data_elements', [
             'name' => 'Customer Email',
             'data_type' => 'string',
-            'sensitivity' => 'Confidential',
+            'sensitivity' => Sensitivity::CONFIDENTIAL->value,
         ]);
     }
 
@@ -170,11 +177,16 @@ class DataElementControllerTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
                 'name',
+                'business_definition',
                 'data_type',
+                'data_steward',
+                'status',
+                'data_source_id',
+                'database_name',
+                'table_name',
+                'column_name',
                 'sensitivity',
-                'pii_flag',
-                'special_category_flag',
-                'cde_flag',
+                'contains_personal_data',
             ]);
     }
 
@@ -186,7 +198,7 @@ class DataElementControllerTest extends TestCase
             'data_type' => 'string',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/data-elements/' . $dataElement->id);
+        $response = $this->actingAs($this->user)->getJson('/api/data-elements/'.$dataElement->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -213,7 +225,7 @@ class DataElementControllerTest extends TestCase
             'nullable' => 'No',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/data-elements/' . $dataElement->id);
+        $response = $this->actingAs($this->user)->getJson('/api/data-elements/'.$dataElement->id);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -255,15 +267,15 @@ class DataElementControllerTest extends TestCase
         $dataElement = DataElement::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Old Name',
-            'sensitivity' => 'Internal',
+            'sensitivity' => Sensitivity::INTERNAL->value,
         ]);
 
         $updateData = [
             'name' => 'Updated Name',
-            'sensitivity' => 'Confidential',
+            'sensitivity' => Sensitivity::CONFIDENTIAL->value,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/data-elements/' . $dataElement->id, $updateData);
+        $response = $this->actingAs($this->user)->postJson('/api/data-elements/'.$dataElement->id, $updateData);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -271,14 +283,14 @@ class DataElementControllerTest extends TestCase
                 'message' => 'Data element updated successfully',
                 'data' => [
                     'name' => 'Updated Name',
-                    'sensitivity' => 'Confidential',
+                    'sensitivity' => Sensitivity::CONFIDENTIAL->value,
                 ],
             ]);
 
         $this->assertDatabaseHas('data_elements', [
             'id' => $dataElement->id,
             'name' => 'Updated Name',
-            'sensitivity' => 'Confidential',
+            'sensitivity' => Sensitivity::CONFIDENTIAL->value,
         ]);
     }
 
@@ -286,7 +298,7 @@ class DataElementControllerTest extends TestCase
     {
         $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/api/data-elements/' . $dataElement->id);
+        $response = $this->actingAs($this->user)->deleteJson('/api/data-elements/'.$dataElement->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -310,7 +322,7 @@ class DataElementControllerTest extends TestCase
             'dataset_id' => $dataset->id,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/api/data-elements/' . $dataElement->id);
+        $response = $this->actingAs($this->user)->deleteJson('/api/data-elements/'.$dataElement->id);
 
         $response->assertStatus(200);
 
@@ -353,7 +365,7 @@ class DataElementControllerTest extends TestCase
 
         $dataElement->load('datasets');
 
-        $response = $this->actingAs($this->user)->getJson('/api/data-elements/' . $dataElement->id);
+        $response = $this->actingAs($this->user)->getJson('/api/data-elements/'.$dataElement->id);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -385,7 +397,7 @@ class DataElementControllerTest extends TestCase
             'dataset_id' => $dataset->id,
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/api/data-elements/' . $dataElement->id, [
+        $response = $this->actingAs($this->user)->postJson('/api/data-elements/'.$dataElement->id, [
             'name' => 'Updated',
         ]);
 

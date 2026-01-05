@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Repositories;
 
-use App\Models\DataElement;
+use Tests\TestCase;
 use App\Models\Dataset;
-use App\Models\DatasetDataElement;
+use App\Models\DataElement;
 use App\Models\Organization;
+use App\Models\DatasetDataElement;
 use App\Repositories\DataElementRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class DataElementRepositoryTest extends TestCase
 {
@@ -67,6 +67,7 @@ class DataElementRepositoryTest extends TestCase
     public function test_create_data_element_creates_new_record(): void
     {
         $organization = Organization::factory()->create();
+        $dataSource = \App\Models\DataSource::factory()->create(['organization_id' => $organization->id]);
 
         $data = [
             'organization_id' => $organization->id,
@@ -74,15 +75,26 @@ class DataElementRepositoryTest extends TestCase
             'business_definition' => 'Unique identifier for customers',
             'data_type' => 'string',
             'format' => 'UUID',
-            'sensitivity' => 'Confidential',
-            'pii_flag' => 'Yes',
-            'personal_data_category' => 'Identifier',
-            'special_category_flag' => 'No',
-            'cde_flag' => 'Yes',
-            'cde_category' => 'Strategic',
-            'owner_team' => 'Data Engineering',
-            'quality_rules_ref' => 'Must be unique and not null',
-            'catalog_column_id' => 'COL000123',
+            'data_steward' => 'data_engineer',
+            'status' => 'active',
+            'data_source_id' => $dataSource->id,
+            'database_name' => 'prod_db',
+            'schema_name' => 'public',
+            'table_name' => 'customers',
+            'column_name' => 'customer_id',
+            'used_in_datasets' => json_encode([]),
+            'is_nullable' => false,
+            'is_unique' => true,
+            'default_value' => null,
+            'validation_rule' => 'NOT NULL, UNIQUE',
+            'sample_values' => json_encode(['CUST001', 'CUST002']),
+            'sensitivity' => 'confidential',
+            'contains_personal_data' => true,
+            'personal_data_type' => 'identifier',
+            'contains_sensitive_data' => false,
+            'default_masking_method' => 'tokenization',
+            'cde_flag' => true,
+            'cde_categories' => json_encode(['strategic_asset']),
         ];
 
         $dataElement = $this->repository->createDataElement($data);
@@ -96,22 +108,22 @@ class DataElementRepositoryTest extends TestCase
     {
         $dataElement = DataElement::factory()->create([
             'name' => 'Original Name',
-            'sensitivity' => 'Internal',
+            'sensitivity' => 'internal',
         ]);
 
         $updateData = [
             'name' => 'Updated Name',
-            'sensitivity' => 'Confidential',
+            'sensitivity' => 'confidential',
         ];
 
         $updated = $this->repository->updateDataElement($dataElement, $updateData);
 
         $this->assertEquals('Updated Name', $updated->name);
-        $this->assertEquals('Confidential', $updated->sensitivity);
+        $this->assertEquals('confidential', $updated->sensitivity);
         $this->assertDatabaseHas('data_elements', [
             'id' => $dataElement->id,
             'name' => 'Updated Name',
-            'sensitivity' => 'Confidential',
+            'sensitivity' => 'confidential',
         ]);
     }
 
