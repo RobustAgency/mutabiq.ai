@@ -27,14 +27,17 @@ class DatasetFactory extends Factory
      */
     public function definition(): array
     {
+        $dataSources = DataSource::pluck('id')->toArray();
+        $sourceCount = min(fake()->numberBetween(1, 3), count($dataSources) ?: 1);
+        $sourceIds = count($dataSources) > 0
+            ? fake()->randomElements($dataSources, $sourceCount)
+            : [1, 2, 3];
+
         return [
             'organization_id' => Organization::factory(),
             'name' => fake()->words(3, true).' Dataset',
             'description' => fake()->optional()->sentence(),
-            'source_ids' => fake()->randomElements(
-                DataSource::pluck('id')->toArray() ?: [1, 2, 3],
-                fake()->numberBetween(1, 3)
-            ),
+            'source_ids' => $sourceIds,
             'purpose' => fake()->randomElement(Purpose::cases())->value,
             'owner_team' => fake()->randomElement(['Data Science', 'Engineering', 'Analytics', 'Research', 'Operations']),
             'data_steward' => fake()->randomElement(DataSteward::cases())->value,

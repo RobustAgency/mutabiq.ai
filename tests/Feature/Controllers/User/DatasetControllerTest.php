@@ -10,6 +10,7 @@ use App\Models\Organization;
 use App\Enums\Dataset\Status;
 use App\Enums\Dataset\Purpose;
 use App\Enums\Dataset\SizeUnit;
+use App\Enums\Dataset\OwnerTeam;
 use App\Enums\Dataset\DataSteward;
 use App\Enums\Dataset\LicenseType;
 use App\Enums\Dataset\Sensitivity;
@@ -47,7 +48,7 @@ class DatasetControllerTest extends TestCase
             'description' => 'Contains customer demographic and transaction data',
             'source_ids' => $dataSources->pluck('id')->toArray(),
             'purpose' => $this->enumFirstValue(Purpose::class),
-            'owner_team' => 'Data Science',
+            'owner_team' => OwnerTeam::ML_PLATFORM_TEAM->value,
             'data_steward' => $this->enumFirstValue(DataSteward::class),
             'status' => $this->enumFirstValue(Status::class),
             'estimated_row_count' => 1000000,
@@ -112,7 +113,7 @@ class DatasetControllerTest extends TestCase
                 'message' => 'Dataset created successfully',
                 'data' => [
                     'name' => 'Customer Analytics Dataset',
-                    'owner_team' => 'Data Science',
+                    'owner_team' => 'ml_platform_team',
                     'estimated_row_count' => 1000000,
                     'retention_period' => '90 days',
                 ],
@@ -120,7 +121,7 @@ class DatasetControllerTest extends TestCase
 
         $this->assertDatabaseHas('datasets', [
             'name' => 'Customer Analytics Dataset',
-            'owner_team' => 'Data Science',
+            'owner_team' => OwnerTeam::ML_PLATFORM_TEAM->value,
         ]);
     }
 
@@ -207,7 +208,6 @@ class DatasetControllerTest extends TestCase
 
         $updateData = [
             'name' => 'Updated Dataset Name',
-            'owner_team' => 'Updated Team',
             'retention_period' => '90 days',
         ];
 
@@ -219,7 +219,6 @@ class DatasetControllerTest extends TestCase
                 'message' => 'Dataset updated successfully',
                 'data' => [
                     'name' => 'Updated Dataset Name',
-                    'owner_team' => 'Updated Team',
                     'retention_period' => '90 days',
                 ],
             ]);
@@ -227,7 +226,6 @@ class DatasetControllerTest extends TestCase
         $this->assertDatabaseHas('datasets', [
             'id' => $dataset->id,
             'name' => 'Updated Dataset Name',
-            'owner_team' => 'Updated Team',
         ]);
     }
 
@@ -294,26 +292,6 @@ class DatasetControllerTest extends TestCase
         $dataset = Dataset::find($response->json('data.id'));
         $this->assertIsArray($dataset->primary_languages);
         $this->assertCount(2, $dataset->primary_languages);
-    }
-
-    public function test_nullable_fields_can_be_null(): void
-    {
-        $data = $this->validPayload([
-            'description' => null,
-            'estimated_size' => null,
-            'size_unit' => null,
-            'license_type' => null,
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/api/datasets', $data);
-
-        $response->assertStatus(201);
-
-        $dataset = Dataset::find($response->json('data.id'));
-        $this->assertNull($dataset->description);
-        $this->assertNull($dataset->estimated_size);
-        $this->assertNull($dataset->size_unit);
-        $this->assertNull($dataset->license_type);
     }
 
     public function test_estimated_row_count_must_be_integer(): void

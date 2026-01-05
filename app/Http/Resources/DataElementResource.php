@@ -7,6 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin \App\Models\DataElement
+ *
  * @property mixed $pivot
  */
 class DataElementResource extends JsonResource
@@ -24,20 +25,25 @@ class DataElementResource extends JsonResource
             'business_definition' => $this->business_definition,
             'data_type' => $this->data_type,
             'format' => $this->format,
+            'data_steward' => $this->data_steward,
+            'status' => $this->status,
+            'database_name' => $this->database_name,
+            'schema_name' => $this->schema_name,
+            'table_name' => $this->table_name,
+            'column_name' => $this->column_name,
             'sensitivity' => $this->sensitivity,
-            'pii_flag' => $this->pii_flag,
-            'personal_data_category' => $this->personal_data_category,
-            'special_category_flag' => $this->special_category_flag,
+            'contains_personal_data' => $this->contains_personal_data,
+            'personal_data_type' => $this->personal_data_type,
+            'contains_sensitive_data' => $this->contains_sensitive_data,
+            'default_masking_method' => $this->default_masking_method,
             'cde_flag' => $this->cde_flag,
-            'cde_category' => $this->cde_category,
-            'owner_team' => $this->owner_team,
-            'quality_rules_ref' => $this->quality_rules_ref,
-            'catalog_column_id' => $this->catalog_column_id,
+            'cde_categories' => $this->cde_categories,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
             'datasets' => DatasetResource::collection($this->whenLoaded('datasets')),
             'pivot' => $this->whenPivotLoaded('dataset_element', function () {
                 $pivot = $this->pivot;
+
                 return [
                     'dataset_id' => $pivot->dataset_id,
                     'data_element_id' => $pivot->data_element_id,
