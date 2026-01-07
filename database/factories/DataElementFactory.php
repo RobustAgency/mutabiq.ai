@@ -56,7 +56,7 @@ class DataElementFactory extends Factory
             'is_unique' => fake()->boolean(),
             'default_value' => fake()->optional(0.5)->word(),
             'validation_rule' => fake()->optional(0.5)->sentence(),
-            'sample_values' => json_encode([]),
+            'sample_values' => fake()->optional(0.5)->sentence(),
             'sensitivity' => fake()->randomElement(Sensitivity::cases())->value,
             'contains_personal_data' => fake()->boolean(),
             'personal_data_type' => $personalDataType,
