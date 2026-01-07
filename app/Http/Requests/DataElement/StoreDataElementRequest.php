@@ -37,7 +37,7 @@ class StoreDataElementRequest extends FormRequest
             'is_unique' => ['nullable', 'boolean'],
             'default_value' => ['nullable', 'string'],
             'validation_rule' => ['nullable', 'string'],
-            'sample_values' => ['nullable', 'array'],
+            'sample_values' => ['nullable', 'string'],
             'sensitivity' => ['required', 'string', Rule::enum(Sensitivity::class)],
             'contains_personal_data' => ['required', 'boolean'],
             'personal_data_type' => ['required_if:contains_personal_data,true', 'string', Rule::enum(PersonalDataCategory::class)],
