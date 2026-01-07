@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -51,6 +52,14 @@ class DataElement extends Model
     protected $appends = [
         'display_id',
     ];
+
+    /**
+     * @return BelongsTo<DataSource, $this>
+     */
+    public function dataSource(): BelongsTo
+    {
+        return $this->belongsTo(DataSource::class);
+    }
 
     /**
      * @return BelongsToMany<Dataset, $this>

@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\DataElement;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\DataElementResource;
+use App\Repositories\DataElementRepository;
 use App\Http\Requests\DataElement\ListDataElementRequest;
 use App\Http\Requests\DataElement\StoreDataElementRequest;
 use App\Http\Requests\DataElement\UpdateDataElementRequest;
-use App\Models\DataElement;
-use App\Repositories\DataElementRepository;
-use Illuminate\Http\JsonResponse;
-use App\Http\Resources\DataElementResource;
-use Illuminate\Support\Facades\Auth;
 
 class DataElementController extends Controller
 {
@@ -46,7 +46,7 @@ class DataElementController extends Controller
 
     public function show(DataElement $dataElement): JsonResponse
     {
-        $dataElement = $this->repository->getDataElementByID($dataElement->id);
+        $dataElement = $dataElement->load('dataSource');
 
         return response()->json([
             'error' => false,

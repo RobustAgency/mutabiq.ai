@@ -72,28 +72,30 @@ class DataElementControllerTest extends TestCase
                             'id',
                             'name',
                             'business_definition',
-                            'data_type',
-                            'format',
                             'data_steward',
                             'status',
+                            'data_source_id',
                             'database_name',
+                            'schema_name',
                             'table_name',
                             'column_name',
+                            'used_in_datasets',
+                            'is_nullable',
+                            'is_unique',
+                            'default_value',
+                            'validation_rule',
+                            'sample_values',
+                            'data_type',
+                            'format',
                             'sensitivity',
                             'contains_personal_data',
+                            'personal_data_type',
+                            'contains_sensitive_data',
+                            'default_masking_method',
+                            'cde_flag',
+                            'cde_categories',
                             'created_at',
                             'updated_at',
-                            'datasets' => [
-                                '*' => [
-                                    'id',
-                                    'name',
-                                    'pivot' => [
-                                        'dataset_id',
-                                        'data_element_id',
-                                        'column_name',
-                                    ],
-                                ],
-                            ],
                         ],
                     ],
                     'total',
@@ -117,31 +119,6 @@ class DataElementControllerTest extends TestCase
         $response->assertStatus(200);
         $this->assertEquals(5, $response->json('data.per_page'));
         $this->assertEquals(30, $response->json('data.total'));
-    }
-
-    public function test_paginated_data_elements_include_datasets_relationship(): void
-    {
-        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
-        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id]);
-
-        DatasetDataElement::factory()->create([
-            'organization_id' => $this->organization->id,
-            'data_element_id' => $dataElement->id,
-            'dataset_id' => $dataset->id,
-        ]);
-
-        $response = $this->actingAs($this->user)->getJson('/api/data-elements');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    'data' => [
-                        '*' => [
-                            'datasets',
-                        ],
-                    ],
-                ],
-            ]);
     }
 
     public function test_user_can_create_data_element(): void
@@ -200,6 +177,46 @@ class DataElementControllerTest extends TestCase
 
         $response = $this->actingAs($this->user)->getJson('/api/data-elements/'.$dataElement->id);
 
+        $response->assertJsonStructure([
+            'error',
+            'message',
+            'data' => [
+                'id',
+                'name',
+                'business_definition',
+                'data_steward',
+                'status',
+                'data_source_id',
+                'database_name',
+                'schema_name',
+                'table_name',
+                'column_name',
+                'used_in_datasets',
+                'is_nullable',
+                'is_unique',
+                'default_value',
+                'validation_rule',
+                'sample_values',
+                'data_type',
+                'format',
+                'sensitivity',
+                'contains_personal_data',
+                'personal_data_type',
+                'contains_sensitive_data',
+                'default_masking_method',
+                'cde_flag',
+                'cde_categories',
+                'data_source' => [
+                    'id',
+                    'name',
+                    'created_at',
+                    'updated_at',
+                ],
+                'created_at',
+                'updated_at',
+            ],
+        ]);
+
         $response->assertStatus(200)
             ->assertJson([
                 'error' => false,
@@ -208,56 +225,6 @@ class DataElementControllerTest extends TestCase
                     'id' => $dataElement->id,
                     'name' => 'Test Element',
                     'data_type' => 'string',
-                ],
-            ]);
-    }
-
-    public function test_show_method_includes_datasets_relationship(): void
-    {
-        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Test Element']);
-        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Test Dataset']);
-
-        DatasetDataElement::factory()->create([
-            'organization_id' => $this->organization->id,
-            'data_element_id' => $dataElement->id,
-            'dataset_id' => $dataset->id,
-            'column_name' => 'customer_email',
-            'nullable' => 'No',
-        ]);
-
-        $response = $this->actingAs($this->user)->getJson('/api/data-elements/'.$dataElement->id);
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                    'datasets' => [
-                        '*' => [
-                            'id',
-                            'name',
-                            'pivot' => [
-                                'dataset_id',
-                                'data_element_id',
-                                'column_name',
-                                'nullable',
-                            ],
-                        ],
-                    ],
-                ],
-            ])
-            ->assertJson([
-                'data' => [
-                    'datasets' => [
-                        [
-                            'id' => $dataset->id,
-                            'name' => 'Test Dataset',
-                            'pivot' => [
-                                'column_name' => 'customer_email',
-                                'nullable' => 'No',
-                            ],
-                        ],
-                    ],
                 ],
             ]);
     }
@@ -348,42 +315,6 @@ class DataElementControllerTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
-    }
-
-    public function test_single_data_element_includes_datasets_with_pivot_data(): void
-    {
-        $dataElement = DataElement::factory()->create(['organization_id' => $this->organization->id]);
-        $dataset = Dataset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Test Dataset']);
-
-        DatasetDataElement::factory()->create([
-            'organization_id' => $this->organization->id,
-            'data_element_id' => $dataElement->id,
-            'dataset_id' => $dataset->id,
-            'column_name' => 'customer_email',
-            'nullable' => 'No',
-        ]);
-
-        $dataElement->load('datasets');
-
-        $response = $this->actingAs($this->user)->getJson('/api/data-elements/'.$dataElement->id);
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                    'datasets' => [
-                        '*' => [
-                            'id',
-                            'name',
-                            'pivot' => [
-                                'column_name',
-                                'nullable',
-                            ],
-                        ],
-                    ],
-                ],
-            ]);
     }
 
     public function test_updating_data_element_preserves_dataset_associations(): void
