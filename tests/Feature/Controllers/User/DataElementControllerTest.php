@@ -206,7 +206,12 @@ class DataElementControllerTest extends TestCase
                 'default_masking_method',
                 'cde_flag',
                 'cde_categories',
-                'data_source',
+                'data_source' => [
+                    'id',
+                    'name',
+                    'created_at',
+                    'updated_at',
+                ],
                 'created_at',
                 'updated_at',
             ],
