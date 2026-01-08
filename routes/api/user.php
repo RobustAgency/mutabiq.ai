@@ -37,6 +37,7 @@ use App\Http\Controllers\User\AiRiskRegisterController;
 use App\Http\Controllers\User\DatasetElementController;
 use App\Http\Controllers\IncidentNotificationController;
 use App\Http\Controllers\User\AiRiskTreatmentController;
+use App\Http\Controllers\User\CommitteeActionController;
 use App\Http\Controllers\User\ConsentCoverageController;
 use App\Http\Controllers\User\DatasetSnapshotController;
 use App\Http\Controllers\User\PrivacyIncidentController;
@@ -425,6 +426,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{committeeMeeting}', 'show');
         Route::post('{committeeMeeting}', 'update');
         Route::delete('{committeeMeeting}', 'destroy');
+    });
+
+    Route::prefix('/committee-actions')->controller(CommitteeActionController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{committeeAction}', 'show');
+        Route::post('{committeeAction}', 'update');
+        Route::delete('{committeeAction}', 'destroy');
     });
 
 });
