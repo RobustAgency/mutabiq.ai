@@ -37,10 +37,12 @@ use App\Http\Controllers\User\AiRiskRegisterController;
 use App\Http\Controllers\User\DatasetElementController;
 use App\Http\Controllers\IncidentNotificationController;
 use App\Http\Controllers\User\AiRiskTreatmentController;
+use App\Http\Controllers\User\CommitteeActionController;
 use App\Http\Controllers\User\ConsentCoverageController;
 use App\Http\Controllers\User\DatasetSnapshotController;
 use App\Http\Controllers\User\PrivacyIncidentController;
 use App\Http\Controllers\User\RiskMethodologyController;
+use App\Http\Controllers\User\CommitteeMeetingController;
 use App\Http\Controllers\User\ArtifactAccessLogController;
 use App\Http\Controllers\User\ComplianceEvidenceController;
 use App\Http\Controllers\User\CommitteeMembershipController;
@@ -416,6 +418,22 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{committeeMembership}', 'show');
         Route::post('{committeeMembership}', 'update');
         Route::delete('{committeeMembership}', 'destroy');
+    });
+
+    Route::prefix('/committee-meetings')->controller(CommitteeMeetingController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{committeeMeeting}', 'show');
+        Route::post('{committeeMeeting}', 'update');
+        Route::delete('{committeeMeeting}', 'destroy');
+    });
+
+    Route::prefix('/committee-actions')->controller(CommitteeActionController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{committeeAction}', 'show');
+        Route::post('{committeeAction}', 'update');
+        Route::delete('{committeeAction}', 'destroy');
     });
 
 });
