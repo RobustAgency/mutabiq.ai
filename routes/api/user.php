@@ -44,6 +44,7 @@ use App\Http\Controllers\User\PrivacyIncidentController;
 use App\Http\Controllers\User\RiskMethodologyController;
 use App\Http\Controllers\User\CommitteeMeetingController;
 use App\Http\Controllers\User\ArtifactAccessLogController;
+use App\Http\Controllers\User\CommitteeDecisionController;
 use App\Http\Controllers\User\ComplianceEvidenceController;
 use App\Http\Controllers\User\CommitteeMembershipController;
 use App\Http\Controllers\IncidentRootCauseAnalysisController;
@@ -426,6 +427,14 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{committeeMeeting}', 'show');
         Route::post('{committeeMeeting}', 'update');
         Route::delete('{committeeMeeting}', 'destroy');
+    });
+
+    Route::prefix('/committee-decisions')->controller(CommitteeDecisionController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{committeeDecision}', 'show');
+        Route::post('{committeeDecision}', 'update');
+        Route::delete('{committeeDecision}', 'destroy');
     });
 
     Route::prefix('/committee-actions')->controller(CommitteeActionController::class)->group(function () {
