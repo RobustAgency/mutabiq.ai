@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\User;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\OrganizationResource;
 use App\Repositories\OrganizationRepository;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\JsonResponse;
 use App\Http\Requests\StoreOrganizationRequest;
 
 class OrganizationController extends Controller
@@ -21,21 +22,31 @@ class OrganizationController extends Controller
         /** @var int $userID */
         $userID = Auth::id();
 
-        $organizations = $this->organizationRepository->getOrganizationWithMembersByUserID($userID);
+        $organization = $this->organizationRepository->getOrganizationWithMembersByUserID($userID);
 
         return response()->json([
             'error' => false,
             'message' => 'Organizations retrieved successfully',
-            'data' => new OrganizationResource($organizations),
+            'data' => new OrganizationResource($organization),
         ]);
     }
 
     public function store(StoreOrganizationRequest $request): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+
         $validated = $request->validated();
 
-        $this->organizationRepository->createForUser($user, $validated);
+        $organization = DB::transaction(function () use ($validated, $user) {
+            $organization = $this->organizationRepository->create($validated);
+
+            $user->update([
+                'organization_id' => $organization->id,
+            ]);
+
+            return $organization;
+        });
 
         return response()->json([
             'error' => false,

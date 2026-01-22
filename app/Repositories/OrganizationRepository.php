@@ -49,6 +49,14 @@ class OrganizationRepository
     }
 
     /**
+     * Create a new organization (admin).
+     */
+    public function create(array $organizationData): Organization
+    {
+        return Organization::create($organizationData);
+    }
+
+    /**
      * Update the given organization with new data.
      */
     public function update(Organization $organization, array $organizationData): Organization
@@ -63,6 +71,16 @@ class OrganizationRepository
      */
     public function getOrganizationWithMembersByUserID(int $userID): Organization
     {
-        return Organization::with('members')->where('user_id', $userID)->first();
+        return Organization::with('members')->whereHas('members', function ($query) use ($userID) {
+            $query->where('id', $userID);
+        })->firstOrFail();
+    }
+
+    /**
+     * Delete the given organization.
+     */
+    public function delete(Organization $organization): bool
+    {
+        return $organization->delete();
     }
 }

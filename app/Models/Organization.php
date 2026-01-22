@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Organization extends Model
@@ -13,7 +12,6 @@ class Organization extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'name',
         'website',
         'phone',
@@ -24,16 +22,6 @@ class Organization extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
-
-    /**
-     * Get the user that owns the organization.
-     *
-     * @return BelongsTo<User, $this>
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     /**
      * Get the members for the organization.

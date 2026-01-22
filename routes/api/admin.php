@@ -5,8 +5,8 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\ControlController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\RequirementController;
-use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\Admin\FrameworkController;
+use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\RequirementControlController;
 
 Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
@@ -51,8 +51,10 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
 
         Route::prefix('/organizations')->controller(OrganizationController::class)->group(function () {
             Route::get('', 'index');
+            Route::post('', 'store');
             Route::get('{organization}', 'show');
             Route::post('{organization}', 'update');
+            Route::delete('{organization}', 'destroy');
         });
 
         Route::prefix('/tags')->controller(TagController::class)->group(function () {
