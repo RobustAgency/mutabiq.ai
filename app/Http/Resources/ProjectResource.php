@@ -21,6 +21,7 @@ class ProjectResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'ai_model_id' => $this->ai_model_id,
             'name' => $this->name,
             'description' => $this->description,
             'governance_pillar' => $this->governance_pillar,
@@ -29,6 +30,7 @@ class ProjectResource extends JsonResource
             'updated_at' => $this->updated_at->toDateTimeString(),
             'users' => ProjectMemberResource::collection($this->whenLoaded('users')),
             'framework' => new FrameworkResource($this->whenLoaded('framework')),
+            'ai_model' => new AiModelResource($this->whenLoaded('aiModel')),
         ];
     }
 }

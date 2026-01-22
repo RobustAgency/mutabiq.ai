@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\Organization;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\OrganizationResource;
 use App\Repositories\OrganizationRepository;
 use App\Http\Requests\StoreOrganizationRequest;

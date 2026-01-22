@@ -19,6 +19,7 @@ class ComplianceEvidenceResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'project_id' => $this->project_id,
             'control_id' => $this->control_id,
             'requirement_id' => $this->requirement_id,
             'ai_model_id' => $this->ai_model_id,

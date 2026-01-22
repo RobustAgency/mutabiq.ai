@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Controllers\User;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Tests\TestCase;
 use App\Models\User;
 use App\Enums\UserRole;
 use App\Models\Organization;
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class OrganizationControllerTest extends TestCase
 {
@@ -74,14 +74,13 @@ class OrganizationControllerTest extends TestCase
             'website' => $organizationData['website'],
             'phone' => $organizationData['phone'],
             'country' => $organizationData['country'],
-            'user_id' => $user->id,
         ]);
     }
 
     private function createUserWithOrganizationAndMembers(): User
     {
         $user = User::factory()->create(['role' => UserRole::OWNER]);
-        $organization = Organization::factory()->create(['user_id' => $user->id]);
+        $organization = Organization::factory()->create();
         $user->update(['organization_id' => $organization->id]);
 
         User::factory()->count(2)->create(['organization_id' => $organization->id]);
@@ -101,7 +100,7 @@ class OrganizationControllerTest extends TestCase
             'is_active' => true,
         ];
 
-        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+        $response = $this->actingAs($user)->postJson('/api/organizations', $organizationData);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('organizations', [
@@ -121,7 +120,7 @@ class OrganizationControllerTest extends TestCase
             'is_active' => true,
         ];
 
-        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+        $response = $this->actingAs($user)->postJson('/api/organizations', $organizationData);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('organizations', [
@@ -141,7 +140,7 @@ class OrganizationControllerTest extends TestCase
             'is_active' => true,
         ];
 
-        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+        $response = $this->actingAs($user)->postJson('/api/organizations', $organizationData);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('organizations', [
@@ -161,7 +160,7 @@ class OrganizationControllerTest extends TestCase
             'is_active' => true,
         ];
 
-        $response = $this->actingAs($user)->postJson("/api/organizations", $organizationData);
+        $response = $this->actingAs($user)->postJson('/api/organizations', $organizationData);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('organizations', [

@@ -148,8 +148,8 @@ class MemberControllerTest extends TestCase
 
     private function createUserWithOrganizationAndMembers(): User
     {
-        $user = User::factory()->create(['role' => UserRole::OWNER->value]);
-        $organization = Organization::factory()->create(['user_id' => $user->id]);
+        $user = User::factory()->create(['role' => UserRole::ADMIN->value]);
+        $organization = Organization::factory()->create();
         $user->update(['organization_id' => $organization->id]);
 
         // Create additional members

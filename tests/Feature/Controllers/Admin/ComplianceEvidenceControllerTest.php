@@ -32,11 +32,13 @@ class ComplianceEvidenceControllerTest extends TestCase
         $control = Control::factory()->create();
         $requirement = Requirement::factory()->create();
         $aiModel = AiModel::factory()->create();
+        $project = Project::factory()->create();
 
         ComplianceEvidence::factory()->count(3)->create([
             'control_id' => $control->id,
             'requirement_id' => $requirement->id,
             'ai_model_id' => $aiModel->id,
+            'project_id' => $project->id,
         ]);
 
         $response = $this->actingAs($this->user)->getJson('/api/compliance-evidences');
@@ -81,6 +83,7 @@ class ComplianceEvidenceControllerTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('compliance_evidences', [
+            'project_id' => $project->id,
             'control_id' => $control->id,
             'requirement_id' => $requirement->id,
             'ai_model_id' => $aiModel->id,
@@ -93,11 +96,13 @@ class ComplianceEvidenceControllerTest extends TestCase
         $control = Control::factory()->create();
         $requirement = Requirement::factory()->create();
         $aiModel = AiModel::factory()->create();
+        $project = Project::factory()->create();
 
         $evidence = ComplianceEvidence::factory()->create([
             'control_id' => $control->id,
             'requirement_id' => $requirement->id,
             'ai_model_id' => $aiModel->id,
+            'project_id' => $project->id,
             'artifact_type' => ArtifactType::LOG->value,
             'artifact_uri' => 'https://example.com/logs.txt',
         ]);
@@ -110,6 +115,7 @@ class ComplianceEvidenceControllerTest extends TestCase
             'message' => 'Compliance evidence retrieved successfully',
             'data' => [
                 'id' => $evidence->id,
+                'project_id' => $project->id,
                 'control_id' => $control->id,
                 'requirement_id' => $requirement->id,
                 'ai_model_id' => $aiModel->id,
@@ -120,12 +126,14 @@ class ComplianceEvidenceControllerTest extends TestCase
 
     public function test_user_can_update_compliance_evidence(): void
     {
+        $project = Project::factory()->create();
         $control = Control::factory()->create();
         $requirement = Requirement::factory()->create();
         $aiModel = AiModel::factory()->create();
         $reviewedBy = User::factory()->create();
 
         $evidence = ComplianceEvidence::factory()->create([
+            'project_id' => $project->id,
             'control_id' => $control->id,
             'requirement_id' => $requirement->id,
             'ai_model_id' => $aiModel->id,
@@ -150,6 +158,7 @@ class ComplianceEvidenceControllerTest extends TestCase
 
         $this->assertDatabaseHas('compliance_evidences', [
             'id' => $evidence->id,
+            'project_id' => $project->id,
             'artifact_type' => ArtifactType::DOCUMENT->value,
             'review_outcome' => ReviewOutcome::PASS->value,
         ]);
