@@ -6,6 +6,9 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Enums\UserRole;
 use App\Models\Organization;
+use Tests\Fakes\FakeSupabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AdminOrganizationControllerTest extends TestCase
@@ -414,5 +417,81 @@ class AdminOrganizationControllerTest extends TestCase
         $this->assertEquals('+44-123-4567', $organization->phone);
         $this->assertEquals('United Kingdom', $organization->country);
         $this->assertTrue($organization->is_active);
+    }
+
+    public function test_admin_can_store_organization_admin(): void
+    {
+        Event::fake();
+        Http::fake([
+            '*/auth/v1/admin/users' => function ($request) {
+                $requestData = $request->data();
+
+                return Http::response(FakeSupabase::getUserCreationResponse([
+                    'email' => $requestData['email'],
+                    'name' => $requestData['user_metadata']['name'] ?? 'Test Admin',
+                ]), 200);
+            },
+        ]);
+
+        $organization = Organization::factory()->create();
+        $payload = [
+            'name' => 'Organization Admin',
+            'email' => 'org.admin@example.com',
+            'password' => 'password123',
+        ];
+
+        $response = $this->actingAs($this->adminUser)
+            ->postJson("/api/admin/organizations/{$organization->id}/admin", $payload);
+
+        $response->assertStatus(201);
+        $response->assertJsonStructure([
+            'error',
+            'message',
+            'data' => [
+                'id',
+                'name',
+                'email',
+                'role',
+                'organization_id',
+                'created_at',
+                'updated_at',
+            ],
+        ]);
+        $this->assertEquals('Organization Admin', $response->json('data.name'));
+        $this->assertEquals('org.admin@example.com', $response->json('data.email'));
+        $this->assertEquals(UserRole::ADMIN->value, $response->json('data.role'));
+        $this->assertEquals($organization->id, $response->json('data.organization_id'));
+
+    }
+
+    public function test_admin_can_get_organization_admin(): void
+    {
+        $organization = Organization::factory()->create();
+        $admin = User::factory()->create([
+            'organization_id' => $organization->id,
+            'role' => UserRole::ADMIN->value,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->getJson("/api/admin/organizations/{$organization->id}/admin");
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'error',
+            'message',
+            'data' => [
+                'id',
+                'name',
+                'email',
+                'role',
+                'organization_id',
+                'created_at',
+                'updated_at',
+            ],
+        ]);
+        $this->assertEquals($admin->id, $response->json('data.id'));
+        $this->assertEquals($admin->name, $response->json('data.name'));
+        $this->assertEquals($admin->email, $response->json('data.email'));
+        $this->assertEquals(UserRole::ADMIN->value, $response->json('data.role'));
+        $this->assertEquals($organization->id, $response->json('data.organization_id'));
     }
 }
