@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Models\Organization;
 use App\Clients\SupabaseClient;
 use App\Http\Resources\UserResource;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,17 +35,21 @@ class UserRepository
             ->get();
     }
 
-    /**
-     * Create an Admin user.
-     */
     public function createAdmin(array $adminData): User
     {
+        $supabaseUser = $this->supabaseClient->createUser([
+            'name' => $adminData['name'],
+            'email' => $adminData['email'],
+            'password' => $adminData['password'],
+            'role' => UserRole::ADMIN->value,
+        ]);
+
         return User::create([
             'name' => $adminData['name'],
             'email' => $adminData['email'],
             'password' => bcrypt($adminData['password']),
-            'role' => UserRole::ADMIN,
-            'supabase_id' => $adminData['supabase_id'],
+            'role' => UserRole::ADMIN->value,
+            'supabase_id' => $supabaseUser['id'],
         ]);
     }
 
@@ -106,5 +111,25 @@ class UserRepository
         $query = User::where('organization_id', $organizationID);
 
         return $query->latest()->paginate($perPage);
+    }
+
+    /**
+     * Create an Admin user for a specific organization.
+     */
+    public function createAdminForOrganization(array $adminData, Organization $organization): User
+    {
+        $admin = $this->createAdmin($adminData);
+        $admin->update([
+            'organization_id' => $organization->id,
+        ]);
+
+        return $admin;
+    }
+
+    public function getAdminByOrganizationID(int $organizationID): User
+    {
+        return User::where('organization_id', $organizationID)
+            ->where('role', UserRole::ADMIN->value)
+            ->first();
     }
 }
