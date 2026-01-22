@@ -18,7 +18,6 @@ class OrganizationRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         Organization::factory()->count(1)->create([
-            'user_id' => $user->id,
             'name' => $this->faker->word(),
             'website' => $this->faker->url(),
             'phone' => $this->faker->phoneNumber(),
@@ -27,7 +26,6 @@ class OrganizationRepositoryTest extends TestCase
         ]);
 
         Organization::factory()->create([
-            'user_id' => $user->id,
             'name' => 'High Risk AI',
             'website' => $this->faker->url(),
             'phone' => $this->faker->phoneNumber(),
@@ -46,7 +44,6 @@ class OrganizationRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         Organization::factory()->create([
-            'user_id' => $user->id,
             'name' => $this->faker->word(),
             'website' => $this->faker->url(),
             'phone' => $this->faker->phoneNumber(),
@@ -55,7 +52,6 @@ class OrganizationRepositoryTest extends TestCase
         ]);
 
         Organization::factory()->create([
-            'user_id' => $user->id,
             'name' => $this->faker->word(),
             'website' => $this->faker->url(),
             'phone' => $this->faker->phoneNumber(),
@@ -74,7 +70,6 @@ class OrganizationRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         Organization::factory()->create([
-            'user_id' => $user->id,
             'name' => $this->faker->word(),
             'website' => $this->faker->url(),
             'phone' => $this->faker->phoneNumber(),
@@ -83,7 +78,6 @@ class OrganizationRepositoryTest extends TestCase
         ]);
 
         Organization::factory()->create([
-            'user_id' => $user->id,
             'name' => $this->faker->word(),
             'website' => $this->faker->url(),
             'phone' => $this->faker->phoneNumber(),
@@ -94,5 +88,54 @@ class OrganizationRepositoryTest extends TestCase
         $results = $repository->getFilteredOrganizations(['is_active' => true]);
 
         $this->assertCount(1, $results);
+    }
+
+    public function test_create_creates_organization_with_all_fields(): void
+    {
+        $data = [
+            'name' => 'New Organization',
+            'website' => 'https://www.neworg.com',
+            'phone' => '+1-555-1234',
+            'country' => 'United States',
+            'is_active' => true,
+        ];
+
+        $repository = app(OrganizationRepository::class);
+        $organization = $repository->create($data);
+
+        $this->assertInstanceOf(Organization::class, $organization);
+        $this->assertEquals('New Organization', $organization->name);
+        $this->assertEquals('https://www.neworg.com', $organization->website);
+        $this->assertEquals('+1-555-1234', $organization->phone);
+        $this->assertEquals('United States', $organization->country);
+        $this->assertTrue($organization->is_active);
+        $this->assertDatabaseHas('organizations', [
+            'id' => $organization->id,
+            'name' => 'New Organization',
+            'website' => 'https://www.neworg.com',
+        ]);
+    }
+
+    public function test_create_creates_organization_with_minimal_fields(): void
+    {
+        $data = [
+            'name' => 'Minimal Organization',
+            'is_active' => false,
+        ];
+
+        $repository = app(OrganizationRepository::class);
+        $organization = $repository->create($data);
+
+        $this->assertInstanceOf(Organization::class, $organization);
+        $this->assertEquals('Minimal Organization', $organization->name);
+        $this->assertFalse($organization->is_active);
+        $this->assertNull($organization->website);
+        $this->assertNull($organization->phone);
+        $this->assertNull($organization->country);
+        $this->assertDatabaseHas('organizations', [
+            'id' => $organization->id,
+            'name' => 'Minimal Organization',
+            'is_active' => false,
+        ]);
     }
 }
