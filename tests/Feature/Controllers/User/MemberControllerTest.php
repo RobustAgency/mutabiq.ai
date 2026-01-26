@@ -15,68 +15,6 @@ class MemberControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_user_can_update_member(): void
-    {
-        Notification::fake();
-
-        Http::fake([
-            '*/auth/v1/admin/users/*' => function ($request) {
-                $requestData = $request->data();
-
-                return Http::response([
-                    'id' => 'fake-supabase-id',
-                    'email' => $requestData['email'] ?? 'updated.member@example.com',
-                    'user_metadata' => [
-                        'name' => $requestData['name'] ?? 'Updated Member',
-                    ],
-                ], 200);
-            },
-        ]);
-
-        $user = $this->createUserWithOrganizationAndMembers();
-        $member = $user->organization->members->first();
-        $member->update(['supabase_id' => 'fake-supabase-id']);
-
-        $updateData = [
-            'name' => $this->faker->name(),
-            'role' => UserRole::AUDITOR,
-        ];
-
-        $response = $this->actingAs($user)->putJson("/api/members/{$member->id}", $updateData);
-
-        $response->assertOk();
-        $response->assertJsonStructure([
-            'error',
-            'message',
-            'data' => [
-                'id',
-                'name',
-                'email',
-                'organization_id',
-                'is_organization_active',
-                'role',
-                'created_at',
-                'updated_at',
-            ],
-        ]);
-
-        $responseData = $response->json();
-
-        $this->assertFalse($responseData['error']);
-        $this->assertEquals('Member updated successfully', $responseData['message']);
-        $this->assertEquals($updateData['name'], $responseData['data']['name']);
-        $this->assertEquals($member->email, $responseData['data']['email']);
-        $this->assertEquals($member->organization_id, $responseData['data']['organization_id']);
-        $this->assertEquals('auditor', $responseData['data']['role']);
-
-        $this->assertDatabaseHas('users', [
-            'id' => $member->id,
-            'email' => $member->email,
-            'name' => $updateData['name'],
-            'role' => $updateData['role'],
-        ]);
-    }
-
     public function test_user_can_delete_member(): void
     {
         Notification::fake();

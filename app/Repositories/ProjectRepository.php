@@ -65,8 +65,9 @@ class ProjectRepository
 
     public function addFrameworkToProject(Project $project, int $frameworkID): Project
     {
-        $project->framework_id = $frameworkID;
-        $project->save();
+        $project->update([
+            'framework_id' => $frameworkID,
+        ]);
 
         return $project;
     }
