@@ -7,8 +7,10 @@ use App\Models\User;
 use App\Enums\UserRole;
 use App\Models\Organization;
 use Tests\Fakes\FakeSupabase;
+use Spatie\Permission\Models\Role;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Http;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -124,5 +126,126 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals($admin->id, $retrievedAdmin->id);
         $this->assertEquals(UserRole::ADMIN, $retrievedAdmin->role);
         $this->assertEquals($organization->id, $retrievedAdmin->organization_id);
+    }
+
+    /**
+     * Test assigning a role to a user.
+     */
+    public function test_assign_role_to_user(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create(['organization_id' => $organization->id]);
+        setPermissionsTeamId($organization->id);
+        $role = Role::create([
+            'name' => 'Test Role',
+            'guard_name' => 'web',
+        ]);
+
+        $this->userRepository->assignRoleToUser($user, [
+            'role_id' => $role->id,
+        ]);
+
+        $user->refresh();
+        $this->assertTrue($user->hasRole($role->name));
+    }
+
+    /**
+     * Test assigning granular permissions to a user.
+     */
+    public function test_assign_granular_permissions_to_user(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create(['organization_id' => $organization->id]);
+        setPermissionsTeamId($organization->id);
+        $permissions = Permission::create([
+            'name' => 'test.permission.one',
+            'guard_name' => 'web',
+        ]);
+
+        $result = $this->userRepository->assignGranularPermissionsToUser(
+            $user,
+            $permissions->pluck('id')->toArray()
+        );
+
+        $this->assertCount(1, $result->getDirectPermissions());
+    }
+
+    /**
+     * Test removing a role from a user.
+     */
+    public function test_remove_role_from_user(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create(['organization_id' => $organization->id]);
+        setPermissionsTeamId($organization->id);
+        $role = Role::create([
+            'name' => 'Test Role 2',
+            'guard_name' => 'web',
+        ]);
+
+        $user->assignRole($role);
+        $this->assertTrue($user->fresh()->hasRole($role->name));
+
+        $result = $this->userRepository->removeRoleFromUser($user, $role);
+
+        $this->assertFalse($result->hasRole($role->name));
+    }
+
+    /**
+     * Test revoking granular permissions from a user.
+     */
+    public function test_revoke_granular_permissions_from_user(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create(['organization_id' => $organization->id]);
+        setPermissionsTeamId($organization->id);
+        $permission1 = Permission::create([
+            'name' => 'test.permission.one',
+            'guard_name' => 'web',
+        ]);
+
+        $permission2 = Permission::create([
+            'name' => 'test.permission.two',
+            'guard_name' => 'web',
+        ]);
+
+        $user->givePermissionTo([$permission1, $permission2]);
+        $this->assertCount(2, $user->fresh()->getDirectPermissions());
+
+        $result = $this->userRepository->revokeGranularPermissionsFromUser(
+            $user,
+            [$permission1->id]
+        );
+
+        $this->assertCount(1, $result->getDirectPermissions());
+    }
+
+    /**
+     * Test revoking all permissions from a user.
+     */
+    public function test_revoke_all_granular_permissions_from_user(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create(['organization_id' => $organization->id]);
+        setPermissionsTeamId($organization->id);
+        $permission1 = Permission::create([
+            'name' => 'test.permission.one',
+            'guard_name' => 'web',
+        ]);
+
+        $permission2 = Permission::create([
+            'name' => 'test.permission.two',
+            'guard_name' => 'web',
+        ]);
+
+        $user->givePermissionTo([$permission1, $permission2]);
+        $this->assertCount(2, $user->fresh()->getDirectPermissions());
+
+        $result = $this->userRepository->revokeGranularPermissionsFromUser(
+            $user,
+            [$permission1->id, $permission2->id]
+        );
+
+        $this->assertCount(0, $result->getDirectPermissions());
     }
 }

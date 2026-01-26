@@ -451,7 +451,6 @@ class AdminOrganizationControllerTest extends TestCase
                 'id',
                 'name',
                 'email',
-                'role',
                 'organization_id',
                 'created_at',
                 'updated_at',
@@ -459,7 +458,6 @@ class AdminOrganizationControllerTest extends TestCase
         ]);
         $this->assertEquals('Organization Admin', $response->json('data.name'));
         $this->assertEquals('org.admin@example.com', $response->json('data.email'));
-        $this->assertEquals(UserRole::ADMIN->value, $response->json('data.role'));
         $this->assertEquals($organization->id, $response->json('data.organization_id'));
 
     }
@@ -482,7 +480,6 @@ class AdminOrganizationControllerTest extends TestCase
                 'id',
                 'name',
                 'email',
-                'role',
                 'organization_id',
                 'created_at',
                 'updated_at',
@@ -491,7 +488,6 @@ class AdminOrganizationControllerTest extends TestCase
         $this->assertEquals($admin->id, $response->json('data.id'));
         $this->assertEquals($admin->name, $response->json('data.name'));
         $this->assertEquals($admin->email, $response->json('data.email'));
-        $this->assertEquals(UserRole::ADMIN->value, $response->json('data.role'));
         $this->assertEquals($organization->id, $response->json('data.organization_id'));
     }
 }

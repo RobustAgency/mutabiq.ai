@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Enums\UserRole;
 use App\Clients\SupabaseClient;
 use App\Services\Auth\SupabaseGuard;
 use Illuminate\Support\Facades\Auth;
@@ -37,5 +39,19 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RecordOfProcessingActivity::observe(RecordOfProcessingActivityObserver::class);
+
+        // Set permission scope based on user's organization
+        // This ensures users only see permissions scoped to their organization
+        // unless they are a super admin
+        Auth::resolved(function ($auth) {
+            $user = $auth->user();
+            if ($user instanceof User) {
+                // Skip permission scoping for super admins
+                if ($user->role === UserRole::SUPER_ADMIN) {
+                    return;
+                }
+                setPermissionsTeamId($user->organization_id);
+            }
+        });
     }
 }

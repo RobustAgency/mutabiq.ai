@@ -33,6 +33,7 @@ class ComplianceEvidenceResource extends JsonResource
             'review_outcome' => $this->review_outcome,
             'reviewed_by' => $this->reviewed_by,
             'reviewed_at' => $this->reviewed_at?->toDateTimeString(),
+            'hash_checksum' => $this->hash_checksum,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
             'control' => new ControlResource($this->whenLoaded('control')),

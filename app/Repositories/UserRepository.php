@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Enums\UserRole;
 use App\Models\Organization;
 use App\Clients\SupabaseClient;
+use Spatie\Permission\Models\Role;
 use App\Http\Resources\UserResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -131,5 +132,42 @@ class UserRepository
         return User::where('organization_id', $organizationID)
             ->where('role', UserRole::ADMIN->value)
             ->first();
+    }
+
+    public function assignRoleToUser(User $user, array $roleData): void
+    {
+        $user->assignRole($roleData['role_id']);
+    }
+
+    /**
+     * Assign granular permissions to a user.
+     */
+    public function assignGranularPermissionsToUser(User $user, array $permissionIds): User
+    {
+        $user->givePermissionTo($permissionIds);
+
+        return $user->fresh();
+    }
+
+    /**
+     * Remove a role from a user.
+     */
+    public function removeRoleFromUser(User $user, Role $role): User
+    {
+        $user->removeRole($role);
+
+        return $user->fresh();
+    }
+
+    /**
+     * Revoke granular permissions from a user.
+     */
+    public function revokeGranularPermissionsFromUser(User $user, array $permissionIds): User
+    {
+        foreach ($permissionIds as $permissionId) {
+            $user->revokePermissionTo($permissionId);
+        }
+
+        return $user->fresh();
     }
 }
