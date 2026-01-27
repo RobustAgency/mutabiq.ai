@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ControlController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\Admin\FrameworkController;
 use App\Http\Controllers\Admin\OrganizationController;
@@ -11,14 +10,6 @@ use App\Http\Controllers\Admin\RequirementControlController;
 
 Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
     Route::prefix('/admin')->group(function () {
-        Route::prefix('/users')->controller(UserController::class)->group(function () {
-            Route::get('', 'index');
-            Route::get('search', 'search');
-            Route::post('', 'store');
-            Route::get('{user}', 'show');
-            Route::post('{user}', 'update');
-            Route::delete('{user}', 'destroy');
-        });
 
         Route::prefix('/frameworks')->controller(FrameworkController::class)->group(function () {
             Route::get('', 'index');
@@ -55,6 +46,8 @@ Route::middleware(['auth:supabase', 'role:super_admin'])->group(function () {
             Route::get('{organization}', 'show');
             Route::post('{organization}', 'update');
             Route::delete('{organization}', 'destroy');
+            Route::post('{organization}/admin', 'storeAdmin');
+            Route::get('{organization}/admin', 'getAdmin');
         });
 
         Route::prefix('/tags')->controller(TagController::class)->group(function () {

@@ -4,7 +4,9 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Models\Organization;
 use App\Clients\SupabaseClient;
+use Spatie\Permission\Models\Role;
 use App\Http\Resources\UserResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -34,17 +36,21 @@ class UserRepository
             ->get();
     }
 
-    /**
-     * Create an Admin user.
-     */
     public function createAdmin(array $adminData): User
     {
+        $supabaseUser = $this->supabaseClient->createUser([
+            'name' => $adminData['name'],
+            'email' => $adminData['email'],
+            'password' => $adminData['password'],
+            'role' => UserRole::ADMIN->value,
+        ]);
+
         return User::create([
             'name' => $adminData['name'],
             'email' => $adminData['email'],
             'password' => bcrypt($adminData['password']),
-            'role' => UserRole::ADMIN,
-            'supabase_id' => $adminData['supabase_id'],
+            'role' => UserRole::ADMIN->value,
+            'supabase_id' => $supabaseUser['id'],
         ]);
     }
 
@@ -106,5 +112,62 @@ class UserRepository
         $query = User::where('organization_id', $organizationID);
 
         return $query->latest()->paginate($perPage);
+    }
+
+    /**
+     * Create an Admin user for a specific organization.
+     */
+    public function createAdminForOrganization(array $adminData, Organization $organization): User
+    {
+        $admin = $this->createAdmin($adminData);
+        $admin->update([
+            'organization_id' => $organization->id,
+        ]);
+
+        return $admin;
+    }
+
+    public function getAdminByOrganizationID(int $organizationID): User
+    {
+        return User::where('organization_id', $organizationID)
+            ->where('role', UserRole::ADMIN->value)
+            ->first();
+    }
+
+    public function assignRoleToUser(User $user, array $roleData): void
+    {
+        $user->assignRole($roleData['role_id']);
+    }
+
+    /**
+     * Assign granular permissions to a user.
+     */
+    public function assignGranularPermissionsToUser(User $user, array $permissionIds): User
+    {
+        $user->givePermissionTo($permissionIds);
+
+        return $user->fresh();
+    }
+
+    /**
+     * Remove a role from a user.
+     */
+    public function removeRoleFromUser(User $user, Role $role): User
+    {
+        $user->removeRole($role);
+
+        return $user->fresh();
+    }
+
+    /**
+     * Revoke granular permissions from a user.
+     */
+    public function revokeGranularPermissionsFromUser(User $user, array $permissionIds): User
+    {
+        foreach ($permissionIds as $permissionId) {
+            $user->revokePermissionTo($permissionId);
+        }
+
+        return $user->fresh();
     }
 }

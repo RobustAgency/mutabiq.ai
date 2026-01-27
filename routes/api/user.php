@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\User\AiController;
+use App\Http\Controllers\User\RoleController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\MemberController;
 use App\Http\Controllers\User\VendorController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\User\FrameworkController;
 use App\Http\Controllers\AiModelArtifactController;
 use App\Http\Controllers\User\AiIncidentController;
 use App\Http\Controllers\User\DataSourceController;
+use App\Http\Controllers\User\PermissionController;
 use App\Http\Controllers\User\AiCommitteeController;
 use App\Http\Controllers\User\AiModelCardController;
 use App\Http\Controllers\User\DataElementController;
@@ -58,6 +60,15 @@ use App\Http\Controllers\User\DataProtectionImpactAssessmentController;
 
 Route::middleware(['auth:supabase'])->group(function () {
 
+    Route::prefix('users')->controller(UserController::class)->group(function () {
+        Route::get('', 'index');
+        Route::get('{user}', 'show');
+        Route::post('{user}/assign-role', 'assignRole');
+        Route::delete('{user}/revoke-role/{role}', 'revokeRole');
+        Route::post('{user}/assign-permission', 'assignPermission');
+        Route::post('{user}/revoke-permission', 'revokePermission');
+    });
+
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
         Route::get('', 'index');
         Route::get('subscribe/{plan}', 'subscribe');
@@ -84,8 +95,15 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('', 'store')->can('create', Organization::class);
     });
 
-    Route::prefix('organization-users')->controller(UserController::class)->group(function () {
+    Route::prefix('permissions')->controller(PermissionController::class)->group(function () {
         Route::get('', 'index');
+    });
+
+    Route::prefix('roles')->controller(RoleController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{role}', 'show');
+        Route::post('{role}', 'update');
     });
 
     Route::prefix('members')->controller(MemberController::class)->group(function () {

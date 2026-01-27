@@ -2,15 +2,14 @@
 
 namespace App\Http\Resources;
 
-use App\Models\User;
-use App\Enums\UserRole;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin User
+ * @mixin Role
  */
-class UserResource extends JsonResource
+class RoleResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,12 +21,8 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
-            'organization_id' => $this->organization_id,
-            'is_organization_active' => $this->organization?->is_active,
-            'is_super_admin' => $this->role === UserRole::SUPER_ADMIN,
-            'roles' => $this->roles,
-            'permissions' => $this->getAllPermissions(),
+            'guard_name' => $this->guard_name,
+            'permissions' => $this->permissions,
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
         ];

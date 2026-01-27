@@ -17,7 +17,8 @@
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "*",
         "resend/resend-laravel": "^0.21.0",
-        "spatie/laravel-medialibrary": "^11.14"
+        "spatie/laravel-medialibrary": "^11.14",
+        "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",

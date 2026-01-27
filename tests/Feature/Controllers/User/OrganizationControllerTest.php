@@ -39,7 +39,6 @@ class OrganizationControllerTest extends TestCase
                         'email' => $member->email,
                         'organization_id' => $member->organization_id,
                         'is_organization_active' => true,
-                        'role' => is_object($member->role) ? $member->role->value : $member->role,
                         'created_at' => $member->created_at->format('Y-m-d\TH:i:sP'),
                         'updated_at' => $member->updated_at->format('Y-m-d\TH:i:sP'),
                     ];
