@@ -47,6 +47,7 @@ class DataElement extends Model
         'is_unique' => 'boolean',
         'contains_personal_data' => 'boolean',
         'contains_sensitive_data' => 'boolean',
+        'cde_flag' => 'boolean',
     ];
 
     protected $appends = [
