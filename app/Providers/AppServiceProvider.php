@@ -44,9 +44,11 @@ class AppServiceProvider extends ServiceProvider
         // This ensures users only see permissions scoped to their organization
         // unless they are a super admin
         Auth::resolved(function ($auth) {
-            $user = $auth->user();
+            if (! Auth::guard('supabase')->check()) {
+                return;
+            }
+            $user = Auth::guard('supabase')->user();
             if ($user instanceof User) {
-                // Skip permission scoping for super admins
                 if ($user->role === UserRole::SUPER_ADMIN) {
                     return;
                 }
