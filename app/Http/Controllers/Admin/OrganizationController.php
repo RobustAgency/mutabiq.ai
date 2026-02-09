@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Organization;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
@@ -18,8 +19,9 @@ use App\Http\Requests\Admin\CreateAdminUserRequest;
 class OrganizationController extends Controller
 {
     public function __construct(
+        private UserService $userService,
+        private UserRepository $userRepository,
         private OrganizationRepository $organizationRepository,
-        private UserRepository $userRepository
     ) {}
 
     public function index(SearchOrganizationsRequest $request): JsonResponse
@@ -83,7 +85,7 @@ class OrganizationController extends Controller
     {
         $validated = $request->validated();
 
-        $admin = $this->userRepository->createAdminForOrganization($validated, $organization);
+        $admin = $this->userService->createAdminForOrganization($validated, $organization->id);
 
         event(new OrganizationAdminCreated($admin, $organization));
 

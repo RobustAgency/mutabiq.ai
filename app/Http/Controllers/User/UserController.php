@@ -2,21 +2,29 @@
 
 namespace App\Http\Controllers\User;
 
+use Exception;
 use App\Models\User;
+use App\Imports\UserImport;
 use Illuminate\Http\Request;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Requests\Role\AssignRoleRequest;
+use App\Http\Requests\User\ImportUsersRequest;
 use App\Http\Requests\Permission\AssignPermissionsRequest;
 use App\Http\Requests\Permission\RevokePermissionsRequest;
 
 class UserController extends Controller
 {
-    public function __construct(private UserRepository $userRepository) {}
+    public function __construct(
+        private UserRepository $userRepository,
+        private UserService $userService,
+    ) {}
 
     /**
      * Get all users in the authenticated user's organization.
@@ -100,5 +108,27 @@ class UserController extends Controller
             'message' => 'Permission revoked from user successfully.',
             'error' => false,
         ]);
+    }
+
+    public function importUsers(ImportUsersRequest $request): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $user->organization;
+
+        try {
+            $import = new UserImport($organization->id, $this->userService);
+            Excel::import($import, $request->file('file'));
+
+            return response()->json([
+                'error' => false,
+                'message' => 'User import completed successfully.',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Error during import: '.$e->getMessage(),
+            ], 500);
+        }
+
     }
 }

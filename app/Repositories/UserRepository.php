@@ -5,16 +5,12 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Enums\UserRole;
 use App\Models\Organization;
-use App\Clients\SupabaseClient;
 use Spatie\Permission\Models\Role;
-use App\Http\Resources\UserResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class UserRepository
 {
-    public function __construct(private SupabaseClient $supabaseClient) {}
-
     /**
      * Search users based on the provided search term.
      *
@@ -36,22 +32,22 @@ class UserRepository
             ->get();
     }
 
-    public function createAdmin(array $adminData): User
+    /**
+     * Create a user (DB only - Supabase should be created beforehand).
+     */
+    public function create(array $data): User
     {
-        $supabaseUser = $this->supabaseClient->createUser([
-            'name' => $adminData['name'],
-            'email' => $adminData['email'],
-            'password' => $adminData['password'],
-            'role' => UserRole::ADMIN->value,
-        ]);
+        return User::create($data);
+    }
 
-        return User::create([
-            'name' => $adminData['name'],
-            'email' => $adminData['email'],
-            'password' => bcrypt($adminData['password']),
-            'role' => UserRole::ADMIN->value,
-            'supabase_id' => $supabaseUser['id'],
-        ]);
+    /**
+     * Update a user (DB only - Supabase sync handled in service).
+     */
+    public function update(User $user, array $data): User
+    {
+        $user->update($data);
+
+        return $user;
     }
 
     /**
@@ -79,26 +75,20 @@ class UserRepository
     }
 
     /**
-     * Update user details and sync with Supabase.
+     * Update user details (DB only).
      */
-    public function updateUser(User $user, array $data): UserResource
+    public function updateUser(User $user, array $data): User
     {
-        // This is because email is required by Supabase but optional in our update
-        $data['email'] = $data['email'] ?? $user->email;
-
-        $this->supabaseClient->updateUser($user->supabase_id, $data);
-
         $user->update($data);
 
-        return new UserResource($user);
+        return $user;
     }
 
     /**
-     * Delete a user and remove from Supabase.
+     * Delete a user (DB only - Supabase deletion handled in service).
      */
     public function deleteUser(User $user): void
     {
-        $this->supabaseClient->deleteUser($user->supabase_id);
         $user->delete();
     }
 
@@ -112,19 +102,6 @@ class UserRepository
         $query = User::where('organization_id', $organizationID);
 
         return $query->latest()->paginate($perPage);
-    }
-
-    /**
-     * Create an Admin user for a specific organization.
-     */
-    public function createAdminForOrganization(array $adminData, Organization $organization): User
-    {
-        $admin = $this->createAdmin($adminData);
-        $admin->update([
-            'organization_id' => $organization->id,
-        ]);
-
-        return $admin;
     }
 
     public function getAdminByOrganizationID(int $organizationID): User

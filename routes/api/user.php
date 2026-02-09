@@ -67,6 +67,7 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::delete('{user}/revoke-role/{role}', 'revokeRole');
         Route::post('{user}/assign-permission', 'assignPermission');
         Route::post('{user}/revoke-permission', 'revokePermission');
+        Route::post('import', 'importUsers');
     });
 
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
