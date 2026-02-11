@@ -113,7 +113,9 @@ class UserRepository
 
     public function assignRoleToUser(User $user, array $roleData): void
     {
-        $user->assignRole($roleData['role_id']);
+        $role = Role::findById($roleData['role_id']);
+        // Remove all existing roles to ensure only one role at a time
+        $user->syncRoles([$role]);
     }
 
     /**
