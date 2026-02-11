@@ -113,10 +113,10 @@ class UserController extends Controller
     public function importUsers(ImportUsersRequest $request): JsonResponse
     {
         $user = Auth::user();
-        $organization = $user->organization;
+        $organizationId = $user->organization_id;
 
         try {
-            $import = new UserImport($organization->id, $this->userService);
+            $import = new UserImport($organizationId, $this->userService);
             Excel::import($import, $request->file('file'));
 
             return response()->json([

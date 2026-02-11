@@ -100,6 +100,7 @@ class SupabaseClient
      */
     public function createUser(array $userData): ?array
     {
+        logger()->info('Creating user in Supabase', ['data' => $userData]);
         $response = $this->getClient()->post('/admin/users', [
             'email' => $userData['email'],
             'password' => $userData['password'],
