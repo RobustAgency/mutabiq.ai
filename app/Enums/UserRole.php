@@ -11,4 +11,5 @@ enum UserRole: string
     case REVIEWER = 'reviewer';
     case CONTRIBUTOR = 'contributor';
     case AUDITOR = 'auditor';
+    case USER = 'user';
 }
