@@ -30,8 +30,8 @@ class ComplianceEvidenceObserverTest extends TestCase
     public function test_logs_activity_on_compliance_evidence_update(): void
     {
         $organization = Organization::factory()->create();
-        $project = Project::factory()->for($organization)->create();
-        $evidence = ComplianceEvidence::factory()->for($project)->create();
+        $project = Project::factory()->create(['organization_id' => $organization->id]);
+        $evidence = ComplianceEvidence::factory()->create(['project_id' => $project->id]);
 
         ActivityLog::truncate();
 
@@ -50,8 +50,8 @@ class ComplianceEvidenceObserverTest extends TestCase
     public function test_logs_activity_on_compliance_evidence_delete(): void
     {
         $organization = Organization::factory()->create();
-        $project = Project::factory()->for($organization)->create();
-        $evidence = ComplianceEvidence::factory()->for($project)->create();
+        $project = Project::factory()->create(['organization_id' => $organization->id]);
+        $evidence = ComplianceEvidence::factory()->create(['project_id' => $project->id]);
         $evidenceId = $evidence->id;
 
         $evidence->delete();

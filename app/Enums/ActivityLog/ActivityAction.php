@@ -4,7 +4,7 @@ namespace App\Enums\ActivityLog;
 
 enum ActivityAction: string
 {
-    case CREATE = 'CREATE';
-    case UPDATE = 'UPDATE';
-    case DELETE = 'DELETE';
+    case CREATE = 'create';
+    case UPDATE = 'update';
+    case DELETE = 'delete';
 }

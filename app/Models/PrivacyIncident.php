@@ -78,6 +78,9 @@ class PrivacyIncident extends Model
         'third_party_involved' => 'boolean',
         'evidence_uris' => 'array',
         'resolution_date' => 'date',
+        'immediate_actions' => 'array',
+        'mitigation_measures' => 'array',
+        'preventive_measures' => 'array',
     ];
 
     /**

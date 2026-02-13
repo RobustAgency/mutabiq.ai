@@ -31,6 +31,10 @@ class IncidentRootCauseAnalysis extends Model
     {
         return [
             'approved_at' => 'datetime',
+            'root_causes' => 'array',
+            'contributing_factors' => 'array',
+            'control_failures' => 'array',
+            'recommendations' => 'array',
         ];
     }
 
