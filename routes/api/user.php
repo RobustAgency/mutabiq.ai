@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\User\AiController;
 use App\Http\Controllers\User\RoleController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\User\MemberController;
 use App\Http\Controllers\User\VendorController;
 use App\Http\Controllers\User\AiAssetController;
@@ -287,6 +288,10 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::get('{incidentAlert}', 'show');
         Route::post('{incidentAlert}', 'update');
         Route::delete('{incidentAlert}', 'destroy');
+    });
+
+    Route::prefix('activity-logs')->controller(ActivityLogController::class)->group(function () {
+        Route::get('', 'index');
     });
 
     Route::prefix('incident-actions')->controller(IncidentActionController::class)->group(function () {
