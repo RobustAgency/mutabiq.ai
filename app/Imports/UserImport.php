@@ -34,7 +34,7 @@ class UserImport implements ToCollection, WithChunkReading, WithHeadingRow, With
             $user = [
                 'name' => $row['name'],
                 'email' => $row['email'],
-                'password' => $row['password'] ?? $this->password,
+                'password' => (string) ($row['password'] ?? $this->password),
                 'role' => UserRole::USER,
             ];
 
