@@ -67,6 +67,11 @@ class PermissionSeeder extends Seeder
                 'corrective-preventive-actions' => ['view', 'create', 'edit', 'delete', 'approve'],
 
             ],
+            'administration' => [
+                'users' => ['view', 'create', 'edit', 'delete', 'approve'],
+                'roles' => ['view', 'create', 'edit', 'delete', 'approve'],
+                'permissions' => ['view'],
+            ],
         ];
 
         foreach ($permissions as $category => $resources) {

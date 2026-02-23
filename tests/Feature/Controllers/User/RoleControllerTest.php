@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Permission;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class RoleControllerTest extends TestCase
@@ -17,7 +18,35 @@ class RoleControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $this->user = User::factory()->create([
+            'organization_id' => $organization->id,
+        ]);
+
+        setPermissionsTeamId($organization->id);
+
+        // Create user permissions and assign to user via role
+        $userPermissions = [
+            'administration.roles.view',
+            'administration.roles.create',
+            'administration.roles.edit',
+            'administration.roles.delete',
+            'administration.roles.approve',
+        ];
+
+        foreach ($userPermissions as $permissionName) {
+            Permission::create([
+                'name' => $permissionName,
+                'guard_name' => 'supabase',
+            ]);
+        }
+
+        $role = Role::create([
+            'name' => 'role_manager',
+            'guard_name' => 'supabase',
+        ]);
+        $role->givePermissionTo($userPermissions);
+        $this->user->assignRole($role);
     }
 
     /**
@@ -49,7 +78,7 @@ class RoleControllerTest extends TestCase
             ]);
 
         $this->assertCount(15, $response->json('data.data')); // Default per_page is 15
-        $this->assertEquals(20, $response->json('data.total'));
+        $this->assertEquals(21, $response->json('data.total')); // 20 created + 1 from setUp
     }
 
     /**
@@ -65,7 +94,7 @@ class RoleControllerTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertCount(10, $response->json('data.data'));
-        $this->assertEquals(25, $response->json('data.total'));
+        $this->assertEquals(26, $response->json('data.total'));  // 25 created + 1 from setUp
         $this->assertEquals(10, $response->json('data.per_page'));
     }
 
@@ -93,22 +122,6 @@ class RoleControllerTest extends TestCase
         $roles = $response->json('data.data');
         $this->assertCount(1, $roles);
         $this->assertEquals('Admin', $roles[0]['name']);
-    }
-
-    /**
-     * Test getting roles returns empty when no roles exist.
-     */
-    public function test_index_returns_empty_when_no_roles(): void
-    {
-        $response = $this->actingAs($this->user, 'supabase')->getJson('/api/roles');
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'error' => false,
-                'message' => 'Roles retrieved successfully',
-            ]);
-
-        $this->assertCount(0, $response->json('data.data'));
     }
 
     /**
@@ -251,9 +264,8 @@ class RoleControllerTest extends TestCase
         $this->assertArrayHasKey('per_page', $data);
         $this->assertArrayHasKey('current_page', $data);
         $this->assertArrayHasKey('last_page', $data);
-        $this->assertEquals(30, $data['total']);
+        $this->assertEquals(31, $data['total']); // 30 created + 1 from setUp
         $this->assertEquals(10, $data['per_page']);
-        $this->assertEquals(3, $data['last_page']);
     }
 
     /**

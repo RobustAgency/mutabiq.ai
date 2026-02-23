@@ -27,6 +27,29 @@ class UserControllerTest extends TestCase
             'organization_id' => $this->organization->id,
         ]);
         setPermissionsTeamId($this->organization->id);
+
+        // Create user permissions and assign to user via role
+        $userPermissions = [
+            'administration.users.view',
+            'administration.users.create',
+            'administration.users.edit',
+            'administration.users.delete',
+            'administration.users.approve',
+        ];
+
+        foreach ($userPermissions as $permissionName) {
+            Permission::create([
+                'name' => $permissionName,
+                'guard_name' => 'supabase',
+            ]);
+        }
+
+        $role = Role::create([
+            'name' => 'user_manager',
+            'guard_name' => 'supabase',
+        ]);
+        $role->givePermissionTo($userPermissions);
+        $this->user->assignRole($role);
     }
 
     public function test_index_returns_organization_users(): void
@@ -117,6 +140,18 @@ class UserControllerTest extends TestCase
     {
         $organization = Organization::factory()->create();
         $user = User::factory()->create(['organization_id' => $organization->id]);
+
+        setPermissionsTeamId($organization->id);
+        $viewPermission = Permission::firstOrCreate([
+            'name' => 'administration.users.view',
+            'guard_name' => 'supabase',
+        ]);
+        $role = Role::create([
+            'name' => 'user_viewer',
+            'guard_name' => 'supabase',
+        ]);
+        $role->givePermissionTo($viewPermission);
+        $user->assignRole($role);
 
         $response = $this->actingAs($user)->getJson('/api/users');
 
