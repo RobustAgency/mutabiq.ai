@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use App\Models\User;
-use App\Enums\UserRole;
 use Illuminate\Support\Str;
 use App\Models\Organization;
 use App\Enums\InvitationStatus;
@@ -25,7 +25,7 @@ class TeamInvitationFactory extends Factory
             'organization_id' => Organization::factory(),
             'invited_by' => User::factory(),
             'email' => $this->faker->safeEmail(),
-            'role' => UserRole::CONTRIBUTOR,
+            'role_id' => Role::factory(),
             'token' => Str::random(16),
             'status' => InvitationStatus::PENDING,
             'expires_at' => now()->addDays(7),

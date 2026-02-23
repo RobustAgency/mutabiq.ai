@@ -48,7 +48,7 @@ class TeamInvitationController extends Controller
         }
 
         $data['email'] = $invite->email;
-        $data['role'] = $invite->role;
+        $data['role'] = $invite->role->name;
         $data['organization_id'] = $invite->organization_id;
 
         $supabaseResponse = $supabaseClient->createUser($data);

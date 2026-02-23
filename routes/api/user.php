@@ -70,6 +70,8 @@ Route::middleware(['auth:supabase'])->group(function () {
         Route::post('import', 'importUsers')->middleware('permission:administration.users.create');
     });
 
+    Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers'])->middleware('permission:administration.users.create');
+
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
         Route::get('', 'index');
         Route::get('subscribe/{plan}', 'subscribe');
@@ -83,8 +85,6 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::get('profile', [ProfileController::class, 'show']);
-
-    Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
 
     Route::prefix('frameworks')->controller(FrameworkController::class)->group(function () {
         Route::get('', 'index')->middleware('permission:risk-management-and-compliance.frameworks.view');
