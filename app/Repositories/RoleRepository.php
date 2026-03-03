@@ -30,9 +30,12 @@ class RoleRepository
 
     public function createRole(array $roleData): Role
     {
+        $teamId = getPermissionsTeamId();
+
         $role = Role::query()->create([
             'name' => $roleData['name'],
             'guard_name' => 'supabase',
+            'team_id' => $teamId,
         ]);
 
         if (! empty($roleData['permissions'])) {
