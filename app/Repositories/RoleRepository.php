@@ -14,7 +14,10 @@ class RoleRepository
      */
     public function getFilteredRoles(array $filters): LengthAwarePaginator
     {
-        $query = Role::with('permissions');
+        $teamId = getPermissionsTeamId();
+
+        $query = Role::with('permissions')
+            ->where('team_id', $teamId);
 
         if (isset($filters['name'])) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
