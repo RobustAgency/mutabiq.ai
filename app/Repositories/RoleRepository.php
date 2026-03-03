@@ -14,7 +14,10 @@ class RoleRepository
      */
     public function getFilteredRoles(array $filters): LengthAwarePaginator
     {
-        $query = Role::with('permissions');
+        $teamId = getPermissionsTeamId();
+
+        $query = Role::with('permissions')
+            ->where('team_id', $teamId);
 
         if (isset($filters['name'])) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
@@ -27,9 +30,12 @@ class RoleRepository
 
     public function createRole(array $roleData): Role
     {
+        $teamId = getPermissionsTeamId();
+
         $role = Role::query()->create([
             'name' => $roleData['name'],
             'guard_name' => 'supabase',
+            'team_id' => $teamId,
         ]);
 
         if (! empty($roleData['permissions'])) {
