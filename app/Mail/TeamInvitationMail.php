@@ -34,6 +34,8 @@ class TeamInvitationMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        $this->invitation->load('role');
+
         return new Content(
             markdown: 'emails.team_invitation',
             with: [

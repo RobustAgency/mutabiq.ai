@@ -61,13 +61,16 @@ use App\Http\Controllers\User\DataProtectionImpactAssessmentController;
 Route::middleware(['auth:supabase'])->group(function () {
 
     Route::prefix('users')->controller(UserController::class)->group(function () {
-        Route::get('', 'index');
-        Route::get('{user}', 'show');
-        Route::post('{user}/assign-role', 'assignRole');
-        Route::delete('{user}/revoke-role/{role}', 'revokeRole');
-        Route::post('{user}/assign-permission', 'assignPermission');
-        Route::post('{user}/revoke-permission', 'revokePermission');
+        Route::get('', 'index')->middleware('permission:administration.users.view');
+        Route::get('{user}', 'show')->middleware('permission:administration.users.view');
+        Route::post('{user}/assign-role', 'assignRole')->middleware('permission:administration.users.edit');
+        Route::delete('{user}/revoke-role/{role}', 'revokeRole')->middleware('permission:administration.users.edit');
+        Route::post('{user}/assign-permission', 'assignPermission')->middleware('permission:administration.users.edit');
+        Route::post('{user}/revoke-permission', 'revokePermission')->middleware('permission:administration.users.edit');
+        Route::post('import', 'importUsers')->middleware('permission:administration.users.create');
     });
+
+    Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers'])->middleware('permission:administration.users.create');
 
     Route::prefix('/plans')->controller(BillingController::class)->group(function () {
         Route::get('', 'index');
@@ -83,11 +86,9 @@ Route::middleware(['auth:supabase'])->group(function () {
 
     Route::get('profile', [ProfileController::class, 'show']);
 
-    Route::post('invite-members', [TeamInvitationController::class, 'inviteMembers']);
-
     Route::prefix('frameworks')->controller(FrameworkController::class)->group(function () {
-        Route::get('', 'index');
-        Route::get('{framework}', 'show');
+        Route::get('', 'index')->middleware('permission:risk-management-and-compliance.frameworks.view');
+        Route::get('{framework}', 'show')->middleware('permission:risk-management-and-compliance.frameworks.view');
     });
 
     Route::prefix('organizations')->controller(OrganizationController::class)->group(function () {
@@ -96,14 +97,14 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('permissions')->controller(PermissionController::class)->group(function () {
-        Route::get('', 'index');
+        Route::get('', 'index')->middleware('permission:administration.permissions.view');
     });
 
     Route::prefix('roles')->controller(RoleController::class)->group(function () {
-        Route::get('', 'index');
-        Route::post('', 'store');
-        Route::get('{role}', 'show');
-        Route::post('{role}', 'update');
+        Route::get('', 'index')->middleware('permission:administration.roles.view');
+        Route::post('', 'store')->middleware('permission:administration.roles.create');
+        Route::get('{role}', 'show')->middleware('permission:administration.roles.view');
+        Route::post('{role}', 'update')->middleware('permission:administration.roles.edit');
     });
 
     Route::prefix('members')->controller(MemberController::class)->group(function () {
@@ -113,12 +114,12 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('projects')->controller(ProjectController::class)->group(function () {
-        Route::get('', 'index');
-        Route::post('', 'store');
-        Route::get('{project}', 'show');
-        Route::post('{project}', 'update');
-        Route::post('{project}/add-member', 'addMember')->can('addMember', 'project');
-        Route::post('{project}/add-framework', 'addFramework');
+        Route::get('', 'index')->middleware('permission:risk-management-and-compliance.projects.view');
+        Route::post('', 'store')->middleware('permission:risk-management-and-compliance.projects.create');
+        Route::get('{project}', 'show')->middleware('permission:risk-management-and-compliance.projects.view');
+        Route::post('{project}', 'update')->middleware('permission:risk-management-and-compliance.projects.edit');
+        Route::post('{project}/add-member', 'addMember')->middleware('permission:risk-management-and-compliance.projects.edit')->can('addMember', 'project');
+        Route::post('{project}/add-framework', 'addFramework')->middleware('permission:risk-management-and-compliance.projects.edit');
     });
 
     Route::prefix('ai-models')->controller(AiController::class)->group(function () {
@@ -208,27 +209,27 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('user-consents')->controller(UserConsentController::class)->group(function () {
-        Route::get('', 'index')->middleware('permission:core-assets.user-consents.view');
-        Route::post('', 'store')->middleware('permission:core-assets.user-consents.create');
-        Route::get('{userConsent}', 'show')->middleware('permission:core-assets.user-consents.view');
-        Route::put('{userConsent}', 'update')->middleware('permission:core-assets.user-consents.edit');
-        Route::delete('{userConsent}', 'destroy')->middleware('permission:core-assets.user-consents.delete');
+        Route::get('', 'index')->middleware('permission:privacy-and-data-protection.user-consents.view');
+        Route::post('', 'store')->middleware('permission:privacy-and-data-protection.user-consents.create');
+        Route::get('{userConsent}', 'show')->middleware('permission:privacy-and-data-protection.user-consents.view');
+        Route::put('{userConsent}', 'update')->middleware('permission:privacy-and-data-protection.user-consents.edit');
+        Route::delete('{userConsent}', 'destroy')->middleware('permission:privacy-and-data-protection.user-consents.delete');
     });
 
     Route::prefix('consent-scopes')->controller(ConsentScopeController::class)->group(function () {
-        Route::get('', 'index')->middleware('permission:core-assets.consent-scopes.view');
-        Route::post('', 'store')->middleware('permission:core-assets.consent-scopes.create');
-        Route::get('{consentScope}', 'show')->middleware('permission:core-assets.consent-scopes.view');
-        Route::put('{consentScope}', 'update')->middleware('permission:core-assets.consent-scopes.edit');
-        Route::delete('{consentScope}', 'destroy')->middleware('permission:core-assets.consent-scopes.delete');
+        Route::get('', 'index')->middleware('permission:privacy-and-data-protection.consent-scopes.view');
+        Route::post('', 'store')->middleware('permission:privacy-and-data-protection.consent-scopes.create');
+        Route::get('{consentScope}', 'show')->middleware('permission:privacy-and-data-protection.consent-scopes.view');
+        Route::put('{consentScope}', 'update')->middleware('permission:privacy-and-data-protection.consent-scopes.edit');
+        Route::delete('{consentScope}', 'destroy')->middleware('permission:privacy-and-data-protection.consent-scopes.delete');
     });
 
     Route::prefix('consent-coverages')->controller(ConsentCoverageController::class)->group(function () {
-        Route::get('', 'index')->middleware('permission:core-assets.consent-coverages.view');
-        Route::post('', 'store')->middleware('permission:core-assets.consent-coverages.create');
-        Route::get('{consentCoverage}', 'show')->middleware('permission:core-assets.consent-coverages.view');
-        Route::post('{consentCoverage}', 'update')->middleware('permission:core-assets.consent-coverages.edit');
-        Route::delete('{consentCoverage}', 'destroy')->middleware('permission:core-assets.consent-coverages.delete');
+        Route::get('', 'index')->middleware('permission:privacy-and-data-protection.consent-coverages.view');
+        Route::post('', 'store')->middleware('permission:privacy-and-data-protection.consent-coverages.create');
+        Route::get('{consentCoverage}', 'show')->middleware('permission:privacy-and-data-protection.consent-coverages.view');
+        Route::post('{consentCoverage}', 'update')->middleware('permission:privacy-and-data-protection.consent-coverages.edit');
+        Route::delete('{consentCoverage}', 'destroy')->middleware('permission:privacy-and-data-protection.consent-coverages.delete');
     });
 
     Route::prefix('dataset-subject-populations')->controller(DatasetSubjectPopulationController::class)->group(function () {
@@ -240,11 +241,11 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('pdp-processing-registers')->controller(PdpProcessingRegisterController::class)->group(function () {
-        Route::get('', 'index')->middleware('permission:core-assets.pdp-processing-registers.view');
-        Route::post('', 'store')->middleware('permission:core-assets.pdp-processing-registers.create');
-        Route::get('{pdpProcessingRegister}', 'show')->middleware('permission:core-assets.pdp-processing-registers.view');
-        Route::post('{pdpProcessingRegister}', 'update')->middleware('permission:core-assets.pdp-processing-registers.edit');
-        Route::delete('{pdpProcessingRegister}', 'destroy')->middleware('permission:core-assets.pdp-processing-registers.delete');
+        Route::get('', 'index')->middleware('permission:privacy-and-data-protection.pdp-processing-registers.view');
+        Route::post('', 'store')->middleware('permission:privacy-and-data-protection.pdp-processing-registers.create');
+        Route::get('{pdpProcessingRegister}', 'show')->middleware('permission:privacy-and-data-protection.pdp-processing-registers.view');
+        Route::post('{pdpProcessingRegister}', 'update')->middleware('permission:privacy-and-data-protection.pdp-processing-registers.edit');
+        Route::delete('{pdpProcessingRegister}', 'destroy')->middleware('permission:privacy-and-data-protection.pdp-processing-registers.delete');
     });
 
     Route::prefix('vendors')->controller(VendorController::class)->group(function () {
@@ -384,11 +385,11 @@ Route::middleware(['auth:supabase'])->group(function () {
     });
 
     Route::prefix('consent-records')->controller(ConsentRecordController::class)->group(function () {
-        Route::get('', 'index')->middleware('permission:core-assets.consent-records.view');
-        Route::post('', 'store')->middleware('permission:core-assets.consent-records.create');
-        Route::get('{consentRecord}', 'show')->middleware('permission:core-assets.consent-records.view');
-        Route::post('{consentRecord}', 'update')->middleware('permission:core-assets.consent-records.edit');
-        Route::delete('{consentRecord}', 'destroy')->middleware('permission:core-assets.consent-records.delete');
+        Route::get('', 'index')->middleware('permission:privacy-and-data-protection.consent-records.view');
+        Route::post('', 'store')->middleware('permission:privacy-and-data-protection.consent-records.create');
+        Route::get('{consentRecord}', 'show')->middleware('permission:privacy-and-data-protection.consent-records.view');
+        Route::post('{consentRecord}', 'update')->middleware('permission:privacy-and-data-protection.consent-records.edit');
+        Route::delete('{consentRecord}', 'destroy')->middleware('permission:privacy-and-data-protection.consent-records.delete');
     });
 
     Route::prefix('data-protection-impact-assessments')->controller(DataProtectionImpactAssessmentController::class)->group(function () {

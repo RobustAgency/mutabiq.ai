@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\UserRole;
 use App\Enums\InvitationStatus;
 use App\Events\TeamInvitationSent;
 use Illuminate\Database\Eloquent\Model;
@@ -18,14 +17,13 @@ class TeamInvitation extends Model
         'organization_id',
         'invited_by',
         'email',
-        'role',
+        'role_id',
         'token',
         'status',
         'expires_at',
     ];
 
     protected $casts = [
-        'role' => UserRole::class,
         'status' => InvitationStatus::class,
         'expires_at' => 'datetime',
     ];
@@ -52,5 +50,15 @@ class TeamInvitation extends Model
     public function invitedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invited_by');
+    }
+
+    /**
+     * Get the role associated with the invitation.
+     *
+     * @return BelongsTo<Role, $this>
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
 }
