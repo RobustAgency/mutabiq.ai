@@ -79,7 +79,7 @@ class User extends Authenticatable
             'name' => $attributes['name'],
             'email' => $attributes['email'],
             'supabase_id' => $attributes['supabase_id'],
-            'role' => UserRole::tryFrom($roleValue),
+            'role' => $roleValue,
             'organization_id' => $attributes['organization_id'] ?? null,
         ]);
 

@@ -12,7 +12,7 @@ class TeamInvitationRepository
 {
     public function getByToken(string $token): ?TeamInvitation
     {
-        return TeamInvitation::where('token', $token)->first();
+        return TeamInvitation::where('token', $token)->with('role')->first();
     }
 
     public function createInvite(User $user, array $members): TeamInvitation
@@ -23,7 +23,7 @@ class TeamInvitationRepository
             'organization_id' => $user->organization_id,
             'invited_by' => $user->id,
             'email' => $members['email'],
-            'role' => $members['role'],
+            'role_id' => $members['role_id'],
             'token' => $token,
             'expires_at' => Carbon::now()->addDays(7),
             'status' => InvitationStatus::PENDING,

@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
-use App\Enums\UserRole;
-use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTeamInviteRequest extends FormRequest
@@ -27,7 +25,7 @@ class StoreTeamInviteRequest extends FormRequest
         return [
             'members' => ['required', 'array', 'min:1'],
             'members.*.email' => ['required', 'email', 'max:255'],
-            'members.*.role' => ['required', Rule::in(array_map(fn ($r) => $r->value, UserRole::cases()))],
+            'members.*.role_id' => ['required', 'exists:roles,id'],
         ];
     }
 }

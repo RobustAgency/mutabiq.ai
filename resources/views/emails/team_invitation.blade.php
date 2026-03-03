@@ -22,7 +22,7 @@
                             Hello,<br><br>
                             <strong>{{ $invitation->invitedBy->name }}</strong> has invited you to join 
                             <strong>{{ $invitation->organization->name }}</strong> as a 
-                            <strong style="color:#2563eb;">{{ ucfirst($invitation->role->value) }}</strong>.
+                            <strong style="color:#2563eb;">{{ $invitation->role->name }}</strong>.
                         </td>
                     </tr>
 
